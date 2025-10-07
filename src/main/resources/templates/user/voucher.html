@@ -1,0 +1,960 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voucher - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .btn-auth {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-auth:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .cart-icon {
+            position: relative;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="voucher" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><text x="10" y="15" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.1)">🎫</text></pattern></defs><rect width="100" height="100" fill="url(%23voucher)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .filter-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            color: #495057;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .voucher-card {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .voucher-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .voucher-header {
+            padding: 25px 30px 20px;
+            position: relative;
+        }
+
+        .voucher-discount {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 15px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .voucher-discount::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #764ba2;
+        }
+
+        .discount-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .discount-type {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .voucher-code {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .code-text {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .voucher-info {
+            padding: 0 30px 25px;
+        }
+
+        .voucher-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .voucher-description {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .voucher-details {
+            border-top: 1px solid #e9ecef;
+            padding-top: 20px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .detail-icon {
+            width: 20px;
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+        }
+
+        .detail-value {
+            color: #6c757d;
+        }
+
+        .voucher-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-ending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .voucher-category {
+            position: absolute;
+            top: -10px;
+            left: 30px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .countdown-timer {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .timer-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .voucher-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px 0 20px 0;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 60px 0;
+            }
+            
+            .voucher-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .voucher-header {
+                padding: 20px 20px 15px;
+            }
+            
+            .voucher-info {
+                padding: 0 20px 20px;
+            }
+            
+            .filter-section {
+                padding: 20px;
+            }
+            
+            .stats-section {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-book-open"></i> BookStore</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="product.html">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Liên hệ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="voucher.html">Voucher</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-auth btn-sm" onclick="window.location.href='login.html'">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </button>
+                    <button class="btn btn-auth btn-sm" onclick="window.location.href='register.html'">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </button>
+                    <div class="cart-icon ms-3" onclick="window.location.href='cart.html'">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content text-center">
+                <h1 class="display-3 fw-bold mb-4">
+                    <i class="fas fa-ticket-alt"></i> Voucher ưu đãi
+                </h1>
+                <p class="lead fs-4 mb-5">
+                    Tiết kiệm hơn với các mã giảm giá hấp dẫn
+                </p>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <p class="fs-5 opacity-90">
+                            Khám phá bộ sưu tập voucher đa dạng của BookStore. Từ giảm giá sách giáo khoa 
+                            đến miễn phí vận chuyển, chúng tôi có ưu đãi phù hợp cho mọi nhu cầu học tập!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics -->
+    <div class="container">
+        <div class="stats-section">
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalVouchers">12</div>
+                        <div class="stat-label">Voucher khả dụng</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number">50%</div>
+                        <div class="stat-label">Giảm giá tối đa</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number">0đ</div>
+                        <div class="stat-label">Phí vận chuyển</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Hỗ trợ sử dụng</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="container">
+        <div class="filter-section">
+            <h4 class="mb-3"><i class="fas fa-filter"></i> Lọc voucher theo loại</h4>
+            <div class="d-flex flex-wrap">
+                <button class="filter-btn active" onclick="filterVouchers('all')">
+                    <i class="fas fa-list"></i> Tất cả
+                </button>
+                <button class="filter-btn" onclick="filterVouchers('discount')">
+                    <i class="fas fa-percentage"></i> Giảm giá
+                </button>
+                <button class="filter-btn" onclick="filterVouchers('shipping')">
+                    <i class="fas fa-shipping-fast"></i> Miễn ship
+                </button>
+                <button class="filter-btn" onclick="filterVouchers('combo')">
+                    <i class="fas fa-gift"></i> Combo
+                </button>
+                <button class="filter-btn" onclick="filterVouchers('newbie')">
+                    <i class="fas fa-user-plus"></i> Khách mới
+                </button>
+                <button class="filter-btn" onclick="filterVouchers('vip')">
+                    <i class="fas fa-crown"></i> VIP
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voucher Grid -->
+    <div class="container">
+        <div class="voucher-grid" id="voucherGrid">
+            <!-- Voucher items will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                    <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
+                    <div class="d-flex">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên kết nhanh</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-white-50">Trang chủ</a></li>
+                        <li><a href="product.html" class="text-white-50">Sản phẩm</a></li>
+                        <li><a href="about.html" class="text-white-50">Giới thiệu</a></li>
+                        <li><a href="contact.html" class="text-white-50">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên hệ</h5>
+                    <p><i class="fas fa-phone"></i> 0123 456 789</p>
+                    <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Đại học Công nghiệp Hà Nội - Cơ sở 1</p>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let currentFilter = 'all';
+
+        // Voucher data
+        const vouchers = [
+            {
+                id: 1,
+                code: 'WELCOME50',
+                title: 'Chào mừng khách hàng mới',
+                description: 'Giảm 50% cho đơn hàng đầu tiên. Áp dụng cho tất cả sách giáo khoa và tham khảo.',
+                discountValue: '50%',
+                discountType: 'Giảm giá',
+                category: 'Khách mới',
+                type: 'newbie',
+                minOrder: '200.000đ',
+                endDate: '2024-12-31',
+                status: 'active',
+                requirements: 'Chỉ áp dụng cho khách hàng đăng ký lần đầu. Không áp dụng cùng voucher khác.',
+                quantity: 100
+            },
+            {
+                id: 2,
+                code: 'FREESHIP',
+                title: 'Miễn phí vận chuyển',
+                description: 'Miễn phí ship toàn quốc cho đơn hàng từ 150.000đ. Giao hàng nhanh trong 24h.',
+                discountValue: '0đ',
+                discountType: 'Phí ship',
+                category: 'Miễn ship',
+                type: 'shipping',
+                minOrder: '150.000đ',
+                endDate: '2024-12-25',
+                status: 'active',
+                requirements: 'Áp dụng toàn quốc. Không giới hạn số lần sử dụng.',
+                quantity: 500
+            },
+            {
+                id: 3,
+                code: 'COMBO30',
+                title: 'Combo sách tiết kiệm',
+                description: 'Giảm 30% khi mua combo từ 3 cuốn sách trở lên. Tiết kiệm hơn cho năm học mới.',
+                discountValue: '30%',
+                discountType: 'Combo deal',
+                category: 'Combo',
+                type: 'combo',
+                minOrder: '300.000đ',
+                endDate: '2024-12-20',
+                status: 'ending',
+                requirements: 'Mua tối thiểu 3 cuốn sách. Không áp dụng cho sách đã giảm giá.',
+                quantity: 75
+            },
+            {
+                id: 4,
+                code: 'VIP100',
+                title: 'Ưu đãi thành viên VIP',
+                description: 'Giảm 100.000đ cho thành viên VIP. Tích điểm thêm 5% giá trị đơn hàng.',
+                discountValue: '100K',
+                discountType: 'Giảm tiền',
+                category: 'VIP',
+                type: 'vip',
+                minOrder: '500.000đ',
+                endDate: '2024-12-30',
+                status: 'active',
+                requirements: 'Chỉ dành cho thành viên VIP. Tích điểm thêm 5%.',
+                quantity: 50
+            },
+            {
+                id: 5,
+                code: 'STUDENT20',
+                title: 'Ưu đãi học sinh',
+                description: 'Giảm 20% cho tất cả sách giáo khoa lớp 10, 11, 12. Hỗ trợ học tập hiệu quả.',
+                discountValue: '20%',
+                discountType: 'Sách GK',
+                category: 'Giảm giá',
+                type: 'discount',
+                minOrder: '100.000đ',
+                endDate: '2024-12-28',
+                status: 'active',
+                requirements: 'Chỉ áp dụng sách giáo khoa cấp 3. Xuất trình thẻ học sinh.',
+                quantity: 200
+            },
+            {
+                id: 6,
+                code: 'FLASH40',
+                title: 'Flash Sale cuối tuần',
+                description: 'Giảm 40% trong 48h cuối tuần. Cơ hội vàng để sắm sách với giá ưu đãi nhất.',
+                discountValue: '40%',
+                discountType: 'Flash Sale',
+                category: 'Giảm giá',
+                type: 'discount',
+                minOrder: '250.000đ',
+                endDate: '2024-12-15',
+                status: 'ending',
+                requirements: 'Chỉ áp dụng thứ 7 và chủ nhật. Số lượng có hạn.',
+                quantity: 30
+            },
+            {
+                id: 7,
+                code: 'ENGLISH25',
+                title: 'Sách tiếng Anh giảm giá',
+                description: 'Giảm 25% cho tất cả sách tiếng Anh và từ điển. Nâng cao kỹ năng ngôn ngữ.',
+                discountValue: '25%',
+                discountType: 'Tiếng Anh',
+                category: 'Giảm giá',
+                type: 'discount',
+                minOrder: '180.000đ',
+                endDate: '2024-12-22',
+                status: 'active',
+                requirements: 'Chỉ áp dụng sách tiếng Anh và từ điển. Không giới hạn số lượng.',
+                quantity: 150
+            },
+            {
+                id: 8,
+                code: 'NEWBOOK15',
+                title: 'Sách mới ra mắt',
+                description: 'Giảm 15% cho các đầu sách mới nhất 2024. Cập nhật kiến thức mới nhất.',
+                discountValue: '15%',
+                discountType: 'Sách mới',
+                category: 'Giảm giá',
+                type: 'discount',
+                minOrder: '120.000đ',
+                endDate: '2024-12-27',
+                status: 'active',
+                requirements: 'Chỉ áp dụng sách xuất bản năm 2024. Còn hàng tại kho.',
+                quantity: 80
+            },
+            {
+                id: 9,
+                code: 'BUNDLE50',
+                title: 'Combo 5 cuốn siêu tiết kiệm',
+                description: 'Mua 5 cuốn giảm ngay 50%. Combo hoàn hảo cho cả năm học với giá cực ưu đãi.',
+                discountValue: '50%',
+                discountType: 'Bundle',
+                category: 'Combo',
+                type: 'combo',
+                minOrder: '400.000đ',
+                endDate: '2024-12-26',
+                status: 'active',
+                requirements: 'Mua đúng 5 cuốn sách bất kỳ. Không áp dụng sách sale.',
+                quantity: 40
+            },
+            {
+                id: 10,
+                code: 'LOYAL35',
+                title: 'Khách hàng thân thiết',
+                description: 'Giảm 35% cho khách hàng đã mua từ 5 đơn hàng. Cảm ơn sự tin tưởng của bạn.',
+                discountValue: '35%',
+                discountType: 'Thân thiết',
+                category: 'VIP',
+                type: 'vip',
+                minOrder: '300.000đ',
+                endDate: '2024-12-29',
+                status: 'active',
+                requirements: 'Đã có tối thiểu 5 đơn hàng thành công. Tự động áp dụng.',
+                quantity: 60
+            },
+            {
+                id: 11,
+                code: 'MIDNIGHT60',
+                title: 'Sale nửa đêm đặc biệt',
+                description: 'Giảm 60% từ 23:00-01:00. Cơ hội duy nhất trong tháng để mua sách giá sốc.',
+                discountValue: '60%',
+                discountType: 'Midnight',
+                category: 'Giảm giá',
+                type: 'discount',
+                minOrder: '200.000đ',
+                endDate: '2024-12-18',
+                status: 'ending',
+                requirements: 'Chỉ áp dụng từ 23:00-01:00. Số lượng rất hạn chế.',
+                quantity: 20
+            },
+            {
+                id: 12,
+                code: 'XMAS2024',
+                title: 'Giáng sinh ấm áp',
+                description: 'Giảm 45% nhân dịp Giáng sinh. Tặng bookmark xinh xắn cho mỗi đơn hàng.',
+                discountValue: '45%',
+                discountType: 'Giáng sinh',
+                category: 'Giảm giá',
+                type: 'discount',
+                minOrder: '350.000đ',
+                endDate: '2024-12-25',
+                status: 'active',
+                requirements: 'Áp dụng từ 20/12-25/12. Tặng kèm bookmark Giáng sinh.',
+                quantity: 90
+            }
+        ];
+
+        // Load page on startup
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            renderVouchers();
+            startCountdowns();
+            animateOnScroll();
+        });
+
+        // Update cart count
+        function updateCartCount() {
+            const cartCount = document.getElementById('cartCount');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+        }
+
+        // Render vouchers
+        function renderVouchers() {
+            const grid = document.getElementById('voucherGrid');
+            const filteredVouchers = currentFilter === 'all' ? vouchers : vouchers.filter(v => v.type === currentFilter);
+            
+            grid.innerHTML = filteredVouchers.map(voucher => `
+                <div class="voucher-card" data-type="${voucher.type}">
+                    <div class="voucher-category">${voucher.category}</div>
+                    <div class="voucher-status status-${voucher.status}">
+                        ${voucher.status === 'active' ? 'Còn hiệu lực' : 
+                          voucher.status === 'ending' ? 'Sắp hết hạn' : 'Hết hạn'}
+                    </div>
+                    
+                    <div class="voucher-header">
+                        <div class="voucher-discount">
+                            <div class="discount-value">${voucher.discountValue}</div>
+                            <div class="discount-type">${voucher.discountType}</div>
+                        </div>
+                        
+                        <div class="voucher-code">
+                            <div class="code-text">${voucher.code}</div>
+                            <button class="copy-btn" onclick="copyVoucherCode('${voucher.code}')">
+                                <i class="fas fa-copy"></i> Copy mã
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="voucher-info">
+                        <h4 class="voucher-title">${voucher.title}</h4>
+                        <p class="voucher-description">${voucher.description}</p>
+                        
+                        <div class="voucher-details">
+                            <div class="detail-item">
+                                <i class="fas fa-calendar detail-icon"></i>
+                                <span class="detail-label">Hết hạn:</span>
+                                <span class="detail-value">${formatDate(voucher.endDate)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-shopping-cart detail-icon"></i>
+                                <span class="detail-label">Đơn tối thiểu:</span>
+                                <span class="detail-value">${voucher.minOrder}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-ticket-alt detail-icon"></i>
+                                <span class="detail-label">Còn lại:</span>
+                                <span class="detail-value">${voucher.quantity} voucher</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-info-circle detail-icon"></i>
+                                <span class="detail-label">Điều kiện:</span>
+                                <span class="detail-value">${voucher.requirements}</span>
+                            </div>
+                        </div>
+                        
+                        ${voucher.status === 'ending' ? `
+                            <div class="countdown-timer" id="countdown-${voucher.id}">
+                                <div>⏰ Còn lại: <span class="timer-value" id="timer-${voucher.id}">--:--:--</span></div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            // Update total vouchers count
+            document.getElementById('totalVouchers').textContent = filteredVouchers.length;
+        }
+
+        // Filter vouchers
+        function filterVouchers(type) {
+            currentFilter = type;
+            
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderVouchers();
+            startCountdowns();
+        }
+
+        // Copy voucher code
+        function copyVoucherCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification(`Đã copy mã voucher: ${code}`, 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification(`Đã copy mã voucher: ${code}`, 'success');
+            });
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Start countdown timers
+        function startCountdowns() {
+            const endingVouchers = vouchers.filter(v => v.status === 'ending');
+            
+            endingVouchers.forEach(voucher => {
+                const timerElement = document.getElementById(`timer-${voucher.id}`);
+                if (timerElement) {
+                    updateCountdown(voucher.endDate, timerElement);
+                    setInterval(() => updateCountdown(voucher.endDate, timerElement), 1000);
+                }
+            });
+        }
+
+        // Update countdown
+        function updateCountdown(endDate, element) {
+            const now = new Date().getTime();
+            const end = new Date(endDate).getTime();
+            const distance = end - now;
+
+            if (distance > 0) {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                element.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            } else {
+                element.textContent = 'Đã hết hạn';
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 
+                              type === 'info' ? 'alert-info' : 'alert-warning';
+            
+            notification.className = `alert ${alertClass} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // Animate elements on scroll
+        function animateOnScroll() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all voucher cards for animation
+            document.querySelectorAll('.voucher-card, .stats-section, .filter-section').forEach(element => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(30px)';
+                element.style.transition = 'all 0.6s ease';
+                observer.observe(element);
+            });
+        }
+
+        // Add scroll effect to navbar
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%)';
+                navbar.style.backdropFilter = 'blur(10px)';
+            } else {
+                navbar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                navbar.style.backdropFilter = 'none';
+            }
+        });
+
+        // Add parallax effect to hero section
+        window.addEventListener('scroll', function() {
+            const hero = document.querySelector('.hero-section');
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * -0.5;
+            
+            if (hero) {
+                hero.style.transform = `translateY(${rate}px)`;
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa36ac02d708dd',t:'MTc1OTgwNjcxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
