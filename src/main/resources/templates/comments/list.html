@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách bình luận</title>
+</head>
+<body>
+<h2>Danh sách bình luận</h2>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>ID Người dùng</th>
+        <th>ID Sản phẩm</th>
+        <th>Nội dung</th>
+        <th>Đánh giá</th>
+        <th>Ngày</th>
+        <th>Hành động</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="c : ${comments}">
+        <td th:text="${c.id}"></td>
+        <td th:text="${c.userId}"></td>
+        <td th:text="${c.productId}"></td>
+        <td th:text="${c.messages}"></td>
+        <td th:text="${c.rate}"></td>
+        <td th:text="${c.date}"></td>
+        <td>
+            <a th:href="@{'/comments/delete/' + ${c.id}}">Xóa</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+<a th:href="@{/comments/new}">Thêm bình luận mới</a>
+
+</body>
+</html>

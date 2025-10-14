@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bình luận theo sản phẩm</title>
+</head>
+<body>
+<h2>Bình luận của sản phẩm có ID: <span th:text="${productId}"></span></h2>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Nội dung</th>
+        <th>Đánh giá</th>
+        <th>Ngày</th>
+        <th>Người dùng</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="c : ${comments}">
+        <td th:text="${c.id}"></td>
+        <td th:text="${c.messages}"></td>
+        <td th:text="${c.rate}"></td>
+        <td th:text="${c.date}"></td>
+        <td th:text="${c.userId}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+<a th:href="@{/comments}">Quay lại danh sách</a>
+
+</body>
+</html>
