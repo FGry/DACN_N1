@@ -15,4 +15,12 @@ public class CommentsDTO {
     private LocalDate date;
     private Integer userId;
     private Integer productId;
+
+    private String productTitle;
+    private String productCode;
+    private String userName;
+    private String status;
+    private String reply;
+
+    private String productImageUrl;
 }

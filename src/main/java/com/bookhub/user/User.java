@@ -24,7 +24,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_user") // ánh xạ đúng tên cột trong DB
+    @Column(name = "id_user")
     Integer idUser;
 
     @Column(nullable = false, length = 50)
@@ -46,6 +46,9 @@ public class User {
     String roles;
 
     @Column(nullable = false)
+    Boolean isLocked = false;
+
+    @Column(nullable = false)
     LocalDate updateDate;
 
     @Column(nullable = false)
@@ -56,6 +59,9 @@ public class User {
     List<Address> addresses;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<Cart> carts;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Comments> comments;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -63,7 +69,4 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Voucher> vouchers;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<Cart> carts;
 }

@@ -850,32 +850,35 @@
             <h2 class="sidebar-title">BookStore</h2>
         </div>
         
-        <nav class="sidebar-menu">
-            <a href="#" class="menu-item active" onclick="showSection('products')">
+       <nav class="sidebar-menu">
+            <a th:href="@{/admin/home}" class="menu-item active" onclick="showSection('products')">
                 <i class="fas fa-box"></i>
                 <span>Quản lý sản phẩm</span>
             </a>
-            <a href="#" class="menu-item" onclick="showSection('orders')">
+            <a th:href="@{/admin/carts}" class="menu-item" onclick="showSection('orders')">
                 <i class="fas fa-shopping-cart"></i>
                 <span>Quản lý đơn hàng</span>
             </a>
-            <a href="#" class="menu-item" onclick="showSection('users')">
+            <a th:href="@{/admin/users}" class="menu-item" onclick="showSection('users')">
                 <i class="fas fa-users"></i>
                 <span>Quản lý tài khoản</span>
             </a>
-            <a href="#" class="menu-item" onclick="showSection('vouchers')">
+            <a th:href="@{/admin/vouchers}" class="menu-item" onclick="showSection('vouchers')">
                 <i class="fas fa-ticket-alt"></i>
                 <span>Quản lý voucher</span>
             </a>
-            <a href="#" class="menu-item" onclick="showSection('analytics')">
+             <a th:href="@{/admin/comments}" class="menu-item "> <i class="fas fa-star"></i>
+            <span>Quản lý đánh giá</span>
+            </a>
+            <a th:href="@{/admin/revenue}" class="menu-item" onclick="showSection('analytics')">
                 <i class="fas fa-chart-line"></i>
                 <span>Thống kê doanh thu</span>
             </a>
-            <a href="#" class="menu-item" onclick="showSection('settings')">
+            <a th:href="@{/admin/setting}" class="menu-item" onclick="showSection('settings')">
                 <i class="fas fa-cog"></i>
                 <span>Cài đặt</span>
             </a>
-            <a href="index.html" class="menu-item">
+            <a th:href="@{/logout}" class="menu-item">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Đăng xuất</span>
             </a>

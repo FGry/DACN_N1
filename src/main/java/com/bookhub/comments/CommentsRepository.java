@@ -12,8 +12,14 @@ public interface CommentsRepository extends JpaRepository<Comments, Integer> {
     // Lấy comment theo sản phẩm
     List<Comments> findByProduct_IdProducts(Integer idProduct);
 
-    // Lấy comment theo người dùng (sử dụng JPQL để tránh lỗi đặt tên)
+    // Lấy comment theo người dùng
     @Query("SELECT c FROM Comments c WHERE c.user.idUser = :userId")
     List<Comments> findByUserId(@Param("userId") Integer userId);
 
+
+    @Query("SELECT DISTINCT c FROM Comments c " +
+            "JOIN FETCH c.user u " +
+            "JOIN FETCH c.product p " +
+            "LEFT JOIN FETCH p.images")
+    List<Comments> findAllWithDetails();
 }

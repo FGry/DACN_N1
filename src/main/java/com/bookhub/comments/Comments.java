@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "comments") // nên để tên bảng chữ thường cho thống nhất
+@Table(name = "comments")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -20,7 +20,7 @@ public class Comments {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_comment") // tên cột trong DB là id_comment
+    @Column(name = "id_comment")
     Integer idComment;
 
     @Column(name = "date")
@@ -32,10 +32,16 @@ public class Comments {
     @Column(name = "rate")
     Integer rate;
 
+    @Column(name = "status", length = 10)
+    String status;
+
+    @Column(name = "reply", columnDefinition = "TEXT")
+    String reply;
+
     // ánh xạ với user
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id") // nên đổi cho thống nhất
-            User user;
+    @JoinColumn(name = "user_id")
+    User user;
 
     // ánh xạ với product
     @ManyToOne(fetch = FetchType.LAZY)
