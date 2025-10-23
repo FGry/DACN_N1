@@ -46,19 +46,29 @@ public class Product {
     String language;
     Integer discount;
 
-    // Quan hệ 1-n
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // THÊM TRƯỜNG NÀY
+    @Column(columnDefinition = "TEXT")
+    String description;
+
+    // --- PHẦN SỬA ĐỔI QUAN HỆ CATEGORY ---
+    @ManyToMany(fetch = FetchType.LAZY, targetEntity = Category.class)
+    @JoinTable(
+            name = "Categories_Products",
+            joinColumns = @JoinColumn(name = "Products_id_products"),
+            inverseJoinColumns = @JoinColumn(name = "Categories_id_categories")
+    )
+    List<Category> categories;
+    // --- KẾT THÚC SỬA ĐỔI ---
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY, targetEntity = ImageProduct.class)
     List<ImageProduct> images;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = Comments.class)
     List<Comments> comments;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = OrderDetail.class)
     List<OrderDetail> orderDetails;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = Cart.class)
     List<Cart> carts;
-
-    @ManyToMany(mappedBy = "products")
-    List<Category> categories;
 }

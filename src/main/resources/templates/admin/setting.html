@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* CSS CƠ SỞ (Lấy từ review.html, giữ lại các style chính) */
+
         body {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -252,11 +252,15 @@
     </div>
 
     <nav class="sidebar-menu">
-        <a th:href="@{/admin/home}" class="menu-item" onclick="showSection('products')">
+        <a th:href="@{/admin/home}" class="menu-item " onclick="showSection('home')">
+            <i class="fas fa-box"></i>
+            <span>Trang chủ</span>
+        </a>
+        <a th:href="@{/admin/products}" class="menu-item" onclick="showSection('products')">
             <i class="fas fa-box"></i>
             <span>Quản lý sản phẩm</span>
         </a>
-        <a th:href="@{/admin/carts}" class="menu-item" onclick="showSection('orders')">
+        <a th:href="@{/admin/cart}" class="menu-item" onclick="showSection('cart')">
             <i class="fas fa-shopping-cart"></i>
             <span>Quản lý đơn hàng</span>
         </a>
@@ -272,7 +276,7 @@
             <i class="fas fa-star"></i>
             <span>Quản lý đánh giá</span>
         </a>
-        <a th:href="@{/admin/revenue}" class="menu-item" onclick="showSection('analytics')">
+        <a th:href="@{/admin/revenue}" class="menu-item" onclick="showSection('revenue')">
             <i class="fas fa-chart-line"></i>
             <span>Thống kê doanh thu</span>
         </a>

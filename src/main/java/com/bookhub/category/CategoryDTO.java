@@ -1,25 +1,24 @@
 package com.bookhub.category;
 
+import com.fasterxml.jackson.annotation.JsonProperty; // FIX 2a: Import cần thiết
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 /**
  * Data Transfer Object (DTO) cho Category.
- * Dùng để truyền dữ liệu giữa các tầng trong ứng dụng
- * mà không cần mang theo toàn bộ quan hệ Entity (như List<Product>).
  */
-@Data // Bao gồm @Getter, @Setter, @ToString, @EqualsAndHashCode
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryDTO {
 
-    Integer idCategories; // Ánh xạ từ id_categories
+    // FIX 2b: Đảm bảo tên trường khớp khi nhận JSON
+    @JsonProperty("idCategories")
+    Integer idCategories;
 
     String name;
 
     String description;
-
-    // Không cần List<Product> trong DTO này để tránh lỗi vòng lặp/lấy dữ liệu quá mức.
 }

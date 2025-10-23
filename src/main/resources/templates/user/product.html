@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sản phẩm - BookStore</title>
+    <title>BookStore - Sản phẩm</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -32,7 +31,7 @@
             transition: all 0.3s ease;
         }
 
-        .nav-link:hover, .nav-link.active {
+        .nav-link:hover {
             color: white !important;
             transform: translateY(-2px);
         }
@@ -54,7 +53,6 @@
             position: relative;
             color: white;
             font-size: 1.2rem;
-            cursor: pointer;
         }
 
         .cart-badge {
@@ -72,11 +70,133 @@
             justify-content: center;
         }
 
-        .page-header {
+        .hero-banner {
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            padding: 60px 0;
+            padding: 40px 0;
             margin-bottom: 40px;
+        }
+
+        .hero-content h1 {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .category-section {
+            margin: 40px 0;
+        }
+
+        .category-card {
+            background: white;
             border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .category-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            height: 250px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: #e67e22;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .product-title:hover {
+            color: #667eea;
+        }
+
+        .product-price {
+            color: #e74c3c;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .btn-add-cart {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-cart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
+        }
+
+        .btn-order {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
 
         .search-section {
@@ -108,138 +228,16 @@
             font-weight: 600;
         }
 
-        .filter-section {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            margin-bottom: 30px;
-            height: 100%;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
-
-        .product-image {
-            height: 200px;
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: #e67e22;
-            position: relative;
-        }
-
-        .category-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(102, 126, 234, 0.9);
+        .footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .product-info {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: calc(100% - 200px);
-        }
-
-        .product-title {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 1.1rem;
-            line-height: 1.3;
-        }
-
-        .product-author {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            font-style: italic;
-        }
-
-        .product-description {
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            flex-grow: 1;
-        }
-
-        .product-price {
-            color: #e74c3c;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .btn-primary-custom {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            color: white;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-            color: white;
-        }
-
-        .btn-add-cart {
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .btn-add-cart:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
-            color: white;
-        }
-
-        .product-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: auto;
-        }
-
-        .product-actions .btn {
-            flex: 1;
+            padding: 40px 0 20px 0;
+            margin-top: 60px;
         }
 
         .modal-content {
             border-radius: 15px;
             border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         .modal-header {
@@ -248,895 +246,427 @@
             border-radius: 15px 15px 0 0;
         }
 
-        .modal-body {
-            padding: 30px;
+        /* Thêm style cho Product-Page Banner */
+        .product-banner {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 60px 0;
+            margin-bottom: 40px;
+            text-align: center;
         }
 
-        .book-detail-image {
-            height: 300px;
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 6rem;
-            color: #e67e22;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .detail-info {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .detail-row:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .detail-value {
-            color: #6c757d;
-        }
-
-        .pagination-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 40px;
-        }
-
-        .footer {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 40px 0 20px 0;
-            margin-top: 60px;
-        }
-
-        @media (max-width: 768px) {
-            .page-header {
-                padding: 40px 0;
-            }
-            
-            .product-image {
-                height: 180px;
-                font-size: 2.5rem;
-            }
-            
-            .search-section {
-                padding: 20px;
-            }
-            
-            .filter-section {
-                padding: 20px;
-            }
-            
-            .product-actions {
-                flex-direction: column;
-            }
+        .product-banner h1 {
+            color: #2c3e50;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.html"><i class="fas fa-book-open"></i> BookStore</a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Trang chủ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="product.html">Sản phẩm</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="about.html">Giới thiệu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="contact.html">Liên hệ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="voucher.html">Voucher</a>
-                    </li>
-                </ul>
-                
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-auth btn-sm" onclick="window.location.href='login.html'">
-                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                    </button>
-                    <button class="btn btn-auth btn-sm" onclick="window.location.href='register.html'">
-                        <i class="fas fa-user-plus"></i> Đăng ký
-                    </button>
-                    <div class="cart-icon ms-3" onclick="window.location.href='cart.html'">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-badge" id="cartCount">0</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Page Header -->
-    <div class="container mt-4">
-        <section class="page-header">
-            <div class="text-center">
-                <h1 class="display-4 fw-bold text-dark">
-                    <i class="fas fa-books"></i> Sản phẩm
-                </h1>
-                <p class="lead text-dark">Khám phá kho tàng sách học tập phong phú</p>
-            </div>
-        </section>
-    </div>
-
-    <!-- Main Content -->
+<nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-        <!-- Search Section -->
-        <div class="search-section">
-            <h4 class="text-center mb-4"><i class="fas fa-search"></i> Tìm kiếm sách</h4>
-            <div class="row">
-                <div class="col-lg-8 mx-auto">
-                    <div class="input-group">
-                        <input type="text" class="form-control search-input" id="searchInput" placeholder="Nhập tên sách, tác giả hoặc từ khóa...">
-                        <button class="btn btn-search" onclick="searchBooks()">
-                            <i class="fas fa-search"></i> Tìm kiếm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <a class="navbar-brand" href="mainInterface.html"><i class="fas fa-book-open"></i> BookStore</a>
 
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h5 class="mb-3 mb-md-0"><i class="fas fa-filter"></i> Lọc theo danh mục:</h5>
-                </div>
-                <div class="col-md-4">
-                    <select class="form-select" id="sortSelect" onchange="sortProducts()">
-                        <option value="name">Sắp xếp theo tên</option>
-                        <option value="price-asc">Giá: Thấp đến cao</option>
-                        <option value="price-desc">Giá: Cao đến thấp</option>
-                        <option value="author">Tác giả</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row mt-3">
-                <div class="col-12">
-                    <div class="d-flex flex-wrap gap-2">
-                        <button class="btn btn-outline-primary active" onclick="filterByCategory('all')" id="filter-all">
-                            <i class="fas fa-th"></i> Tất cả
-                        </button>
-                        <button class="btn btn-outline-primary" onclick="filterByCategory('giaokho')" id="filter-giaokho">
-                            <i class="fas fa-book"></i> Sách giáo khoa
-                        </button>
-                        <button class="btn btn-outline-primary" onclick="filterByCategory('thamkhao')" id="filter-thamkhao">
-                            <i class="fas fa-bookmark"></i> Sách tham khảo
-                        </button>
-                        <button class="btn btn-outline-primary" onclick="filterByCategory('tienganh')" id="filter-tienganh">
-                            <i class="fas fa-globe"></i> Tiếng Anh
-                        </button>
-                        <button class="btn btn-outline-primary" onclick="filterByCategory('kynang')" id="filter-kynang">
-                            <i class="fas fa-lightbulb"></i> Kỹ năng sống
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-        <!-- Products Grid -->
-        <div class="row" id="productList">
-            <!-- Products will be loaded here -->
-        </div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="mainInterface.html">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="product.html">Sản phẩm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Liên hệ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Voucher</a>
+                </li>
+            </ul>
 
-        <!-- Pagination -->
-        <div class="pagination-container" id="paginationContainer">
-            <!-- Pagination will be loaded here -->
-        </div>
-    </div>
+            <div class="d-flex align-items-center">
+                <a href="#" class="btn btn-auth btn-sm">
+                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                </a>
+                <a href="#" class="btn btn-auth btn-sm">
+                    <i class="fas fa-user-plus"></i> Đăng ký
+                </a>
 
-    <!-- Product Detail Modal -->
-    <div class="modal fade" id="productDetailModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-book-open"></i> Chi tiết sách</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="modalBody">
-                    <!-- Product details will be loaded here -->
+                <div class="cart-icon ms-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#cartModal">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cartCount">0</span>
                 </div>
             </div>
         </div>
     </div>
+</nav>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
-                    <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
-                    <div class="d-flex">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
-                    </div>
+<section class="product-banner">
+    <div class="container">
+        <h1>Tất cả sản phẩm của BookStore</h1>
+        <p class="lead">Cung cấp sách giáo khoa, tham khảo và tài liệu học tập chất lượng cao.</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="search-section">
+        <h4 class="text-center mb-4"><i class="fas fa-filter"></i> Tìm kiếm và Lọc sách</h4>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="input-group">
+                    <input type="text" class="form-control search-input" id="searchInput" placeholder="Nhập tên sách cần tìm...">
+                    <button class="btn btn-search" onclick="searchBooks()">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
                 </div>
-                <div class="col-md-4">
-                    <h5>Liên kết nhanh</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="index.html" class="text-white-50">Trang chủ</a></li>
-                        <li><a href="product.html" class="text-white-50">Sản phẩm</a></li>
-                        <li><a href="about.html" class="text-white-50">Giới thiệu</a></li>
-                        <li><a href="contact.html" class="text-white-50">Liên hệ</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5>Liên hệ</h5>
-                    <p><i class="fas fa-phone"></i> 0123 456 789</p>
-                    <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
-                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, TP.HCM</p>
-                </div>
-            </div>
-            <hr class="my-4">
-            <div class="text-center">
-                <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
             </div>
         </div>
-    </footer>
+    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Sample product data with detailed information
-        const products = [
-            {
-                id: 1,
-                name: "Toán học 12 - Sách giáo khoa",
-                author: "Bộ Giáo dục và Đào tạo",
-                price: 45000,
-                category: "giaokho",
-                categoryName: "Sách giáo khoa",
-                description: "Sách giáo khoa Toán học lớp 12, chương trình mới theo định hướng phát triển năng lực",
-                icon: "📚",
-                publisher: "NXB Giáo dục Việt Nam",
-                pages: 256,
-                year: 2024,
-                isbn: "978-604-0-12345-6",
-                language: "Tiếng Việt",
-                weight: "350g",
-                dimensions: "19 x 27 cm",
-                stock: 50,
-                rating: 4.5,
-                reviews: 128,
-                detailDescription: "Sách giáo khoa Toán học lớp 12 được biên soạn theo chương trình giáo dục phổ thông mới, tập trung phát triển năng lực toán học cho học sinh. Nội dung sách bao gồm các chương: Ứng dụng đạo hàm để khảo sát và vẽ đồ thị hàm số, Hàm số lũy thừa, hàm số mũ và hàm số logarit, Nguyên hàm - Tích phân và ứng dụng, Số phức, Phương pháp tọa độ trong không gian."
-            },
-            {
-                id: 2,
-                name: "Vật lý 11 - Bài tập nâng cao",
-                author: "Nguyễn Văn A, Trần Thị B",
-                price: 65000,
-                category: "thamkhao",
-                categoryName: "Sách tham khảo",
-                description: "Bộ sách bài tập Vật lý nâng cao với nhiều dạng bài hay và phương pháp giải chi tiết",
-                icon: "⚡",
-                publisher: "NXB Đại học Quốc gia",
-                pages: 320,
-                year: 2024,
-                isbn: "978-604-0-23456-7",
-                language: "Tiếng Việt",
-                weight: "420g",
-                dimensions: "16 x 24 cm",
-                stock: 35,
-                rating: 4.7,
-                reviews: 89,
-                detailDescription: "Cuốn sách tập hợp các bài tập Vật lý 11 từ cơ bản đến nâng cao, được phân loại theo từng chương học. Mỗi dạng bài đều có phương pháp giải chi tiết, ví dụ minh họa và bài tập tự luyện. Đặc biệt, sách có phần bài tập trắc nghiệm theo định dạng thi THPT Quốc gia."
-            },
-            {
-                id: 3,
-                name: "English Grammar in Use",
-                author: "Raymond Murphy",
-                price: 120000,
-                category: "tienganh",
-                categoryName: "Tiếng Anh",
-                description: "Sách ngữ pháp tiếng Anh từ cơ bản đến nâng cao, được sử dụng rộng rãi trên thế giới",
-                icon: "🇬🇧",
-                publisher: "Cambridge University Press",
-                pages: 380,
-                year: 2023,
-                isbn: "978-052-1-18906-4",
-                language: "Tiếng Anh",
-                weight: "580g",
-                dimensions: "19 x 25 cm",
-                stock: 25,
-                rating: 4.8,
-                reviews: 256,
-                detailDescription: "Cuốn sách ngữ pháp tiếng Anh nổi tiếng nhất thế giới dành cho người học trình độ trung cấp. Sách gồm 145 bài học với lý thuyết ngắn gọn, ví dụ sinh động và bài tập thực hành phong phú. Mỗi bài học được thiết kế để có thể học độc lập, phù hợp cho việc tự học."
-            },
-            {
-                id: 4,
-                name: "Hóa học 10 - Sách giáo khoa",
-                author: "Bộ Giáo dục và Đào tạo",
-                price: 42000,
-                category: "giaokho",
-                categoryName: "Sách giáo khoa",
-                description: "Sách giáo khoa Hóa học lớp 10, chương trình chuẩn với nhiều thí nghiệm thú vị",
-                icon: "🧪",
-                publisher: "NXB Giáo dục Việt Nam",
-                pages: 240,
-                year: 2024,
-                isbn: "978-604-0-34567-8",
-                language: "Tiếng Việt",
-                weight: "320g",
-                dimensions: "19 x 27 cm",
-                stock: 60,
-                rating: 4.3,
-                reviews: 95,
-                detailDescription: "Sách giáo khoa Hóa học 10 giới thiệu những kiến thức cơ bản về hóa học: cấu tạo nguyên tử, bảng tuần hoàn, liên kết hóa học, phản ứng oxi hóa - khử, và một số nguyên tố phi kim, kim loại quan trọng. Sách có nhiều hình ảnh minh họa và thí nghiệm thực tế."
-            },
-            {
-                id: 5,
-                name: "Kỹ năng học tập hiệu quả",
-                author: "Phạm Minh C",
-                price: 85000,
-                category: "kynang",
-                categoryName: "Kỹ năng sống",
-                description: "Hướng dẫn phương pháp học tập hiệu quả và quản lý thời gian cho học sinh",
-                icon: "💡",
-                publisher: "NXB Trẻ",
-                pages: 280,
-                year: 2024,
-                isbn: "978-604-0-45678-9",
-                language: "Tiếng Việt",
-                weight: "380g",
-                dimensions: "14 x 20 cm",
-                stock: 40,
-                rating: 4.6,
-                reviews: 167,
-                detailDescription: "Cuốn sách cung cấp những phương pháp học tập khoa học và hiệu quả, giúp học sinh tối ưu hóa thời gian học tập. Nội dung bao gồm: kỹ thuật ghi nhớ, phương pháp đọc hiểu, cách lập kế hoạch học tập, quản lý stress trong học tập và thi cử."
-            },
-            {
-                id: 6,
-                name: "Văn học 12 - Tuyển tập",
-                author: "Nhiều tác giả",
-                price: 55000,
-                category: "giaokho",
-                categoryName: "Sách giáo khoa",
-                description: "Tuyển tập văn học Việt Nam và thế giới dành cho học sinh lớp 12",
-                icon: "📖",
-                publisher: "NXB Giáo dục Việt Nam",
-                pages: 300,
-                year: 2024,
-                isbn: "978-604-0-56789-0",
-                language: "Tiếng Việt",
-                weight: "400g",
-                dimensions: "19 x 27 cm",
-                stock: 45,
-                rating: 4.4,
-                reviews: 112,
-                detailDescription: "Tuyển tập các tác phẩm văn học tiêu biểu của Việt Nam và thế giới, được lựa chọn phù hợp với chương trình lớp 12. Sách bao gồm thơ, truyện ngắn, tiểu thuyết và kịch, kèm theo phần giới thiệu tác giả và bối cảnh sáng tác."
-            },
-            {
-                id: 7,
-                name: "Sinh học 11 - Sách giáo khoa",
-                author: "Bộ Giáo dục và Đào tạo",
-                price: 48000,
-                category: "giaokho",
-                categoryName: "Sách giáo khoa",
-                description: "Sách giáo khoa Sinh học lớp 11 với nhiều hình ảnh minh họa sinh động",
-                icon: "🧬",
-                publisher: "NXB Giáo dục Việt Nam",
-                pages: 260,
-                year: 2024,
-                isbn: "978-604-0-67890-1",
-                language: "Tiếng Việt",
-                weight: "340g",
-                dimensions: "19 x 27 cm",
-                stock: 55,
-                rating: 4.2,
-                reviews: 78,
-                detailDescription: "Sách giáo khoa Sinh học 11 trình bày kiến thức về tế bào, di truyền học, tiến hóa và sinh thái học. Nội dung được minh họa bằng nhiều hình ảnh, sơ đồ và bảng biểu sinh động, giúp học sinh dễ dàng tiếp thu kiến thức."
-            },
-            {
-                id: 8,
-                name: "IELTS Vocabulary Builder",
-                author: "Pauline Cullen",
-                price: 95000,
-                category: "tienganh",
-                categoryName: "Tiếng Anh",
-                description: "Xây dựng vốn từ vựng IELTS hiệu quả với phương pháp khoa học",
-                icon: "📝",
-                publisher: "Cambridge University Press",
-                pages: 220,
-                year: 2023,
-                isbn: "978-052-1-17890-7",
-                language: "Tiếng Anh",
-                weight: "320g",
-                dimensions: "17 x 24 cm",
-                stock: 30,
-                rating: 4.7,
-                reviews: 143,
-                detailDescription: "Cuốn sách giúp học viên xây dựng vốn từ vựng cần thiết cho kỳ thi IELTS. Sách được chia thành các chủ đề thường gặp trong IELTS, mỗi chủ đề có từ vựng, cụm từ và bài tập thực hành. Kèm theo CD audio để luyện phát âm."
-            },
-            {
-                id: 9,
-                name: "Lịch sử 12 - Sách giáo khoa",
-                author: "Bộ Giáo dục và Đào tạo",
-                price: 46000,
-                category: "giaokho",
-                categoryName: "Sách giáo khoa",
-                description: "Sách giáo khoa Lịch sử Việt Nam và thế giới hiện đại",
-                icon: "🏛️",
-                publisher: "NXB Giáo dục Việt Nam",
-                pages: 280,
-                year: 2024,
-                isbn: "978-604-0-78901-2",
-                language: "Tiếng Việt",
-                weight: "360g",
-                dimensions: "19 x 27 cm",
-                stock: 42,
-                rating: 4.1,
-                reviews: 67,
-                detailDescription: "Sách trình bày lịch sử Việt Nam và thế giới từ đầu thế kỷ XX đến nay. Nội dung được sắp xếp theo trình tự thời gian, có nhiều tư liệu lịch sử, hình ảnh và bản đồ minh họa."
-            },
-            {
-                id: 10,
-                name: "Địa lý 10 - Sách giáo khoa",
-                author: "Bộ Giáo dục và Đào tạo",
-                price: 44000,
-                category: "giaokho",
-                categoryName: "Sách giáo khoa",
-                description: "Sách giáo khoa Địa lý tự nhiên với nhiều bản đồ và hình ảnh",
-                icon: "🌍",
-                publisher: "NXB Giáo dục Việt Nam",
-                pages: 250,
-                year: 2024,
-                isbn: "978-604-0-89012-3",
-                language: "Tiếng Việt",
-                weight: "330g",
-                dimensions: "19 x 27 cm",
-                stock: 48,
-                rating: 4.0,
-                reviews: 54,
-                detailDescription: "Sách giáo khoa Địa lý 10 giới thiệu về địa lý tự nhiên: khí quyển, thủy quyển, thạch quyển và sinh quyển. Sách có nhiều bản đồ, biểu đồ và hình ảnh minh họa sinh động."
-            },
-            {
-                id: 11,
-                name: "Tư duy phản biện",
-                author: "Lê Văn D",
-                price: 78000,
-                category: "kynang",
-                categoryName: "Kỹ năng sống",
-                description: "Phát triển tư duy phản biện và kỹ năng giải quyết vấn đề",
-                icon: "🤔",
-                publisher: "NXB Thông tin và Truyền thông",
-                pages: 200,
-                year: 2024,
-                isbn: "978-604-0-90123-4",
-                language: "Tiếng Việt",
-                weight: "280g",
-                dimensions: "14 x 20 cm",
-                stock: 35,
-                rating: 4.5,
-                reviews: 92,
-                detailDescription: "Cuốn sách hướng dẫn cách phát triển tư duy phản biện, phân tích thông tin một cách khách quan và đưa ra quyết định đúng đắn. Nội dung bao gồm các kỹ thuật tư duy, phương pháp phân tích và bài tập thực hành."
-            },
-            {
-                id: 12,
-                name: "TOEIC Listening & Reading",
-                author: "ETS",
-                price: 110000,
-                category: "tienganh",
-                categoryName: "Tiếng Anh",
-                description: "Sách luyện thi TOEIC chính thức từ ETS với đề thi thật",
-                icon: "🎧",
-                publisher: "ETS Global",
-                pages: 400,
-                year: 2023,
-                isbn: "978-089-4-85234-1",
-                language: "Tiếng Anh",
-                weight: "650g",
-                dimensions: "21 x 28 cm",
-                stock: 20,
-                rating: 4.8,
-                reviews: 189,
-                detailDescription: "Sách luyện thi TOEIC chính thức từ tổ chức ETS, bao gồm 2 bộ đề thi thật với đáp án chi tiết. Kèm theo CD audio chất lượng cao và hướng dẫn chiến lược làm bài hiệu quả."
-            }
-        ];
+<div class="container category-section text-center">
+    <h2 class="mb-5">Danh mục sách</h2>
+    <div class="row justify-content-center">
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="category-card" onclick="filterByCategory('giaokho')">
+                <div class="category-icon"><i class="fas fa-book"></i></div>
+                <h5>Sách giáo khoa</h5>
+                <p class="text-muted">Toán, Lý, Hóa, Sinh, Văn...</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="category-card" onclick="filterByCategory('thamkhao')">
+                <div class="category-icon"><i class="fas fa-bookmark"></i></div>
+                <h5>Sách tham khảo</h5>
+                <p class="text-muted">Bài tập nâng cao, luyện thi</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="category-card" onclick="filterByCategory('tienganh')">
+                <div class="category-icon"><i class="fas fa-globe"></i></div>
+                <h5>Tiếng Anh</h5>
+                <p class="text-muted">Grammar, Vocabulary, IELTS</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="category-card" onclick="filterByCategory('kynang')">
+                <div class="category-icon"><i class="fas fa-lightbulb"></i></div>
+                <h5>Kỹ năng sống</h5>
+                <p class="text-muted">Tư duy, học tập hiệu quả</p>
+            </div>
+        </div>
+        <div class="col-12 mt-4">
+            <button class="btn btn-primary-custom" onclick="displayProducts(products)">
+                <i class="fas fa-undo"></i> Xem tất cả
+            </button>
+        </div>
+    </div>
+</div>
 
-        let filteredProducts = [...products];
-        let currentPage = 1;
-        const productsPerPage = 9;
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        // Load page on startup
-        document.addEventListener('DOMContentLoaded', function() {
-            displayProducts();
-            updateCartCount();
-            setupEventListeners();
-        });
+<div class="container" id="products">
+    <h2 class="text-center mb-5">Danh sách sản phẩm</h2>
+    <div class="row" id="productList">
+    </div>
+</div>
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Search on Enter key
-            document.getElementById('searchInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchBooks();
-                }
-            });
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Liên hệ</h5>
+                <p><i class="fas fa-phone"></i> 0123 456 789</p>
+                <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, TP.HCM</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Theo dõi chúng tôi</h5>
+                <div class="d-flex">
+                    <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4">
+        <div class="text-center">
+            <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</footer>
+
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-shopping-cart"></i> Giỏ hàng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cartItems">
+                    <p class="text-center text-muted">Giỏ hàng trống</p>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <h5>Tổng cộng: <span id="totalPrice">0đ</span></h5>
+                    <button class="btn btn-primary-custom" onclick="checkout()">
+                        <i class="fas fa-credit-card"></i> Thanh toán
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Sample product data (giữ nguyên từ mainInterface.html)
+    const products = [
+        {
+            id: 1,
+            name: "Toán học 12 - Sách giáo khoa",
+            price: 45000,
+            category: "giaokho",
+            description: "Sách giáo khoa Toán học lớp 12, chương trình mới",
+            icon: "📚"
+        },
+        {
+            id: 2,
+            name: "Vật lý 11 - Bài tập nâng cao",
+            price: 65000,
+            category: "thamkhao",
+            description: "Bộ sách bài tập Vật lý nâng cao với nhiều dạng bài hay",
+            icon: "⚡"
+        },
+        {
+            id: 3,
+            name: "English Grammar in Use",
+            price: 120000,
+            category: "tienganh",
+            description: "Sách ngữ pháp tiếng Anh cơ bản đến nâng cao",
+            icon: "🇬🇧"
+        },
+        {
+            id: 4,
+            name: "Hóa học 10 - Sách giáo khoa",
+            price: 42000,
+            category: "giaokho",
+            description: "Sách giáo khoa Hóa học lớp 10, chương trình chuẩn",
+            icon: "🧪"
+        },
+        {
+            id: 5,
+            name: "Kỹ năng học tập hiệu quả",
+            price: 85000,
+            category: "kynang",
+            description: "Hướng dẫn phương pháp học tập hiệu quả cho học sinh",
+            icon: "💡"
+        },
+        {
+            id: 6,
+            name: "Văn học 12 - Tuyển tập",
+            price: 55000,
+            category: "giaokho",
+            description: "Tuyển tập văn học Việt Nam và thế giới lớp 12",
+            icon: "📖"
         }
+    ];
 
-        // Display products with pagination
-        function displayProducts() {
-            const productList = document.getElementById('productList');
-            const startIndex = (currentPage - 1) * productsPerPage;
-            const endIndex = startIndex + productsPerPage;
-            const productsToShow = filteredProducts.slice(startIndex, endIndex);
-            
-            productList.innerHTML = '';
-            
-            if (productsToShow.length === 0) {
-                productList.innerHTML = `
-                    <div class="col-12">
-                        <div class="text-center py-5">
-                            <i class="fas fa-search" style="font-size: 4rem; color: #ccc;"></i>
-                            <h4 class="mt-3 text-muted">Không tìm thấy sản phẩm</h4>
-                            <p class="text-muted">Hãy thử tìm kiếm với từ khóa khác</p>
+    let cart = [];
+
+    // Load products on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        displayProducts(products);
+    });
+
+    // Display products (Cập nhật để chuyển sang product_detail.html)
+    function displayProducts(productsToShow) {
+        const productList = document.getElementById('productList');
+        productList.innerHTML = '';
+
+        productsToShow.forEach(product => {
+            // Link tới trang chi tiết với tham số id
+            const detailUrl = `product_detail.html?id=${product.id}`;
+
+            const productCard = `
+                    <div class="col-lg-4 col-md-6">
+                        <div class="product-card">
+                            <div class="product-image">
+                                ${product.icon}
+                            </div>
+                            <div class="product-info">
+                                <h5 class="product-title" onclick="window.location.href='${detailUrl}'">${product.name}</h5>
+                                <p class="text-muted">${product.description}</p>
+                                <div class="product-price">${formatPrice(product.price)}</div>
+                                <div class="d-flex">
+                                    <button class="btn btn-add-cart" onclick="addToCart(${product.id})">
+                                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                                    </button>
+                                    <button class="btn btn-order" onclick="orderNow(${product.id})">
+                                        <i class="fas fa-shopping-bag"></i> Đặt hàng
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
-                return;
-            }
-            
-            productsToShow.forEach(product => {
-                const productCard = createProductCard(product);
-                productList.innerHTML += productCard;
-            });
-            
-            displayPagination();
+            productList.innerHTML += productCard;
+        });
+    }
+
+    // Format price
+    function formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    }
+
+    // Search books
+    function searchBooks() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filteredProducts = products.filter(product =>
+            product.name.toLowerCase().includes(searchTerm) ||
+            product.description.toLowerCase().includes(searchTerm)
+        );
+        displayProducts(filteredProducts);
+    }
+
+    // Filter by category
+    function filterByCategory(category) {
+        const filteredProducts = products.filter(product => product.category === category);
+        displayProducts(filteredProducts);
+    }
+
+    // Các hàm liên quan đến giỏ hàng (giữ nguyên để chức năng hoạt động)
+    function addToCart(productId) {
+        const product = products.find(p => p.id === productId);
+        const existingItem = cart.find(item => item.id === productId);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({ ...product, quantity: 1 });
         }
 
-        // Create product card HTML
-        function createProductCard(product) {
-            return `
-                <div class="col-lg-4 col-md-6">
-                    <div class="product-card">
-                        <div class="product-image">
-                            ${product.icon}
-                            <span class="category-badge">${product.categoryName}</span>
-                        </div>
-                        <div class="product-info">
-                            <h5 class="product-title">${product.name}</h5>
-                            <p class="product-author"><i class="fas fa-user-edit"></i> ${product.author}</p>
-                            <p class="product-description">${product.description}</p>
-                            <div class="product-price">${formatPrice(product.price)}</div>
-                            <div class="product-actions">
-                                <button class="btn btn-primary-custom" onclick="showProductDetail(${product.id})">
-                                    <i class="fas fa-eye"></i> Xem chi tiết
-                                </button>
-                                <button class="btn btn-add-cart" onclick="addToCart(${product.id})">
-                                    <i class="fas fa-cart-plus"></i> Thêm vào giỏ
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+        updateCartUI();
+        showNotification('Đã thêm vào giỏ hàng!', 'success');
+    }
 
-        // Show product detail modal
-        function showProductDetail(productId) {
-            const product = products.find(p => p.id === productId);
-            const modalBody = document.getElementById('modalBody');
-            
-            modalBody.innerHTML = `
-                <div class="row">
-                    <div class="col-md-5">
-                        <div class="book-detail-image">
-                            ${product.icon}
+    function orderNow(productId) {
+        addToCart(productId);
+        const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+        cartModal.show();
+    }
+
+    function updateCartUI() {
+        const cartCount = document.getElementById('cartCount');
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCount.textContent = totalItems;
+        updateCartModal();
+    }
+
+    function updateCartModal() {
+        const cartItems = document.getElementById('cartItems');
+        const totalPrice = document.getElementById('totalPrice');
+
+        if (cart.length === 0) {
+            cartItems.innerHTML = '<p class="text-center text-muted">Giỏ hàng trống</p>';
+            totalPrice.textContent = '0đ';
+            return;
+        }
+        // ... (Phần hiển thị item trong modal, giữ nguyên) ...
+        let cartHTML = '';
+        let total = 0;
+
+        cart.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+
+            cartHTML += `
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div>
+                            <h6 class="mb-0">${item.name}</h6>
+                            <small class="text-muted">${formatPrice(item.price)} x ${item.quantity}</small>
                         </div>
-                        <div class="text-center">
-                            <div class="mb-2">
-                                <span class="badge bg-primary fs-6">${product.categoryName}</span>
-                            </div>
-                            <div class="d-flex justify-content-center align-items-center mb-3">
-                                <div class="me-3">
-                                    ${generateStars(product.rating)}
-                                </div>
-                                <small class="text-muted">(${product.reviews} đánh giá)</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-7">
-                        <h3 class="mb-3">${product.name}</h3>
-                        <p class="lead text-primary mb-3">
-                            <i class="fas fa-user-edit"></i> ${product.author}
-                        </p>
-                        <div class="mb-4">
-                            <h2 class="text-danger">${formatPrice(product.price)}</h2>
-                            <small class="text-success">
-                                <i class="fas fa-check-circle"></i> Còn ${product.stock} cuốn
-                            </small>
-                        </div>
-                        
-                        <div class="detail-info">
-                            <h5 class="mb-3"><i class="fas fa-info-circle"></i> Thông tin chi tiết</h5>
-                            <div class="detail-row">
-                                <span class="detail-label">Nhà xuất bản:</span>
-                                <span class="detail-value">${product.publisher}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Số trang:</span>
-                                <span class="detail-value">${product.pages} trang</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Năm xuất bản:</span>
-                                <span class="detail-value">${product.year}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">ISBN:</span>
-                                <span class="detail-value">${product.isbn}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Ngôn ngữ:</span>
-                                <span class="detail-value">${product.language}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Trọng lượng:</span>
-                                <span class="detail-value">${product.weight}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Kích thước:</span>
-                                <span class="detail-value">${product.dimensions}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <h5><i class="fas fa-align-left"></i> Mô tả sản phẩm</h5>
-                            <p class="text-muted">${product.detailDescription}</p>
-                        </div>
-                        
-                        <div class="d-flex gap-3 mt-4">
-                            <button class="btn btn-add-cart flex-fill" onclick="addToCart(${product.id}); bootstrap.Modal.getInstance(document.getElementById('productDetailModal')).hide();">
-                                <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
-                            </button>
-                            <button class="btn btn-primary-custom flex-fill" onclick="orderNow(${product.id})">
-                                <i class="fas fa-shopping-bag"></i> Mua ngay
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.id}, -1)">-</button>
+                            <span class="mx-2">${item.quantity}</span>
+                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.id}, 1)">+</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.id})">
+                                <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </div>
-                </div>
-            `;
-            
-            const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
-            modal.show();
-        }
+                `;
+        });
 
-        // Generate star rating
-        function generateStars(rating) {
-            let stars = '';
-            const fullStars = Math.floor(rating);
-            const hasHalfStar = rating % 1 !== 0;
-            
-            for (let i = 0; i < fullStars; i++) {
-                stars += '<i class="fas fa-star text-warning"></i>';
-            }
-            
-            if (hasHalfStar) {
-                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
-            }
-            
-            const emptyStars = 5 - Math.ceil(rating);
-            for (let i = 0; i < emptyStars; i++) {
-                stars += '<i class="far fa-star text-warning"></i>';
-            }
-            
-            return stars;
-        }
+        cartItems.innerHTML = cartHTML;
+        totalPrice.textContent = formatPrice(total);
+    }
 
-        // Display pagination
-        function displayPagination() {
-            const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-            const paginationContainer = document.getElementById('paginationContainer');
-            
-            if (totalPages <= 1) {
-                paginationContainer.innerHTML = '';
-                return;
-            }
-            
-            let paginationHTML = '<nav><ul class="pagination">';
-            
-            // Previous button
-            paginationHTML += `
-                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                </li>
-            `;
-            
-            // Page numbers
-            for (let i = 1; i <= totalPages; i++) {
-                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-                    paginationHTML += `
-                        <li class="page-item ${i === currentPage ? 'active' : ''}">
-                            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-                        </li>
-                    `;
-                } else if (i === currentPage - 2 || i === currentPage + 2) {
-                    paginationHTML += '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                }
-            }
-            
-            // Next button
-            paginationHTML += `
-                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </li>
-            `;
-            
-            paginationHTML += '</ul></nav>';
-            paginationContainer.innerHTML = paginationHTML;
-        }
-
-        // Change page
-        function changePage(page) {
-            const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-            if (page >= 1 && page <= totalPages) {
-                currentPage = page;
-                displayProducts();
-                window.scrollTo(0, 0);
-            }
-        }
-
-        // Search books
-        function searchBooks() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-            
-            if (searchTerm === '') {
-                filteredProducts = [...products];
+    function updateQuantity(productId, change) {
+        const item = cart.find(item => item.id === productId);
+        if (item) {
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                removeFromCart(productId);
             } else {
-                filteredProducts = products.filter(product => 
-                    product.name.toLowerCase().includes(searchTerm) ||
-                    product.author.toLowerCase().includes(searchTerm) ||
-                    product.description.toLowerCase().includes(searchTerm) ||
-                    product.categoryName.toLowerCase().includes(searchTerm)
-                );
+                updateCartUI();
             }
-            
-            currentPage = 1;
-            displayProducts();
-            
-            // Reset category filter buttons
-            document.querySelectorAll('[id^="filter-"]').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById('filter-all').classList.add('active');
+        }
+    }
+
+    function removeFromCart(productId) {
+        cart = cart.filter(item => item.id !== productId);
+        updateCartUI();
+    }
+
+    function checkout() {
+        if (cart.length === 0) {
+            showNotification('Giỏ hàng trống!', 'warning');
+            return;
         }
 
-        // Filter by category
-        function filterByCategory(category) {
-            if (category === 'all') {
-                filteredProducts = [...products];
-            } else {
-                filteredProducts = products.filter(product => product.category === category);
-            }
-            
-            currentPage = 1;
-            displayProducts();
-            
-            // Update filter buttons
-            document.querySelectorAll('[id^="filter-"]').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(`filter-${category}`).classList.add('active');
-            
-            // Clear search input
-            document.getElementById('searchInput').value = '';
-        }
+        showNotification('Đặt hàng thành công! Chúng tôi sẽ liên hệ với bạn sớm.', 'success');
+        cart = [];
+        updateCartUI();
 
-        // Sort products
-        function sortProducts() {
-            const sortBy = document.getElementById('sortSelect').value;
-            
-            switch (sortBy) {
-                case 'name':
-                    filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
-                    break;
-                case 'price-asc':
-                    filteredProducts.sort((a, b) => a.price - b.price);
-                    break;
-                case 'price-desc':
-                    filteredProducts.sort((a, b) => b.price - a.price);
-                    break;
-                case 'author':
-                    filteredProducts.sort((a, b) => a.author.localeCompare(b.author));
-                    break;
-            }
-            
-            currentPage = 1;
-            displayProducts();
-        }
+        const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
+        if (cartModal) cartModal.hide();
+    }
 
-        // Add to cart
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            const existingItem = cart.find(item => item.id === productId);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ ...product, quantity: 1 });
-            }
-            
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartCount();
-            showNotification('Đã thêm vào giỏ hàng!', 'success');
-        }
-
-        // Order now
-        function orderNow(productId) {
-            addToCart(productId);
-            window.location.href = 'cart.html';
-        }
-
-        // Update cart count
-        function updateCartCount() {
-            const cartCount = document.getElementById('cartCount');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
-        }
-
-        // Format price
-        function formatPrice(price) {
-            return new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND'
-            }).format(price);
-        }
-
-        // Show notification
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            const alertClass = type === 'success' ? 'alert-success' : 
-                              type === 'error' ? 'alert-danger' : 
-                              type === 'info' ? 'alert-info' : 'alert-warning';
-            
-            notification.className = `alert ${alertClass} position-fixed`;
-            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            notification.innerHTML = `
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
                 ${message}
                 <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
             `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 3000);
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    // Search on Enter key
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchBooks();
         }
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa34f7c21908dd',t:'MTc1OTgwNjY0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    });
+</script>
+</body>
 </html>

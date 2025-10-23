@@ -3,6 +3,7 @@ package com.bookhub.comments;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -21,6 +22,6 @@ public class CommentsDTO {
     private String userName;
     private String status;
     private String reply;
-
+    private LocalDateTime replyDate;
     private String productImageUrl;
 }

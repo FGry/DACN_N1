@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "comments")
@@ -24,7 +25,7 @@ public class Comments {
     Integer idComment;
 
     @Column(name = "date")
-    LocalDate date;
+    LocalDate date; // Thời điểm bình luận/đánh giá được tạo
 
     @Column(name = "messages", columnDefinition = "TEXT")
     String messages;
@@ -35,15 +36,22 @@ public class Comments {
     @Column(name = "status", length = 10)
     String status;
 
+    @Column(name = "type", length = 10, nullable = false)
+    String type;
+
+    @Column(name = "purchase_verified", nullable = false)
+    Boolean purchaseVerified = false;
+
     @Column(name = "reply", columnDefinition = "TEXT")
     String reply;
 
-    // ánh xạ với user
+    @Column(name = "reply_date")
+    LocalDateTime replyDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     User user;
 
-    // ánh xạ với product
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     Product product;

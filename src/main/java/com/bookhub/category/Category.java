@@ -25,7 +25,8 @@ public class Category {
 
     String description;
 
-    @ManyToMany
+    // Sửa lỗi: Thêm targetEntity = Product.class
+    @ManyToMany(targetEntity = Product.class)
     @JoinTable(
             name = "Categories_Products",
             joinColumns = @JoinColumn(name = "Categories_id_categories"),

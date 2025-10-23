@@ -1,36 +1,42 @@
 package com.bookhub.product;
 
-import com.bookhub.category.CategoryDTO;
-import com.bookhub.comments.CommentsDTO;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Data // Bao gồm @Getter, @Setter, @ToString, @EqualsAndHashCode
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductDTO {
+    private Integer idProducts;
+    private String title;
+    private Long price;
+    private String author;
+    private String publisher;
 
-    Integer idProducts;
-    String title;
-    Long price;
-    String author;
-    String publisher;
-    LocalDate publicationYear;
-    Integer pages;
-    Integer stockQuantity;
-    String language;
-    Integer discount;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate publicationYear;
 
-    List<ImageProductDTO> images;
-    String categoryName;
-    String detailDescription;
-    Double averageRating;
-    Long totalReviews;
+    private Integer pages;
+    private Integer stockQuantity;
+    private String language;
+    private Integer discount;
 
+    private List<String> categoryNames;
+    private List<Integer> selectedCategoryIds;
 
-    List<CommentsDTO> comments;
-    List<CategoryDTO> categories;
+    private List<MultipartFile> imageFiles;
+    private List<String> imageLinks;
+
+    // THÊM TRƯỜNG NÀY
+    private String description;
 }

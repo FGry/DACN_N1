@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -29,7 +28,9 @@
             z-index: 1000;
             overflow-y: auto;
         }
-
+        .logo{
+            color: #f1f3f4;
+        }
         .sidebar.collapsed {
             width: 80px;
         }
@@ -595,20 +596,23 @@
         <button class="sidebar-toggle" onclick="toggleSidebar()">
             <i class="fas fa-chevron-left" id="toggleIcon"></i>
         </button>
-        
         <div class="sidebar-header">
             <div class="sidebar-logo">
-                <i class="fas fa-book-open"></i>
+                <a href="index.html" class="logo"><i class="fas fa-book-open"></i></a>
             </div>
             <h2 class="sidebar-title">BookStore</h2>
         </div>
-        
+
         <nav class="sidebar-menu">
-            <a th:href="@{/admin/home}" class="menu-item" onclick="showSection('products')">
+            <a th:href="@{/admin/home}" class="menu-item " onclick="showSection('home')">
+                <i class="fas fa-box"></i>
+                <span>Trang chủ</span>
+            </a>
+            <a th:href="@{/admin/products}" class="menu-item" onclick="showSection('products')">
                 <i class="fas fa-box"></i>
                 <span>Quản lý sản phẩm</span>
             </a>
-            <a th:href="@{/admin/carts}" class="menu-item" onclick="showSection('orders')">
+            <a th:href="@{/admin/cart}" class="menu-item active" onclick="showSection('cart')">
                 <i class="fas fa-shopping-cart"></i>
                 <span>Quản lý đơn hàng</span>
             </a>
@@ -620,14 +624,14 @@
                 <i class="fas fa-ticket-alt"></i>
                 <span>Quản lý voucher</span>
             </a>
-             <a th:href="@{/admin/comments}" class="menu-item active"> <i class="fas fa-star"></i>
-            <span>Quản lý đánh giá</span>
+            <a th:href="@{/admin/comments}" class="menu-item "> <i class="fas fa-star"></i>
+                <span>Quản lý đánh giá</span>
             </a>
-            <a th:href="@{/admin/revenue}" class="menu-item" onclick="showSection('analytics')">
+            <a th:href="@{/admin/revenue}" class="menu-item" onclick="showSection('revenue')">
                 <i class="fas fa-chart-line"></i>
                 <span>Thống kê doanh thu</span>
             </a>
-            <a th:href="@{/admin/setting}" class="menu-item" onclick="showSection('settings')">
+            <a th:href="@{/admin/setting}" class="menu-item" onclick="showSection('setting')">
                 <i class="fas fa-cog"></i>
                 <span>Cài đặt</span>
             </a>
@@ -866,426 +870,6 @@
                         </li>
                     </ul>
                 </nav>
-            </div>
-        </div>
-
-        <!-- Analytics Content -->
-        <div class="dashboard-content fade-in" id="analyticsContent" style="display: none;">
-            <!-- Filter Bar -->
-            <div class="action-bar">
-                <div class="action-left">
-                    <select class="form-select" id="periodFilter" onchange="filterAnalytics()">
-                        <option value="day">Theo ngày</option>
-                        <option value="month">Theo tháng</option>
-                        <option value="year">Theo năm</option>
-                    </select>
-                    <input type="date" class="form-control" id="dateFilter" onchange="filterAnalytics()" style="width: 200px;">
-                    <select class="form-select" id="monthFilter" onchange="filterAnalytics()" style="display: none; width: 150px;">
-                        <option value="1">Tháng 1</option>
-                        <option value="2">Tháng 2</option>
-                        <option value="3">Tháng 3</option>
-                        <option value="4">Tháng 4</option>
-                        <option value="5">Tháng 5</option>
-                        <option value="6">Tháng 6</option>
-                        <option value="7">Tháng 7</option>
-                        <option value="8">Tháng 8</option>
-                        <option value="9">Tháng 9</option>
-                        <option value="10">Tháng 10</option>
-                        <option value="11">Tháng 11</option>
-                        <option value="12">Tháng 12</option>
-                    </select>
-                    <select class="form-select" id="yearFilter" onchange="filterAnalytics()" style="width: 120px;">
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                    </select>
-                </div>
-                <div class="action-right">
-                    <button class="btn btn-success" onclick="exportReport()">
-                        <i class="fas fa-download"></i> Xuất báo cáo
-                    </button>
-                </div>
-            </div>
-
-            <!-- Statistics Cards -->
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="card text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px;">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center justify-content-center mb-3">
-                                <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                                    <i class="fas fa-file-invoice"></i>
-                                </div>
-                            </div>
-                            <h3 class="mb-2" id="totalInvoices">156</h3>
-                            <p class="mb-0">Tổng số hóa đơn</p>
-                            <small class="opacity-75" id="invoicesPeriod">Tháng 11/2024</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card text-center" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border-radius: 15px;">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center justify-content-center mb-3">
-                                <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                </div>
-                            </div>
-                            <h3 class="mb-2" id="totalRevenue">45.680.000đ</h3>
-                            <p class="mb-0">Tổng doanh thu</p>
-                            <small class="opacity-75" id="revenuePeriod">Tháng 11/2024</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card text-center" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white; border-radius: 15px;">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center justify-content-center mb-3">
-                                <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                                    <i class="fas fa-chart-line"></i>
-                                </div>
-                            </div>
-                            <h3 class="mb-2" id="avgOrderValue">292.820đ</h3>
-                            <p class="mb-0">Giá trị đơn hàng TB</p>
-                            <small class="opacity-75" id="avgPeriod">Tháng 11/2024</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Products Sales Table -->
-            <div class="table-container">
-                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                    <h5 class="mb-0">Danh sách sản phẩm bán ra</h5>
-                    <div class="d-flex gap-2">
-                        <select class="form-select form-select-sm" id="sortBy" onchange="sortProducts()" style="width: 200px;">
-                            <option value="quantity">Sắp xếp theo số lượng</option>
-                            <option value="revenue">Sắp xếp theo doanh thu</option>
-                            <option value="name">Sắp xếp theo tên</option>
-                        </select>
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Tìm sản phẩm..." id="searchProductInput" onkeyup="searchProducts()" style="width: 200px; padding: 5px 10px 5px 35px; border: 1px solid #dee2e6; border-radius: 20px; font-size: 0.85rem;">
-                        </div>
-                    </div>
-                </div>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Tác giả</th>
-                            <th>Giá bán</th>
-                            <th>Số lượng bán</th>
-                            <th>Doanh thu</th>
-                            <th>% Tổng doanh thu</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productsAnalyticsBody">
-                        <tr>
-                            <td>1</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">📚</div>
-                                    <div>
-                                        <h6 class="mb-0">Lập trình JavaScript</h6>
-                                        <small class="text-muted">Danh mục: Lập trình</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Nguyễn Văn A</td>
-                            <td><span class="price">150.000đ</span></td>
-                            <td><span class="quantity-badge">45 cuốn</span></td>
-                            <td><span class="price">6.750.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-success" style="width: 14.8%"></div>
-                                    </div>
-                                    <span class="text-muted">14.8%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">📖</div>
-                                    <div>
-                                        <h6 class="mb-0">Thiết kế Web Responsive</h6>
-                                        <small class="text-muted">Danh mục: Thiết kế</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Trần Thị B</td>
-                            <td><span class="price">120.000đ</span></td>
-                            <td><span class="quantity-badge">38 cuốn</span></td>
-                            <td><span class="price">4.560.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-info" style="width: 10.0%"></div>
-                                    </div>
-                                    <span class="text-muted">10.0%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">📘</div>
-                                    <div>
-                                        <h6 class="mb-0">Cơ sở dữ liệu MySQL</h6>
-                                        <small class="text-muted">Danh mục: Cơ sở dữ liệu</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Lê Văn C</td>
-                            <td><span class="price">150.000đ</span></td>
-                            <td><span class="quantity-badge">32 cuốn</span></td>
-                            <td><span class="price">4.800.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-warning" style="width: 10.5%"></div>
-                                    </div>
-                                    <span class="text-muted">10.5%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">📱</div>
-                                    <div>
-                                        <h6 class="mb-0">React Native từ cơ bản</h6>
-                                        <small class="text-muted">Danh mục: Mobile</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Phạm Văn D</td>
-                            <td><span class="price">180.000đ</span></td>
-                            <td><span class="quantity-badge">28 cuốn</span></td>
-                            <td><span class="price">5.040.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-primary" style="width: 11.0%"></div>
-                                    </div>
-                                    <span class="text-muted">11.0%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">⚙️</div>
-                                    <div>
-                                        <h6 class="mb-0">Node.js Backend</h6>
-                                        <small class="text-muted">Danh mục: Backend</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Hoàng Thị E</td>
-                            <td><span class="price">140.000đ</span></td>
-                            <td><span class="quantity-badge">25 cuốn</span></td>
-                            <td><span class="price">3.500.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-secondary" style="width: 7.7%"></div>
-                                    </div>
-                                    <span class="text-muted">7.7%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>6</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">🐍</div>
-                                    <div>
-                                        <h6 class="mb-0">Python cho người mới bắt đầu</h6>
-                                        <small class="text-muted">Danh mục: Lập trình</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Nguyễn Thị F</td>
-                            <td><span class="price">160.000đ</span></td>
-                            <td><span class="quantity-badge">22 cuốn</span></td>
-                            <td><span class="price">3.520.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-success" style="width: 7.7%"></div>
-                                    </div>
-                                    <span class="text-muted">7.7%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>7</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">☕</div>
-                                    <div>
-                                        <h6 class="mb-0">Java Spring Boot</h6>
-                                        <small class="text-muted">Danh mục: Framework</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Trần Văn G</td>
-                            <td><span class="price">200.000đ</span></td>
-                            <td><span class="quantity-badge">20 cuốn</span></td>
-                            <td><span class="price">4.000.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-danger" style="width: 8.8%"></div>
-                                    </div>
-                                    <span class="text-muted">8.8%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>8</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">🅰️</div>
-                                    <div>
-                                        <h6 class="mb-0">Angular Framework</h6>
-                                        <small class="text-muted">Danh mục: Frontend</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Lê Thị H</td>
-                            <td><span class="price">180.000đ</span></td>
-                            <td><span class="quantity-badge">18 cuốn</span></td>
-                            <td><span class="price">3.240.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-info" style="width: 7.1%"></div>
-                                    </div>
-                                    <span class="text-muted">7.1%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>9</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">🐳</div>
-                                    <div>
-                                        <h6 class="mb-0">Docker & Kubernetes</h6>
-                                        <small class="text-muted">Danh mục: DevOps</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Phạm Văn I</td>
-                            <td><span class="price">220.000đ</span></td>
-                            <td><span class="quantity-badge">15 cuốn</span></td>
-                            <td><span class="price">3.300.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-warning" style="width: 7.2%"></div>
-                                    </div>
-                                    <span class="text-muted">7.2%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>10</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="product-image me-3">💚</div>
-                                    <div>
-                                        <h6 class="mb-0">Vue.js Complete Guide</h6>
-                                        <small class="text-muted">Danh mục: Frontend</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Nguyễn Văn J</td>
-                            <td><span class="price">150.000đ</span></td>
-                            <td><span class="quantity-badge">12 cuốn</span></td>
-                            <td><span class="price">1.800.000đ</span></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress me-2" style="width: 100px; height: 8px;">
-                                        <div class="progress-bar bg-success" style="width: 3.9%"></div>
-                                    </div>
-                                    <span class="text-muted">3.9%</span>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Summary -->
-            <div class="row mt-4">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0"><i class="fas fa-trophy me-2"></i>Top 5 sản phẩm bán chạy</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>1. Lập trình JavaScript</span>
-                                <span class="badge bg-success">45 cuốn</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>2. Thiết kế Web Responsive</span>
-                                <span class="badge bg-info">38 cuốn</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>3. Cơ sở dữ liệu MySQL</span>
-                                <span class="badge bg-warning">32 cuốn</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>4. React Native từ cơ bản</span>
-                                <span class="badge bg-primary">28 cuốn</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>5. Node.js Backend</span>
-                                <span class="badge bg-secondary">25 cuốn</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Thống kê theo danh mục</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Lập trình</span>
-                                <span class="text-success fw-bold">12.070.000đ</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Framework</span>
-                                <span class="text-info fw-bold">7.240.000đ</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Mobile</span>
-                                <span class="text-warning fw-bold">5.040.000đ</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Cơ sở dữ liệu</span>
-                                <span class="text-primary fw-bold">4.800.000đ</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>Khác</span>
-                                <span class="text-secondary fw-bold">16.530.000đ</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -1728,16 +1312,12 @@
             // Hide all content sections
             document.getElementById('usersContent').style.display = 'none';
             document.getElementById('ordersContent').style.display = 'none';
-            document.getElementById('analyticsContent').style.display = 'none';
             
             // Show selected section
             if (section === 'users') {
                 document.getElementById('usersContent').style.display = 'block';
             } else if (section === 'orders') {
                 document.getElementById('ordersContent').style.display = 'block';
-            } else if (section === 'analytics') {
-                document.getElementById('analyticsContent').style.display = 'block';
-                initializeAnalytics();
             }
             
             // Show notification for demo
@@ -2182,157 +1762,6 @@
             }, 4000);
         }
 
-        // Analytics functions
-        function initializeAnalytics() {
-            // Set default date to today
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('dateFilter').value = today;
-            
-            // Set default month to current month
-            const currentMonth = new Date().getMonth() + 1;
-            document.getElementById('monthFilter').value = currentMonth;
-            
-            updateAnalyticsDisplay();
-        }
-
-        function filterAnalytics() {
-            const period = document.getElementById('periodFilter').value;
-            const dateFilter = document.getElementById('dateFilter');
-            const monthFilter = document.getElementById('monthFilter');
-            const yearFilter = document.getElementById('yearFilter');
-            
-            // Show/hide appropriate filters
-            if (period === 'day') {
-                dateFilter.style.display = 'block';
-                monthFilter.style.display = 'none';
-            } else if (period === 'month') {
-                dateFilter.style.display = 'none';
-                monthFilter.style.display = 'block';
-            } else if (period === 'year') {
-                dateFilter.style.display = 'none';
-                monthFilter.style.display = 'none';
-            }
-            
-            updateAnalyticsDisplay();
-            showNotification(`Lọc thống kê theo ${period === 'day' ? 'ngày' : period === 'month' ? 'tháng' : 'năm'}`, 'info');
-        }
-
-        function updateAnalyticsDisplay() {
-            const period = document.getElementById('periodFilter').value;
-            const year = document.getElementById('yearFilter').value;
-            let periodText = '';
-            
-            if (period === 'day') {
-                const date = document.getElementById('dateFilter').value;
-                if (date) {
-                    const dateObj = new Date(date);
-                    periodText = `Ngày ${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
-                }
-            } else if (period === 'month') {
-                const month = document.getElementById('monthFilter').value;
-                periodText = `Tháng ${month}/${year}`;
-            } else if (period === 'year') {
-                periodText = `Năm ${year}`;
-            }
-            
-            // Update period labels
-            document.getElementById('invoicesPeriod').textContent = periodText;
-            document.getElementById('revenuePeriod').textContent = periodText;
-            document.getElementById('avgPeriod').textContent = periodText;
-            
-            // Update statistics based on period (demo data)
-            const stats = getStatsByPeriod(period);
-            document.getElementById('totalInvoices').textContent = stats.invoices;
-            document.getElementById('totalRevenue').textContent = stats.revenue;
-            document.getElementById('avgOrderValue').textContent = stats.avgOrder;
-        }
-
-        function getStatsByPeriod(period) {
-            // Demo data for different periods
-            const stats = {
-                'day': {
-                    invoices: '12',
-                    revenue: '3.680.000đ',
-                    avgOrder: '306.667đ'
-                },
-                'month': {
-                    invoices: '156',
-                    revenue: '45.680.000đ',
-                    avgOrder: '292.820đ'
-                },
-                'year': {
-                    invoices: '1.847',
-                    revenue: '542.350.000đ',
-                    avgOrder: '293.650đ'
-                }
-            };
-            
-            return stats[period] || stats['month'];
-        }
-
-        function sortProducts() {
-            const sortBy = document.getElementById('sortBy').value;
-            const tbody = document.getElementById('productsAnalyticsBody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            
-            rows.sort((a, b) => {
-                if (sortBy === 'quantity') {
-                    const qtyA = parseInt(a.cells[4].textContent.match(/\d+/)[0]);
-                    const qtyB = parseInt(b.cells[4].textContent.match(/\d+/)[0]);
-                    return qtyB - qtyA;
-                } else if (sortBy === 'revenue') {
-                    const revA = parseInt(a.cells[5].textContent.replace(/[^\d]/g, ''));
-                    const revB = parseInt(b.cells[5].textContent.replace(/[^\d]/g, ''));
-                    return revB - revA;
-                } else if (sortBy === 'name') {
-                    const nameA = a.cells[1].querySelector('h6').textContent;
-                    const nameB = b.cells[1].querySelector('h6').textContent;
-                    return nameA.localeCompare(nameB);
-                }
-                return 0;
-            });
-            
-            // Re-number rows and update table
-            rows.forEach((row, index) => {
-                row.cells[0].textContent = index + 1;
-                tbody.appendChild(row);
-            });
-            
-            showNotification(`Đã sắp xếp theo ${sortBy === 'quantity' ? 'số lượng' : sortBy === 'revenue' ? 'doanh thu' : 'tên sản phẩm'}`, 'info');
-        }
-
-        function searchProducts() {
-            const searchTerm = document.getElementById('searchProductInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#productsAnalyticsBody tr');
-            
-            rows.forEach(row => {
-                const productName = row.querySelector('h6').textContent.toLowerCase();
-                const author = row.cells[2].textContent.toLowerCase();
-                const category = row.querySelector('small').textContent.toLowerCase();
-                
-                if (productName.includes(searchTerm) || author.includes(searchTerm) || category.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            
-            if (searchTerm) {
-                showNotification(`Tìm kiếm sản phẩm: "${searchTerm}"`, 'info');
-            }
-        }
-
-        function exportReport() {
-            const period = document.getElementById('periodFilter').value;
-            const periodText = period === 'day' ? 'ngày' : period === 'month' ? 'tháng' : 'năm';
-            showNotification(`Đang xuất báo cáo thống kê theo ${periodText}...`, 'success');
-            
-            // Simulate export process
-            setTimeout(() => {
-                showNotification('Báo cáo đã được xuất thành công!', 'success');
-            }, 2000);
-        }
-
         // Handle window resize
         window.addEventListener('resize', function() {
             if (window.innerWidth <= 768) {
@@ -2351,5 +1780,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa2df050610953',t:'MTc1OTgwNjM1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa29c8f0b70953',t:'MTc1OTgwNjE4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

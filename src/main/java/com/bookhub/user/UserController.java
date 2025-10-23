@@ -17,7 +17,12 @@ public class UserController {
     public String listUsers(Model model) {
         model.addAttribute("pageTitle", "Quản lý Người dùng");
         model.addAttribute("users", userService.getAllUsers());
-        return "admin/user"; // <<< ĐÃ SỬA: View sẽ tìm file user.html trong thư mục /admin
+        return "admin/user";
+    }
+
+    @GetMapping("/setting")
+    public String Profile() {
+        return "admin/setting";
     }
 
     @GetMapping("/detail/{id}")
