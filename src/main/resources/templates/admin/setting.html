@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} + ' - Admin Panel'"></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* CSS CƠ SỞ (Lấy từ review.html, giữ lại các style chính) */
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .logo{
+            color: #f1f3f4;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar-logo {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .sidebar-title {
+            opacity: 0;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-right: 4px solid white;
+        }
+
+        .menu-item i {
+            width: 20px;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar.collapsed .menu-item {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+
+        .sidebar.collapsed .menu-item i {
+            margin-right: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            top: 25px;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            color: #667eea;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .dashboard-content {
+            padding: 30px;
+        }
+
+        /* === CSS MỚI CHO TRANG CÀI ĐẶT === */
+        .settings-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .nav-pills .nav-link {
+            color: #495057;
+            background: #f1f3f4;
+            margin-right: 10px;
+            border-radius: 10px;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-pills .nav-link.active {
+            color: white;
+            background: #667eea; /* Màu chủ đạo của Sidebar */
+        }
+
+        .tab-content {
+            padding-top: 20px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 0 0 2px #667eea;
+            margin-bottom: 20px;
+        }
+
+        .notification-setting {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        .notification-setting:last-child {
+            border-bottom: none;
+        }
+
+        .notification-label h6 {
+            margin: 0;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .notification-label p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        /* === KẾT THÚC CSS MỚI === */
+    </style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-chevron-left" id="toggleIcon"></i>
+    </button>
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <a th:href="@{/}" class="logo"><i class="fas fa-book-open"></i></a>
+        </div>
+        <h2 class="sidebar-title">BookStore</h2>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a th:href="@{/admin/home}" class="menu-item" onclick="showSection('products')">
+            <i class="fas fa-box"></i>
+            <span>Quản lý sản phẩm</span>
+        </a>
+        <a th:href="@{/admin/carts}" class="menu-item" onclick="showSection('orders')">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Quản lý đơn hàng</span>
+        </a>
+        <a th:href="@{/admin/users}" class="menu-item" onclick="showSection('users')">
+            <i class="fas fa-users"></i>
+            <span>Quản lý tài khoản</span>
+        </a>
+        <a th:href="@{/admin/vouchers}" class="menu-item" onclick="showSection('vouchers')">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Quản lý voucher</span>
+        </a>
+        <a th:href="@{/admin/comments}" class="menu-item">
+            <i class="fas fa-star"></i>
+            <span>Quản lý đánh giá</span>
+        </a>
+        <a th:href="@{/admin/revenue}" class="menu-item" onclick="showSection('analytics')">
+            <i class="fas fa-chart-line"></i>
+            <span>Thống kê doanh thu</span>
+        </a>
+        <a th:href="@{/admin/setting}" class="menu-item active">
+            <i class="fas fa-cog"></i>
+            <span>Cài đặt</span>
+        </a>
+        <a th:href="@{/logout}" class="menu-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Đăng xuất</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content" id="mainContent">
+    <header class="header">
+        <div class="header-left">
+            <h1 class="header-title" th:text="${pageTitle}">Cài đặt hệ thống</h1> </div>
+    </header>
+
+    <div class="dashboard-content fade-in" id="settingsContent">
+        <div class="settings-card">
+            <ul class="nav nav-pills mb-4" id="settingsTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile-settings" type="button" role="tab" aria-controls="profile-settings" aria-selected="true">
+                        <i class="fas fa-user-circle me-2"></i> Hồ sơ Admin
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="notification-tab" data-bs-toggle="pill" data-bs-target="#notification-settings" type="button" role="tab" aria-controls="notification-settings" aria-selected="false">
+                        <i class="fas fa-bell me-2"></i> Cài đặt Thông báo
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="pill" data-bs-target="#security-settings" type="button" role="tab" aria-controls="security-settings" aria-selected="false">
+                        <i class="fas fa-lock me-2"></i> Bảo mật
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="settingsTabContent">
+                <div class="tab-pane fade show active" id="profile-settings" role="tabpanel" aria-labelledby="profile-tab">
+                    <h5 class="mb-3">Thông tin cá nhân</h5>
+                    <form>
+                        <div class="text-center mb-4">
+                            <img src="placeholder-avatar.jpg" class="profile-avatar" alt="Admin Avatar">
+                            <input type="file" class="form-control" id="profileImage" accept="image/*">
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="fullName" class="form-label">Họ và Tên</label>
+                                <input type="text" class="form-control" id="fullName" th:value="${admin.fullName}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" th:value="${admin.email}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phoneNumber" class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control" id="phoneNumber" th:value="${admin.phone}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="role" class="form-label">Vai trò</label>
+                                <input type="text" class="form-control" id="role" th:value="${admin.role}" readonly>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary" style="background: #667eea; border-color: #667eea;">Lưu thay đổi</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="tab-pane fade" id="notification-settings" role="tabpanel" aria-labelledby="notification-tab">
+                    <h5 class="mb-3">Cấu hình thông báo Email & Ứng dụng</h5>
+                    <div class="notification-setting">
+                        <div class="notification-label">
+                            <h6>Thông báo Đơn hàng Mới</h6>
+                            <p>Nhận thông báo khi có đơn hàng mới được tạo.</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="newOrderNotif" checked>
+                            <label class="form-check-label" for="newOrderNotif"></label>
+                        </div>
+                    </div>
+                    <div class="notification-setting">
+                        <div class="notification-label">
+                            <h6>Thông báo Đánh giá Mới</h6>
+                            <p>Nhận thông báo khi có đánh giá/bình luận sản phẩm mới cần duyệt.</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="newReviewNotif" checked>
+                            <label class="form-check-label" for="newReviewNotif"></label>
+                        </div>
+                    </div>
+                    <div class="notification-setting">
+                        <div class="notification-label">
+                            <h6>Thông báo Hết hàng</h6>
+                            <p>Cảnh báo qua email khi một sản phẩm đạt đến ngưỡng tồn kho thấp.</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="lowStockNotif">
+                            <label class="form-check-label" for="lowStockNotif"></label>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button class="btn btn-primary" style="background: #667eea; border-color: #667eea;">Lưu cài đặt thông báo</button>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="security-settings" role="tabpanel" aria-labelledby="security-tab">
+                    <h5 class="mb-3">Thay đổi Mật khẩu</h5>
+                    <form>
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning"><i class="fas fa-key me-2"></i> Thay đổi mật khẩu</button>
+                    </form>
+
+                    <h5 class="mt-5 mb-3">Xác thực Hai yếu tố (2FA)</h5>
+                    <p class="text-muted">Thêm một lớp bảo mật bổ sung cho tài khoản của bạn.</p>
+                    <button class="btn btn-outline-primary">Bật 2FA</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // --- Logic Sidebar (Lấy từ review.html) ---
+    function toggleSidebar() { //
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+
+        if (sidebar.classList.contains('collapsed')) {
+            toggleIcon.classList.remove('fa-chevron-left');
+            toggleIcon.classList.add('fa-chevron-right');
+        } else {
+            toggleIcon.classList.remove('fa-chevron-right');
+            toggleIcon.classList.add('fa-chevron-left');
+        }
+    }
+
+    // Các logic khác như AJAX, xử lý form sẽ cần được thêm vào Controller tương ứng
+    // Ví dụ: Xử lý submit form profile, lưu cài đặt thông báo, đổi mật khẩu.
+
+    /*]]>*/
+</script>
+</body>
+</html>

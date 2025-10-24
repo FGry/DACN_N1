@@ -1,0 +1,959 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sản phẩm - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .btn-auth {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-auth:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .cart-icon {
+            position: relative;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .breadcrumb {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .product-detail-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .product-image-large {
+            height: 400px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            color: #e67e22;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .category-badge-large {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .product-title-large {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .product-author-large {
+            font-size: 1.3rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .product-price-large {
+            font-size: 2.5rem;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .rating-stars {
+            font-size: 1.5rem;
+        }
+
+        .rating-text {
+            font-size: 1.1rem;
+            color: #495057;
+        }
+
+        .detail-info-large {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .detail-row-large {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .detail-row-large:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .detail-label-large {
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        .detail-value-large {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .btn-primary-large {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-primary-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .btn-add-cart-large {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-cart-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
+            color: white;
+        }
+
+        .reviews-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .review-form {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            margin: 15px 0;
+        }
+
+        .star-rating i {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .star-rating i:hover,
+        .star-rating i.active {
+            color: #ffc107;
+            transform: scale(1.1);
+        }
+
+        .review-item {
+            border-bottom: 1px solid #dee2e6;
+            padding: 25px 0;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .reviewer-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .reviewer-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .review-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .review-stars {
+            color: #ffc107;
+        }
+
+        .review-content {
+            color: #495057;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .rating-breakdown {
+            margin: 20px 0;
+        }
+
+        .rating-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .rating-bar-label {
+            width: 60px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .rating-bar-fill {
+            flex: 1;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .rating-bar-progress {
+            height: 100%;
+            background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .rating-bar-count {
+            width: 40px;
+            text-align: right;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px 0 20px 0;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .product-detail-container {
+                padding: 20px;
+            }
+            
+            .product-image-large {
+                height: 300px;
+                font-size: 6rem;
+            }
+            
+            .product-title-large {
+                font-size: 2rem;
+            }
+            
+            .product-price-large {
+                font-size: 2rem;
+            }
+            
+            .reviews-section {
+                padding: 20px;
+            }
+            
+            .review-form {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-book-open"></i> BookStore</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="product.html">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Liên hệ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="voucher.html">Voucher</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-auth btn-sm" onclick="window.location.href='login.html'">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </button>
+                    <button class="btn btn-auth btn-sm" onclick="window.location.href='register.html'">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </button>
+                    <div class="cart-icon ms-3" onclick="window.location.href='cart.html'">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="container">
+        <nav class="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="index.html">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="product.html">Sản phẩm</a></li>
+                <li class="breadcrumb-item active" id="breadcrumbProduct">Chi tiết sản phẩm</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Product Detail -->
+    <div class="container">
+        <div class="product-detail-container" id="productDetail">
+            <!-- Product details will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Rating Statistics -->
+    <div class="container">
+        <div class="stats-section">
+            <h4><i class="fas fa-chart-bar"></i> Thống kê đánh giá</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="display-4 text-warning mb-2" id="averageRating">4.5</div>
+                        <div class="rating-stars mb-2" id="averageStars">
+                            <!-- Stars will be generated here -->
+                        </div>
+                        <div class="text-muted">Dựa trên <span id="totalReviews">0</span> đánh giá</div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="rating-breakdown" id="ratingBreakdown">
+                        <!-- Rating breakdown will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="container">
+        <div class="reviews-section">
+            <h4><i class="fas fa-comments"></i> Đánh giá và bình luận</h4>
+            
+            <!-- Review Form -->
+            <div class="review-form">
+                <h5><i class="fas fa-star"></i> Viết đánh giá của bạn</h5>
+                <form id="reviewForm" onsubmit="submitReview(event)">
+                    <div class="mb-3">
+                        <label class="form-label">Đánh giá của bạn:</label>
+                        <div class="star-rating" id="userRating">
+                            <i class="fas fa-star" data-rating="1"></i>
+                            <i class="fas fa-star" data-rating="2"></i>
+                            <i class="fas fa-star" data-rating="3"></i>
+                            <i class="fas fa-star" data-rating="4"></i>
+                            <i class="fas fa-star" data-rating="5"></i>
+                        </div>
+                        <small class="text-muted">Nhấp vào sao để đánh giá</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewerName" class="form-label">Tên của bạn:</label>
+                        <input type="text" class="form-control" id="reviewerName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewContent" class="form-label">Nội dung đánh giá:</label>
+                        <textarea class="form-control" id="reviewContent" rows="4" placeholder="Chia sẻ trải nghiệm của bạn về cuốn sách này..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary-large">
+                        <i class="fas fa-paper-plane"></i> Gửi đánh giá
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Reviews List -->
+            <div id="reviewsList">
+                <!-- Reviews will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                    <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
+                    <div class="d-flex">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên kết nhanh</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-white-50">Trang chủ</a></li>
+                        <li><a href="product.html" class="text-white-50">Sản phẩm</a></li>
+                        <li><a href="about.html" class="text-white-50">Giới thiệu</a></li>
+                        <li><a href="contact.html" class="text-white-50">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên hệ</h5>
+                    <p><i class="fas fa-phone"></i> 0123 456 789</p>
+                    <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, TP.HCM</p>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sample product data
+        const products = [
+            {
+                id: 1,
+                name: "Toán học 12 - Sách giáo khoa",
+                author: "Bộ Giáo dục và Đào tạo",
+                price: 45000,
+                category: "giaokho",
+                categoryName: "Sách giáo khoa",
+                description: "Sách giáo khoa Toán học lớp 12, chương trình mới theo định hướng phát triển năng lực",
+                icon: "📚",
+                publisher: "NXB Giáo dục Việt Nam",
+                pages: 256,
+                year: 2024,
+                isbn: "978-604-0-12345-6",
+                language: "Tiếng Việt",
+                weight: "350g",
+                dimensions: "19 x 27 cm",
+                stock: 50,
+                rating: 4.5,
+                reviews: 128,
+                detailDescription: "Sách giáo khoa Toán học lớp 12 được biên soạn theo chương trình giáo dục phổ thông mới, tập trung phát triển năng lực toán học cho học sinh. Nội dung sách bao gồm các chương: Ứng dụng đạo hàm để khảo sát và vẽ đồ thị hàm số, Hàm số lũy thừa, hàm số mũ và hàm số logarit, Nguyên hàm - Tích phân và ứng dụng, Số phức, Phương pháp tọa độ trong không gian."
+            }
+        ];
+
+        let currentProduct = null;
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let reviews = JSON.parse(localStorage.getItem('reviews')) || {};
+        let userRating = 0;
+
+        // Load page on startup
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductDetail();
+            updateCartCount();
+            setupStarRating();
+        });
+
+        // Load product detail from URL parameter or default
+        function loadProductDetail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = parseInt(urlParams.get('id')) || 1;
+            
+            currentProduct = products.find(p => p.id === productId) || products[0];
+            displayProductDetail();
+            loadReviews();
+            updateRatingStats();
+        }
+
+        // Display product detail
+        function displayProductDetail() {
+            const productDetail = document.getElementById('productDetail');
+            const breadcrumb = document.getElementById('breadcrumbProduct');
+            
+            breadcrumb.textContent = currentProduct.name;
+            
+            productDetail.innerHTML = `
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="product-image-large">
+                            ${currentProduct.icon}
+                            <span class="category-badge-large">${currentProduct.categoryName}</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <h1 class="product-title-large">${currentProduct.name}</h1>
+                        <p class="product-author-large">
+                            <i class="fas fa-user-edit"></i> ${currentProduct.author}
+                        </p>
+                        
+                        <div class="rating-display">
+                            <div class="rating-stars">
+                                ${generateStars(currentProduct.rating)}
+                            </div>
+                            <div class="rating-text">
+                                ${currentProduct.rating}/5 (${currentProduct.reviews} đánh giá)
+                            </div>
+                        </div>
+                        
+                        <div class="product-price-large">${formatPrice(currentProduct.price)}</div>
+                        
+                        <div class="mb-4">
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-check-circle"></i> Còn ${currentProduct.stock} cuốn
+                            </span>
+                        </div>
+                        
+                        <div class="d-flex gap-3 mb-4">
+                            <button class="btn btn-add-cart-large flex-fill" onclick="addToCart(${currentProduct.id})">
+                                <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                            </button>
+                            <button class="btn btn-primary-large flex-fill" onclick="orderNow(${currentProduct.id})">
+                                <i class="fas fa-shopping-bag"></i> Mua ngay
+                            </button>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5><i class="fas fa-align-left"></i> Mô tả sản phẩm</h5>
+                            <p class="text-muted">${currentProduct.detailDescription}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-info-large mt-5">
+                    <h4 class="mb-4"><i class="fas fa-info-circle"></i> Thông tin chi tiết</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-row-large">
+                                <span class="detail-label-large">Nhà xuất bản:</span>
+                                <span class="detail-value-large">${currentProduct.publisher}</span>
+                            </div>
+                            <div class="detail-row-large">
+                                <span class="detail-label-large">Số trang:</span>
+                                <span class="detail-value-large">${currentProduct.pages} trang</span>
+                            </div>
+                            <div class="detail-row-large">
+                                <span class="detail-label-large">Năm xuất bản:</span>
+                                <span class="detail-value-large">${currentProduct.year}</span>
+                            </div>
+                            <div class="detail-row-large">
+                                <span class="detail-label-large">ISBN:</span>
+                                <span class="detail-value-large">${currentProduct.isbn}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-row-large">
+                                <span class="detail-label-large">Ngôn ngữ:</span>
+                                <span class="detail-value-large">${currentProduct.language}</span>
+                            </div>
+                            <div class="detail-row-large">
+                                <span class="detail-label-large">Trọng lượng:</span>
+                                <span class="detail-value-large">${currentProduct.weight}</span>
+                            </div>
+                            <div class="detail-row-large">
+                                <span class="detail-label-large">Kích thước:</span>
+                                <span class="detail-value-large">${currentProduct.dimensions}</span>
+                            </div>
+                            <div class="detail-row-large">
+                                <span class="detail-label-large">Tình trạng:</span>
+                                <span class="detail-value-large text-success">Còn hàng</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Setup star rating interaction
+        function setupStarRating() {
+            const stars = document.querySelectorAll('#userRating i');
+            
+            stars.forEach((star, index) => {
+                star.addEventListener('click', function() {
+                    userRating = parseInt(this.dataset.rating);
+                    updateStarDisplay();
+                });
+                
+                star.addEventListener('mouseover', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    highlightStars(rating);
+                });
+            });
+            
+            document.getElementById('userRating').addEventListener('mouseleave', function() {
+                updateStarDisplay();
+            });
+        }
+
+        // Highlight stars on hover
+        function highlightStars(rating) {
+            const stars = document.querySelectorAll('#userRating i');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        // Update star display based on user rating
+        function updateStarDisplay() {
+            highlightStars(userRating);
+        }
+
+        // Submit review
+        function submitReview(event) {
+            event.preventDefault();
+            
+            if (userRating === 0) {
+                showNotification('Vui lòng chọn số sao đánh giá!', 'warning');
+                return;
+            }
+            
+            const reviewerName = document.getElementById('reviewerName').value.trim();
+            const reviewContent = document.getElementById('reviewContent').value.trim();
+            
+            if (!reviewerName || !reviewContent) {
+                showNotification('Vui lòng điền đầy đủ thông tin!', 'warning');
+                return;
+            }
+            
+            const newReview = {
+                id: Date.now(),
+                productId: currentProduct.id,
+                name: reviewerName,
+                rating: userRating,
+                content: reviewContent,
+                date: new Date().toLocaleDateString('vi-VN')
+            };
+            
+            // Save review to localStorage
+            if (!reviews[currentProduct.id]) {
+                reviews[currentProduct.id] = [];
+            }
+            reviews[currentProduct.id].unshift(newReview);
+            localStorage.setItem('reviews', JSON.stringify(reviews));
+            
+            // Reset form
+            document.getElementById('reviewForm').reset();
+            userRating = 0;
+            updateStarDisplay();
+            
+            // Reload reviews and stats
+            loadReviews();
+            updateRatingStats();
+            
+            showNotification('Cảm ơn bạn đã đánh giá!', 'success');
+        }
+
+        // Load reviews
+        function loadReviews() {
+            const reviewsList = document.getElementById('reviewsList');
+            const productReviews = reviews[currentProduct.id] || [];
+            
+            if (productReviews.length === 0) {
+                reviewsList.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-comments" style="font-size: 4rem; color: #ccc;"></i>
+                        <h5 class="mt-3 text-muted">Chưa có đánh giá nào</h5>
+                        <p class="text-muted">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let reviewsHTML = '<h5 class="mt-5 mb-4">Đánh giá từ khách hàng:</h5>';
+            
+            productReviews.forEach(review => {
+                reviewsHTML += `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">
+                                    ${review.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="reviewer-name">${review.name}</div>
+                                    <div class="review-date">${review.date}</div>
+                                </div>
+                            </div>
+                            <div class="review-stars">
+                                ${generateStars(review.rating)}
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            ${review.content}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            reviewsList.innerHTML = reviewsHTML;
+        }
+
+        // Update rating statistics
+        function updateRatingStats() {
+            const productReviews = reviews[currentProduct.id] || [];
+            const totalReviews = productReviews.length;
+            
+            if (totalReviews === 0) {
+                document.getElementById('averageRating').textContent = currentProduct.rating;
+                document.getElementById('averageStars').innerHTML = generateStars(currentProduct.rating);
+                document.getElementById('totalReviews').textContent = currentProduct.reviews;
+                generateRatingBreakdown([]);
+                return;
+            }
+            
+            // Calculate average rating
+            const totalRating = productReviews.reduce((sum, review) => sum + review.rating, 0);
+            const averageRating = (totalRating / totalReviews).toFixed(1);
+            
+            document.getElementById('averageRating').textContent = averageRating;
+            document.getElementById('averageStars').innerHTML = generateStars(parseFloat(averageRating));
+            document.getElementById('totalReviews').textContent = totalReviews;
+            
+            generateRatingBreakdown(productReviews);
+        }
+
+        // Generate rating breakdown
+        function generateRatingBreakdown(productReviews) {
+            const breakdown = [5, 4, 3, 2, 1].map(rating => {
+                const count = productReviews.filter(review => review.rating === rating).length;
+                const percentage = productReviews.length > 0 ? (count / productReviews.length) * 100 : 0;
+                return { rating, count, percentage };
+            });
+            
+            const breakdownHTML = breakdown.map(item => `
+                <div class="rating-bar">
+                    <div class="rating-bar-label">${item.rating} sao</div>
+                    <div class="rating-bar-fill">
+                        <div class="rating-bar-progress" style="width: ${item.percentage}%"></div>
+                    </div>
+                    <div class="rating-bar-count">${item.count}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('ratingBreakdown').innerHTML = breakdownHTML;
+        }
+
+        // Generate star rating HTML
+        function generateStars(rating) {
+            let stars = '';
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 !== 0;
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '<i class="fas fa-star text-warning"></i>';
+            }
+            
+            if (hasHalfStar) {
+                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+            }
+            
+            const emptyStars = 5 - Math.ceil(rating);
+            for (let i = 0; i < emptyStars; i++) {
+                stars += '<i class="far fa-star text-warning"></i>';
+            }
+            
+            return stars;
+        }
+
+        // Add to cart
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            showNotification('Đã thêm vào giỏ hàng!', 'success');
+        }
+
+        // Order now
+        function orderNow(productId) {
+            addToCart(productId);
+            window.location.href = 'cart.html';
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            const cartCount = document.getElementById('cartCount');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+        }
+
+        // Format price
+        function formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(price);
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 
+                              type === 'info' ? 'alert-info' : 'alert-warning';
+            
+            notification.className = `alert ${alertClass} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa357e338808dd',t:'MTc1OTgwNjY2My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

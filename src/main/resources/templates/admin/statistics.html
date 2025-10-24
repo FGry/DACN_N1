@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Thống kê Doanh thu | BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* [CSS ĐƯỢC GIỮ NGUYÊN TỪ CÁC FILE TRƯỚC] */
+        body { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; margin: 0; padding: 0; }
+        .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 280px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; transition: all 0.3s ease; z-index: 1000; overflow-y: auto; }
+        .sidebar.collapsed { width: 80px; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; gap: 15px; }
+        .sidebar-logo { width: 45px; height: 45px; background: rgba(255, 255, 255, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .sidebar-title { font-size: 1.4rem; font-weight: bold; margin: 0; transition: opacity 0.3s ease; }
+        .sidebar.collapsed .sidebar-title { opacity: 0; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item { display: block; padding: 15px 20px; color: rgba(255, 255, 255, 0.8); text-decoration: none; transition: all 0.3s ease; border: none; background: none; width: 100%; text-align: left; position: relative; }
+        .menu-item:hover { background: rgba(255, 255, 255, 0.1); color: white; transform: translateX(5px); }
+        .menu-item.active { background: rgba(255, 255, 255, 0.15); color: white; border-right: 4px solid white; }
+        .menu-item i { width: 20px; margin-right: 15px; font-size: 1.1rem; }
+        .sidebar.collapsed .menu-item { padding: 15px; text-align: center; }
+        .sidebar.collapsed .menu-item span { display: none; }
+        .sidebar.collapsed .menu-item i { margin-right: 0; }
+        .sidebar-toggle { position: absolute; top: 25px; right: -15px; width: 30px; height: 30px; background: white; border: none; border-radius: 50%; color: #667eea; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; }
+        .sidebar-toggle:hover { transform: scale(1.1); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+        .main-content { margin-left: 280px; transition: margin-left 0.3s ease; min-height: 100vh; }
+        .main-content.expanded { margin-left: 80px; }
+        .header { background: white; padding: 20px 30px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .header-title { font-size: 1.8rem; font-weight: bold; color: #2c3e50; margin: 0; }
+        .dashboard-content { padding: 30px; }
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
+        .action-left { display: flex; gap: 15px; }
+        .action-right { display: flex; gap: 15px; align-items: center; }
+        .search-box { position: relative; display: flex; align-items: center; }
+        .search-box i { position: absolute; left: 15px; color: #6c757d; z-index: 1; }
+        .search-box input { padding: 10px 15px 10px 45px; border: 1px solid #dee2e6; border-radius: 25px; width: 300px; font-size: 0.9rem; transition: all 0.3s ease; }
+        .search-box input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .form-select { border-radius: 10px; border: 1px solid #dee2e6; padding: 10px 15px; min-width: 180px; }
+        .table-container { background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); overflow: hidden; margin-bottom: 25px; }
+        .table { margin: 0; }
+        .table thead th { background: #f8f9fa; border: none; padding: 20px 15px; font-weight: 600; color: #2c3e50; font-size: 0.9rem; }
+        .table tbody td { padding: 20px 15px; border-top: 1px solid #f1f3f4; vertical-align: middle; }
+        .user-info h6 { margin: 0 0 5px; font-size: 0.95rem; font-weight: 600; color: #2c3e50; }
+        .price { font-weight: 600; color: #28a745; font-size: 1rem; }
+        .quantity-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: #e3f2fd; color: #1976d2; }
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .product-image { width: 40px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; flex-shrink: 0; }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.show { transform: translateX(0); } .main-content { margin-left: 0; } .main-content.expanded { margin-left: 0; } .action-bar { flex-direction: column; gap: 15px; align-items: stretch; } .search-box input { width: 100%; } .table-container { overflow-x: auto; } .table { min-width: 800px; } }
+    </style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-chevron-left" id="toggleIcon"></i>
+    </button>
+
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <i class="fas fa-book-open"></i>
+        </div>
+        <h2 class="sidebar-title">BookStore</h2>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a th:href="@{/admin/products}" class="menu-item">
+            <i class="fas fa-box"></i>
+            <span>Quản lý sản phẩm</span>
+        </a>
+        <a th:href="@{/admin/carts}" class="menu-item">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Quản lý đơn hàng</span>
+        </a>
+        <a th:href="@{/admin/users}" class="menu-item">
+            <i class="fas fa-users"></i>
+            <span>Quản lý tài khoản</span>
+        </a>
+        <a th:href="@{/admin/vouchers}" class="menu-item">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Quản lý voucher</span>
+        </a>
+        <a th:href="@{/admin/comments}" class="menu-item"> <i class="fas fa-star"></i>
+            <span>Quản lý đánh giá</span>
+        </a>
+        <a th:href="@{/admin/revenue}" class="menu-item active">
+            <i class="fas fa-chart-line"></i>
+            <span>Thống kê doanh thu</span>
+        </a>
+        <a th:href="@{/admin/setting}" class="menu-item">
+            <i class="fas fa-cog"></i>
+            <span>Cài đặt</span>
+        </a>
+        <a th:href="@{/logout}" class="menu-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Đăng xuất</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content" id="mainContent">
+    <header class="header">
+        <div class="header-left">
+            <button class="d-md-none btn btn-link" onclick="toggleMobileSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="header-title">Thống kê Doanh thu</h1>
+        </div>
+    </header>
+
+    <div class="dashboard-content fade-in" id="analyticsContent">
+        <div class="action-bar">
+            <div class="action-left">
+                <select class="form-select" id="periodFilter" onchange="filterAnalytics()">
+                    <option value="day">Theo ngày</option>
+                    <option value="month" selected>Theo tháng</option>
+                    <option value="year">Theo năm</option>
+                </select>
+                <input type="date" class="form-control" id="dateFilter" onchange="filterAnalytics()" style="width: 200px; display: none;">
+                <select class="form-select" id="monthFilter" onchange="filterAnalytics()" style="width: 150px;">
+                    <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}" th:text="'Tháng ' + ${m}"
+                            th:selected="${m == T(java.time.LocalDate).now().getMonthValue()}"></option>
+                </select>
+                <select class="form-select" id="yearFilter" onchange="filterAnalytics()" style="width: 120px;">
+                    <option th:each="y : ${#numbers.sequence(T(java.time.LocalDate).now().getYear(), 2022, -1)}"
+                            th:value="${y}" th:text="${y}"
+                            th:selected="${y == T(java.time.LocalDate).now().getYear()}"></option>
+                </select>
+            </div>
+            <div class="action-right">
+                <button class="btn btn-success" onclick="exportReport()">
+                    <i class="fas fa-download"></i> Xuất báo cáo
+                </button>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-center mb-3">
+                            <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                        </div>
+                        <h3 class="mb-2" id="totalInvoices" th:text="${stats.totalInvoices}">0</h3>
+                        <p class="mb-0">Tổng số hóa đơn</p>
+                        <small class="opacity-75" id="invoicesPeriod" th:text="'Tháng ' + ${T(java.time.LocalDate).now().getMonthValue()} + '/' + ${T(java.time.LocalDate).now().getYear()}">Tháng hiện tại</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border-radius: 15px;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-center mb-3">
+                            <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                        </div>
+                        <h3 class="mb-2" id="totalRevenue" th:text="${stats.totalRevenueFormatted}">0đ</h3>
+                        <p class="mb-0">Tổng doanh thu</p>
+                        <small class="opacity-75" id="revenuePeriod" th:text="'Tháng ' + ${T(java.time.LocalDate).now().getMonthValue()} + '/' + ${T(java.time.LocalDate).now().getYear()}">Tháng hiện tại</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white; border-radius: 15px;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-center mb-3">
+                            <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <h3 class="mb-2" id="avgOrderValue" th:text="${stats.averageOrderValueFormatted}">0đ</h3>
+                        <p class="mb-0">Giá trị đơn hàng TB</p>
+                        <small class="opacity-75" id="avgPeriod" th:text="'Tháng ' + ${T(java.time.LocalDate).now().getMonthValue()} + '/' + ${T(java.time.LocalDate).now().getYear()}">Tháng hiện tại</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                <h5 class="mb-0">Danh sách sản phẩm bán ra</h5>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" id="sortBy" onchange="sortProducts()" style="width: 200px;">
+                        <option value="quantity">Sắp xếp theo số lượng</option>
+                        <option value="revenue">Sắp xếp theo doanh thu</option>
+                        <option value="name">Sắp xếp theo tên</option>
+                    </select>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Tìm sản phẩm..." id="searchProductInput" onkeyup="searchProducts()" style="width: 200px; padding: 5px 10px 5px 35px; border: 1px solid #dee2e6; border-radius: 20px; font-size: 0.85rem;">
+                    </div>
+                </div>
+            </div>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên sản phẩm</th>
+                    <th>ID Sản phẩm</th>
+                    <th>Số lượng bán</th>
+                    <th>Doanh thu</th>
+                    <th>% Tổng doanh thu</th>
+                </tr>
+                </thead>
+                <tbody id="productsAnalyticsBody">
+                <tr th:each="product, stat : ${productSales}">
+                    <td th:text="${stat.index + 1}">1</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="product-image me-3">📚</div>
+                            <div><h6 class="mb-0" th:text="${product.productName}">Tên sản phẩm</h6></div>
+                        </div>
+                    </td>
+                    <td th:text="${product.idProduct}">201</td>
+                    <td><span class="quantity-badge" th:text="${#numbers.formatInteger(product.quantitySold, 0, 'POINT') + ' cuốn'}">45 cuốn</span></td>
+                    <td><span class="price" th:text="${product.totalRevenueFormatted}">6.750.000đ</span></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="progress me-2" style="width: 100px; height: 8px;">
+                                <div class="progress-bar bg-success" th:style="'width: ' + (${product.percentageOfTotal > 100 ? 100 : product.percentageOfTotal}) + '%'"></div>
+                            </div>
+                            <span class="text-muted" th:text="${#numbers.formatDecimal(product.percentageOfTotal, 1, 'POINT', 1, '.') + '%'}">14.8%</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(productSales)}">
+                    <td colspan="6" class="text-center">Không có sản phẩm nào được bán trong kỳ này.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_BASE_URL = '/admin/revenue/api';
+    const EXPORT_URL = '/admin/revenue/export';
+    const formatter = new Intl.NumberFormat('vi-VN');
+
+    // --- CÁC HÀM TIỆN ÍCH & KHỞI TẠO ---
+    document.addEventListener('DOMContentLoaded', function() {
+        // Khởi tạo các giá trị filter ban đầu
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        const day = String(today.getDate()).padStart(2, '0');
+        const isoDate = `${year}-${String(month).padStart(2, '0')}-${day}`;
+
+        document.getElementById('dateFilter').value = isoDate;
+        document.getElementById('monthFilter').value = month;
+
+        // Đảm bảo hiển thị đúng filter ban đầu (Month mặc định)
+        document.getElementById('dateFilter').style.display = 'none';
+        document.getElementById('monthFilter').style.display = 'block';
+
+        // Tải dữ liệu lại bằng AJAX để đảm bảo tính động và cập nhật JS model
+        const initialPeriod = document.getElementById('periodFilter').value;
+        const initialDate = getSelectedDateParams().date;
+        const initialPeriodText = getSelectedDateParams().periodText;
+
+        loadStatistics(initialPeriod, initialDate, initialPeriodText);
+    });
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        const alertClass = type === 'success' ? 'alert-success' :
+                          type === 'error' ? 'alert-danger' :
+                          type === 'info' ? 'alert-info' : 'alert-warning';
+
+        notification.className = `alert ${alertClass} position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+        notification.innerHTML = `${message}<button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>`;
+
+        document.body.appendChild(notification);
+        setTimeout(() => { if (notification.parentElement) { notification.remove(); } }, 4000);
+    }
+
+    // --- HÀM LỌC CHÍNH ---
+
+    function getSelectedDateParams() {
+        const period = document.getElementById('periodFilter').value;
+        const year = document.getElementById('yearFilter').value;
+        let dateString = '';
+        let periodText = '';
+
+        if (period === 'day') {
+            dateString = document.getElementById('dateFilter').value;
+            periodText = dateString;
+        } else if (period === 'month') {
+            const month = document.getElementById('monthFilter').value;
+            dateString = `${year}-${String(month).padStart(2, '0')}-01`;
+            periodText = `Tháng ${month}/${year}`;
+        } else if (period === 'year') {
+            dateString = `${year}-01-01`;
+            periodText = `Năm ${year}`;
+        }
+
+        return {
+            period: period,
+            date: dateString,
+            periodText: periodText
+        };
+    }
+
+    function filterAnalytics() {
+        const { period, date, periodText } = getSelectedDateParams();
+        const dateFilter = document.getElementById('dateFilter');
+        const monthFilter = document.getElementById('monthFilter');
+
+        // Hiển thị/Ẩn các Filter
+        if (period === 'day') {
+            dateFilter.style.display = 'block';
+            monthFilter.style.display = 'none';
+        } else if (period === 'month') {
+            dateFilter.style.display = 'none';
+            monthFilter.style.display = 'block';
+        } else if (period === 'year') {
+            dateFilter.style.display = 'none';
+            monthFilter.style.display = 'none';
+        }
+
+        if (!date) {
+            showNotification('Vui lòng chọn ngày/tháng/năm hợp lệ.', 'error');
+            return;
+        }
+
+        loadStatistics(period, date, periodText);
+    }
+
+    function loadStatistics(period, date, periodText) {
+        // 1. Tải số liệu tổng quan
+        fetch(`${API_BASE_URL}/overall?period=${period}&date=${date}`)
+            .then(res => res.json())
+            .then(stats => updateOverallStats(stats, periodText))
+            .catch(err => {
+                console.error('Lỗi tải Overall Stats:', err);
+                showNotification('Lỗi khi tải số liệu tổng quan.', 'error');
+            });
+
+        // 2. Tải dữ liệu sản phẩm bán ra
+        fetch(`${API_BASE_URL}/products?period=${period}&date=${date}`)
+            .then(res => res.json())
+            .then(salesData => renderProductSalesTable(salesData))
+            .catch(err => {
+                console.error('Lỗi tải Product Sales:', err);
+                showNotification('Lỗi khi tải danh sách sản phẩm bán ra.', 'error');
+            });
+    }
+
+    // --- RENDER DỮ LIỆU ---
+
+    function updateOverallStats(stats, periodText) {
+        document.getElementById('totalInvoices').textContent = formatter.format(stats.totalInvoices);
+        document.getElementById('totalRevenue').textContent = stats.totalRevenueFormatted;
+        document.getElementById('avgOrderValue').textContent = stats.averageOrderValueFormatted;
+
+        document.getElementById('invoicesPeriod').textContent = periodText;
+        document.getElementById('revenuePeriod').textContent = periodText;
+        document.getElementById('avgPeriod').textContent = periodText;
+    }
+
+    function renderProductSalesTable(salesData) {
+        const tbody = document.getElementById('productsAnalyticsBody');
+        tbody.innerHTML = '';
+
+        if (salesData.length === 0) {
+             tbody.innerHTML = '<tr><td colspan="6" class="text-center">Không có sản phẩm nào được bán trong kỳ này.</td></tr>';
+             return;
+        }
+
+        salesData.forEach((product, index) => {
+            const percentage = product.percentageOfTotal > 100 ? 100 : product.percentageOfTotal;
+            const percentageText = product.percentageOfTotal.toFixed(1) + '%';
+
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="product-image me-3">📚</div>
+                            <div><h6 class="mb-0">${product.productName}</h6></div>
+                        </div>
+                    </td>
+                    <td>${product.idProduct}</td>
+                    <td><span class="quantity-badge">${formatter.format(product.quantitySold)} cuốn</span></td>
+                    <td><span class="price">${product.totalRevenueFormatted}</span></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="progress me-2" style="width: 100px; height: 8px;">
+                                <div class="progress-bar bg-success" style="width: ${percentage}%"></div>
+                            </div>
+                            <span class="text-muted">${percentageText}</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+
+        sortProducts();
+    }
+
+    // --- CHỨC NĂNG BỔ SUNG (Sắp xếp, Tìm kiếm, Xuất báo cáo) ---
+
+    function sortProducts() {
+        const sortBy = document.getElementById('sortBy').value;
+        const tbody = document.getElementById('productsAnalyticsBody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        rows.sort((a, b) => {
+            const getValue = (row, cellIndex) => {
+                const text = row.cells[cellIndex].textContent;
+                return parseInt(text.replace(/[^\d]/g, '')) || 0;
+            };
+
+            if (sortBy === 'quantity') {
+                const qtyA = getValue(a, 3);
+                const qtyB = getValue(b, 3);
+                return qtyB - qtyA;
+            } else if (sortBy === 'revenue') {
+                const revA = getValue(a, 4);
+                const revB = getValue(b, 4);
+                return revB - revA;
+            } else if (sortBy === 'name') {
+                const nameA = a.cells[1].querySelector('h6').textContent;
+                const nameB = b.cells[1].querySelector('h6').textContent;
+                return nameA.localeCompare(nameB);
+            }
+            return 0;
+        });
+
+        rows.forEach((row, index) => {
+            row.cells[0].textContent = index + 1;
+            tbody.appendChild(row);
+        });
+
+        showNotification(`Đã sắp xếp theo ${sortBy === 'quantity' ? 'số lượng' : sortBy === 'revenue' ? 'doanh thu' : 'tên sản phẩm'}`, 'info');
+    }
+
+    function searchProducts() {
+        const searchTerm = document.getElementById('searchProductInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#productsAnalyticsBody tr');
+
+        rows.forEach(row => {
+            const productName = row.querySelector('h6').textContent.toLowerCase();
+            const productId = row.cells[2].textContent.toLowerCase();
+
+            if (productName.includes(searchTerm) || productId.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function exportReport() {
+        const { period, date, periodText } = getSelectedDateParams();
+
+        if (!date) {
+            showNotification('Vui lòng chọn thời gian để xuất báo cáo.', 'error');
+            return;
+        }
+
+        showNotification(`Đang chuẩn bị xuất báo cáo theo ${periodText}...`, 'info');
+
+        const exportUrl = `${EXPORT_URL}?period=${period}&date=${date}`;
+        window.location.href = exportUrl;
+    }
+
+    // --- CÁC HÀM CHUNG KHÁC (Sidebar) ---
+    let sidebarCollapsed = false;
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleIcon = document.getElementById('toggleIcon');
+        sidebarCollapsed = !sidebarCollapsed;
+        if (sidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            toggleIcon.classList.remove('fa-chevron-left');
+            toggleIcon.classList.add('fa-chevron-right');
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('expanded');
+            toggleIcon.classList.remove('fa-chevron-right');
+            toggleIcon.classList.add('fa-chevron-left');
+        }
+    }
+    function toggleMobileSidebar() {
+        document.getElementById('sidebar').classList.toggle('show');
+    }
+    function showNotifications() { showNotification('Bạn có 3 thông báo mới!', 'info'); }
+    function showUserMenu() { showNotification('Menu người dùng - Tính năng đang phát triển', 'info'); }
+
+</script>
+</body>
+</html>
