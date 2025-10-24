@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -310,3 +311,1781 @@
 
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar-logo {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .sidebar-title {
+            opacity: 0;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-right: 4px solid white;
+        }
+
+        .menu-item i {
+            width: 20px;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar.collapsed .menu-item {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+
+        .sidebar.collapsed .menu-item i {
+            margin-right: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            top: 25px;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            color: #667eea;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #6c757d;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .notification-btn:hover {
+            color: #667eea;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 25px;
+            transition: background 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: #f8f9fa;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-info h6 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .user-info small {
+            color: #6c757d;
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            padding: 30px;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .action-left {
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            color: #6c757d;
+            z-index: 1;
+        }
+
+        .search-box input {
+            padding: 10px 15px 10px 45px;
+            border: 1px solid #dee2e6;
+            border-radius: 25px;
+            width: 300px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-select {
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            padding: 10px 15px;
+            min-width: 180px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead th {
+            background: #f8f9fa;
+            border: none;
+            padding: 20px 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .table tbody td {
+            padding: 20px 15px;
+            border-top: 1px solid #f1f3f4;
+            vertical-align: middle;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar-table {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .user-avatar-table img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info h6 {
+            margin: 0 0 5px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .price {
+            font-weight: 600;
+            color: #28a745;
+            font-size: 1rem;
+        }
+
+        .quantity-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.status-pending {
+            background: #fff8e1;
+            color: #f57c00;
+        }
+
+        .status-badge.status-confirmed {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-badge.status-shipping {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-badge.status-delivered {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-badge.status-cancelled {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-buttons .btn {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .action-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .pagination-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .pagination {
+            margin: 0;
+        }
+
+        .page-link {
+            border: none;
+            color: #667eea;
+            padding: 10px 15px;
+            margin: 0 3px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .page-link:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-item.active .page-link {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            background: #f8f9fa;
+        }
+
+        /* Detail Modal */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .detail-value.price {
+            color: #28a745;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .product-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .product-image {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.expanded {
+                margin-left: 0;
+            }
+            
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .dashboard-content {
+                padding: 20px;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .action-left,
+            .action-right {
+                justify-content: center;
+            }
+
+            .search-box input {
+                width: 100%;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .table {
+                min-width: 800px;
+            }
+
+            .pagination-container {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        /* Fade In Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left" id="toggleIcon"></i>
+        </button>
+        
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h2 class="sidebar-title">BookStore</h2>
+        </div>
+        
+        <nav class="sidebar-menu">
+            <a href="#" class="menu-item" onclick="showSection('products')">
+                <i class="fas fa-box"></i>
+                <span>Quản lý sản phẩm</span>
+            </a>
+            <a href="#" class="menu-item active" onclick="showSection('orders')">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Quản lý đơn hàng</span>
+            </a>
+            <a href="#" class="menu-item" onclick="showSection('users')">
+                <i class="fas fa-users"></i>
+                <span>Quản lý tài khoản</span>
+            </a>
+            <a href="#" class="menu-item" onclick="showSection('vouchers')">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Quản lý voucher</span>
+            </a>
+            <a href="#" class="menu-item" onclick="showSection('analytics')">
+                <i class="fas fa-chart-line"></i>
+                <span>Thống kê doanh thu</span>
+            </a>
+            <a href="#" class="menu-item" onclick="showSection('settings')">
+                <i class="fas fa-cog"></i>
+                <span>Cài đặt</span>
+            </a>
+            <a href="index.html" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="d-md-none btn btn-link" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="header-title">Quản lý đơn hàng</h1>
+            </div>
+            
+            <div class="header-actions">
+                <button class="notification-btn" onclick="showNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                
+                <div class="user-profile" onclick="showUserMenu()">
+                    <div class="user-avatar">A</div>
+                    <div class="user-info d-none d-md-block">
+                        <h6>Admin User</h6>
+                        <small>Quản trị viên</small>
+                    </div>
+                    <i class="fas fa-chevron-down d-none d-md-block"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Users Management Content -->
+        <div class="dashboard-content fade-in" id="usersContent" style="display: none;">
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <div class="action-left">
+                </div>
+                <div class="action-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Tìm kiếm người dùng..." id="searchInput" onkeyup="searchUsers()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Thông tin người dùng</th>
+                            <th>Số điện thoại</th>
+                            <th>Ngày tham gia</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Nguyễn Văn An</h6>
+                                        <small class="text-muted">nguyenvanan@email.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>0901234567</td>
+                            <td>15/03/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewUserDetail(1)" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="editUser(1)" title="Sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser(1)" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table female">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNmZjY5YjQiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Trần Thị Bình</h6>
+                                        <small class="text-muted">tranthibinh@email.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>0912345678</td>
+                            <td>22/03/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewUserDetail(2)" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="editUser(2)" title="Sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser(2)" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMyOGE3NDUiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Lê Văn Cường</h6>
+                                        <small class="text-muted">levancuong@email.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>0923456789</td>
+                            <td>05/04/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewUserDetail(3)" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="editUser(3)" title="Sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser(3)" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table female">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM5YzI3YjAiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Phạm Thị Dung</h6>
+                                        <small class="text-muted">phamthidung@email.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>0934567890</td>
+                            <td>18/04/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewUserDetail(4)" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="editUser(4)" title="Sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser(4)" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNmZmM5MDciLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Hoàng Văn Em</h6>
+                                        <small class="text-muted">hoangvanem@email.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>0945678901</td>
+                            <td>02/05/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewUserDetail(5)" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="editUser(5)" title="Sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser(5)" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Hiển thị 1-5 của 25 người dùng
+                </div>
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Trước</a>
+                        </li>
+                        <li class="page-item active">
+                            <a class="page-link" href="#">1</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">2</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">3</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Orders Management Content -->
+        <div class="dashboard-content fade-in" id="ordersContent">
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <div class="action-left">
+                    <select class="form-select" id="statusFilter" onchange="filterOrders()">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="pending">Chờ xử lý</option>
+                        <option value="confirmed">Đã xác nhận</option>
+                        <option value="shipping">Đang giao</option>
+                        <option value="delivered">Đã giao</option>
+                        <option value="cancelled">Đã hủy</option>
+                    </select>
+                </div>
+                <div class="action-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Tìm kiếm đơn hàng..." id="searchOrderInput" onkeyup="searchOrders()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn hàng</th>
+                            <th>Thông tin khách hàng</th>
+                            <th>Số sản phẩm</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày đặt</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr>
+                            <td><strong>#DH001</strong></td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Nguyễn Văn An</h6>
+                                        <small class="text-muted">0901234567</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="quantity-badge">3 sản phẩm</span></td>
+                            <td><span class="price">450.000đ</span></td>
+                            <td><span class="status-badge status-pending">Chờ xử lý</span></td>
+                            <td>20/11/2024</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewOrderDetail('DH001')" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="cancelOrder('DH001')" title="Hủy đơn hàng">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>#DH002</strong></td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNmZjY5YjQiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Trần Thị Bình</h6>
+                                        <small class="text-muted">0912345678</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="quantity-badge">2 sản phẩm</span></td>
+                            <td><span class="price">320.000đ</span></td>
+                            <td><span class="status-badge status-confirmed">Đã xác nhận</span></td>
+                            <td>19/11/2024</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewOrderDetail('DH002')" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="cancelOrder('DH002')" title="Hủy đơn hàng">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>#DH003</strong></td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMyOGE3NDUiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Lê Văn Cường</h6>
+                                        <small class="text-muted">0923456789</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="quantity-badge">1 sản phẩm</span></td>
+                            <td><span class="price">180.000đ</span></td>
+                            <td><span class="status-badge status-shipping">Đang giao</span></td>
+                            <td>18/11/2024</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewOrderDetail('DH003')" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary" disabled title="Không thể hủy">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>#DH004</strong></td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM5YzI3YjAiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Phạm Thị Dung</h6>
+                                        <small class="text-muted">0934567890</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="quantity-badge">4 sản phẩm</span></td>
+                            <td><span class="price">620.000đ</span></td>
+                            <td><span class="status-badge status-delivered">Đã giao</span></td>
+                            <td>17/11/2024</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewOrderDetail('DH004')" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary" disabled title="Đã giao">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>#DH005</strong></td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-table">
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNmZmM5MDciLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Avatar">
+                                    </div>
+                                    <div>
+                                        <h6>Hoàng Văn Em</h6>
+                                        <small class="text-muted">0945678901</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="quantity-badge">2 sản phẩm</span></td>
+                            <td><span class="price">280.000đ</span></td>
+                            <td><span class="status-badge status-cancelled">Đã hủy</span></td>
+                            <td>16/11/2024</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-info" onclick="viewOrderDetail('DH005')" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary" disabled title="Đã hủy">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Hiển thị 1-5 của 15 đơn hàng
+                </div>
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Trước</a>
+                        </li>
+                        <li class="page-item active">
+                            <a class="page-link" href="#">1</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">2</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">3</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- User Detail Modal -->
+        <div class="modal fade" id="userDetailModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Chi tiết người dùng</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="user-detail-content">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="user-image-large">
+                                        <img id="detailAvatar" src="" alt="Avatar" style="width: 100%; height: 200px; object-fit: cover; border-radius: 15px;">
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="user-details">
+                                        <h4 id="detailUserName">Nguyễn Văn An</h4>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Email:</span>
+                                            <span class="detail-value" id="detailEmail">nguyenvanan@email.com</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Giới tính:</span>
+                                            <span class="detail-value" id="detailGender">Nam</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Số điện thoại:</span>
+                                            <span class="detail-value" id="detailPhone">0901234567</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Địa chỉ:</span>
+                                            <span class="detail-value" id="detailAddress">123 Đường ABC, Quận 1, TP.HCM</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Ngày lập:</span>
+                                            <span class="detail-value" id="detailCreated">15/03/2023</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Ngày cập nhật:</span>
+                                            <span class="detail-value" id="detailUpdated">20/11/2024</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Số đơn đã đặt:</span>
+                                            <span class="detail-value" id="detailOrders">12 đơn hàng</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-warning" onclick="editUserFromDetail()">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Detail Modal -->
+        <div class="modal fade" id="orderDetailModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Chi tiết đơn hàng <span id="orderDetailId">#DH001</span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- Thông tin đơn hàng -->
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Thông tin đơn hàng</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="detail-row">
+                                            <span class="detail-label">Mã đơn hàng:</span>
+                                            <span class="detail-value" id="orderCode">#DH001</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Ngày đặt:</span>
+                                            <span class="detail-value" id="orderDate">20/11/2024</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Trạng thái:</span>
+                                            <span class="detail-value"><span id="orderStatus" class="status-badge status-pending">Chờ xử lý</span></span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Thanh toán:</span>
+                                            <span class="detail-value" id="paymentMethod">COD</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Phí ship:</span>
+                                            <span class="detail-value price" id="shippingFee">30.000đ</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Tổng tiền:</span>
+                                            <span class="detail-value price" id="totalAmount">450.000đ</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Ghi chú:</span>
+                                            <span class="detail-value" id="orderNote">Giao hàng vào buổi chiều</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Thông tin khách hàng -->
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0"><i class="fas fa-user me-2"></i>Thông tin khách hàng</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="text-center mb-3">
+                                            <img id="customerAvatar" src="" alt="Avatar" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Họ tên:</span>
+                                            <span class="detail-value" id="customerName">Nguyễn Văn An</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Email:</span>
+                                            <span class="detail-value" id="customerEmail">nguyenvanan@email.com</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Số điện thoại:</span>
+                                            <span class="detail-value" id="customerPhone">0901234567</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Địa chỉ giao hàng:</span>
+                                            <span class="detail-value" id="shippingAddress">123 Đường ABC, Phường 1, Quận 1, TP.HCM</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Thông tin sản phẩm -->
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0"><i class="fas fa-box me-2"></i>Thông tin sản phẩm</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="orderProducts">
+                                            <!-- Products will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" id="cancelOrderBtn" onclick="cancelOrderFromDetail()">
+                            <i class="fas fa-times"></i> Hủy đơn hàng
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="updateOrderStatus()">
+                            <i class="fas fa-edit"></i> Cập nhật trạng thái
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let sidebarCollapsed = false;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show orders section by default
+            showSection('orders');
+        });
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            sidebarCollapsed = !sidebarCollapsed;
+            
+            if (sidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+                toggleIcon.classList.remove('fa-chevron-left');
+                toggleIcon.classList.add('fa-chevron-right');
+            } else {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+                toggleIcon.classList.remove('fa-chevron-right');
+                toggleIcon.classList.add('fa-chevron-left');
+            }
+        }
+
+        // Toggle mobile sidebar
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
+        }
+
+        // Show section
+        function showSection(section) {
+            // Update active menu item
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update header title
+            const titles = {
+                'products': 'Quản lý sản phẩm',
+                'orders': 'Quản lý đơn hàng',
+                'users': 'Quản lý tài khoản người dùng',
+                'vouchers': 'Quản lý voucher',
+                'analytics': 'Thống kê doanh thu',
+                'settings': 'Cài đặt'
+            };
+            
+            document.querySelector('.header-title').textContent = titles[section] || 'Quản lý sản phẩm';
+            
+            // Hide all content sections
+            document.getElementById('usersContent').style.display = 'none';
+            document.getElementById('ordersContent').style.display = 'none';
+            
+            // Show selected section
+            if (section === 'users') {
+                document.getElementById('usersContent').style.display = 'block';
+            } else if (section === 'orders') {
+                document.getElementById('ordersContent').style.display = 'block';
+            }
+            
+            // Show notification for demo
+            showNotification(`Chuyển đến ${titles[section]}`, 'info');
+        }
+
+        // Sample user data
+        const userData = {
+            1: {
+                name: "Nguyễn Văn An",
+                email: "nguyenvanan@email.com",
+                gender: "Nam",
+                phone: "0901234567",
+                address: "123 Đường ABC, Quận 1, TP.HCM",
+                created: "15/03/2023",
+                updated: "20/11/2024",
+                orders: "12 đơn hàng",
+                avatar: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K"
+            },
+            2: {
+                name: "Trần Thị Bình",
+                email: "tranthibinh@email.com",
+                gender: "Nữ",
+                phone: "0912345678",
+                address: "456 Đường DEF, Quận 3, TP.HCM",
+                created: "22/03/2023",
+                updated: "18/11/2024",
+                orders: "8 đơn hàng",
+                avatar: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNmZjY5YjQiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K"
+            },
+            3: {
+                name: "Lê Văn Cường",
+                email: "levancuong@email.com",
+                gender: "Nam",
+                phone: "0923456789",
+                address: "789 Đường GHI, Quận 5, TP.HCM",
+                created: "05/04/2023",
+                updated: "15/11/2024",
+                orders: "3 đơn hàng",
+                avatar: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMyOGE3NDUiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K"
+            },
+            4: {
+                name: "Phạm Thị Dung",
+                email: "phamthidung@email.com",
+                gender: "Nữ",
+                phone: "0934567890",
+                address: "321 Đường JKL, Quận 7, TP.HCM",
+                created: "18/04/2023",
+                updated: "10/11/2024",
+                orders: "15 đơn hàng",
+                avatar: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM5YzI3YjAiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K"
+            },
+            5: {
+                name: "Hoàng Văn Em",
+                email: "hoangvanem@email.com",
+                gender: "Nam",
+                phone: "0945678901",
+                address: "654 Đường MNO, Quận 10, TP.HCM",
+                created: "02/05/2023",
+                updated: "22/11/2024",
+                orders: "6 đơn hàng",
+                avatar: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNmZmM5MDciLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K"
+            }
+        };
+
+        // View user detail
+        function viewUserDetail(userId) {
+            const user = userData[userId];
+            if (user) {
+                document.getElementById('detailUserName').textContent = user.name;
+                document.getElementById('detailEmail').textContent = user.email;
+                document.getElementById('detailGender').textContent = user.gender;
+                document.getElementById('detailPhone').textContent = user.phone;
+                document.getElementById('detailAddress').textContent = user.address;
+                document.getElementById('detailCreated').textContent = user.created;
+                document.getElementById('detailUpdated').textContent = user.updated;
+                document.getElementById('detailOrders').textContent = user.orders;
+                document.getElementById('detailAvatar').src = user.avatar;
+                
+                const modal = new bootstrap.Modal(document.getElementById('userDetailModal'));
+                modal.show();
+            }
+        }
+
+        // Edit user
+        function editUser(userId) {
+            showNotification(`Chỉnh sửa người dùng #${userId} - Tính năng đang phát triển`, 'info');
+        }
+
+        // Edit user from detail modal
+        function editUserFromDetail() {
+            showNotification('Chuyển đến trang chỉnh sửa - Tính năng đang phát triển', 'info');
+        }
+
+        // Delete user
+        function deleteUser(userId) {
+            if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+                showNotification(`Đã xóa người dùng #${userId}`, 'success');
+                // Here you would remove the row from the table
+            }
+        }
+
+        // Search users
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTableBody tr');
+            
+            rows.forEach(row => {
+                const userName = row.querySelector('h6').textContent.toLowerCase();
+                const email = row.querySelector('small').textContent.toLowerCase();
+                const phone = row.cells[2].textContent.toLowerCase();
+                
+                if (userName.includes(searchTerm) || email.includes(searchTerm) || phone.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            if (searchTerm) {
+                showNotification(`Tìm kiếm: "${searchTerm}"`, 'info');
+            }
+        }
+
+        // Sample order data
+        const orderData = {
+            'DH001': {
+                id: '#DH001',
+                date: '20/11/2024',
+                status: 'pending',
+                statusText: 'Chờ xử lý',
+                paymentMethod: 'Thanh toán khi nhận hàng',
+                shippingFee: '30.000đ',
+                total: '450.000đ',
+                note: 'Giao hàng vào buổi chiều',
+                customer: {
+                    name: 'Nguyễn Văn An',
+                    email: 'nguyenvanan@email.com',
+                    phone: '0901234567',
+                    address: '123 Đường ABC, Phường 1, Quận 1, TP.HCM',
+                    avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K'
+                },
+                products: [
+                    { name: 'Lập trình JavaScript', author: 'Nguyễn Văn A', quantity: 2, price: '150.000đ', icon: '📚' },
+                    { name: 'Thiết kế Web Responsive', author: 'Trần Thị B', quantity: 1, price: '120.000đ', icon: '📖' },
+                    { name: 'Cơ sở dữ liệu MySQL', author: 'Lê Văn C', quantity: 1, price: '150.000đ', icon: '📘' }
+                ]
+            },
+            'DH002': {
+                id: '#DH002',
+                date: '19/11/2024',
+                status: 'confirmed',
+                statusText: 'Đã xác nhận',
+                paymentMethod: 'Chuyển khoản ngân hàng',
+                shippingFee: '25.000đ',
+                total: '320.000đ',
+                note: 'Gọi trước khi giao',
+                customer: {
+                    name: 'Trần Thị Bình',
+                    email: 'tranthibinh@email.com',
+                    phone: '0912345678',
+                    address: '456 Đường DEF, Phường 2, Quận 3, TP.HCM',
+                    avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNmZjY5YjQiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K'
+                },
+                products: [
+                    { name: 'React Native từ cơ bản', author: 'Phạm Văn D', quantity: 1, price: '180.000đ', icon: '📱' },
+                    { name: 'Node.js Backend', author: 'Hoàng Thị E', quantity: 1, price: '140.000đ', icon: '⚙️' }
+                ]
+            },
+            'DH003': {
+                id: '#DH003',
+                date: '18/11/2024',
+                status: 'shipping',
+                statusText: 'Đang giao',
+                paymentMethod: 'Ví điện tử MoMo',
+                shippingFee: '20.000đ',
+                total: '180.000đ',
+                note: 'Giao hàng nhanh',
+                customer: {
+                    name: 'Lê Văn Cường',
+                    email: 'levancuong@email.com',
+                    phone: '0923456789',
+                    address: '789 Đường GHI, Phường 3, Quận 5, TP.HCM',
+                    avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMyOGE3NDUiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K'
+                },
+                products: [
+                    { name: 'Python cho người mới bắt đầu', author: 'Nguyễn Thị F', quantity: 1, price: '160.000đ', icon: '🐍' }
+                ]
+            },
+            'DH004': {
+                id: '#DH004',
+                date: '17/11/2024',
+                status: 'delivered',
+                statusText: 'Đã giao',
+                paymentMethod: 'Thẻ tín dụng',
+                shippingFee: '35.000đ',
+                total: '620.000đ',
+                note: 'Khách hàng VIP',
+                customer: {
+                    name: 'Phạm Thị Dung',
+                    email: 'phamthidung@email.com',
+                    phone: '0934567890',
+                    address: '321 Đường JKL, Phường 4, Quận 7, TP.HCM',
+                    avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM5YzI3YjAiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K'
+                },
+                products: [
+                    { name: 'Java Spring Boot', author: 'Trần Văn G', quantity: 2, price: '200.000đ', icon: '☕' },
+                    { name: 'Angular Framework', author: 'Lê Thị H', quantity: 1, price: '180.000đ', icon: '🅰️' },
+                    { name: 'Docker & Kubernetes', author: 'Phạm Văn I', quantity: 1, price: '220.000đ', icon: '🐳' }
+                ]
+            },
+            'DH005': {
+                id: '#DH005',
+                date: '16/11/2024',
+                status: 'cancelled',
+                statusText: 'Đã hủy',
+                paymentMethod: 'Thanh toán khi nhận hàng',
+                shippingFee: '30.000đ',
+                total: '280.000đ',
+                note: 'Khách hàng hủy đơn',
+                customer: {
+                    name: 'Hoàng Văn Em',
+                    email: 'hoangvanem@email.com',
+                    phone: '0945678901',
+                    address: '654 Đường MNO, Phường 5, Quận 10, TP.HCM',
+                    avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNmZmM5MDciLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA4IDRTMTIgNS43OSAxMiA4UzEwLjIxIDEyIDEyIDEyWk0xMiAxNEM5LjMzIDE0IDQgMTUuMzQgNCAyMFYyMkgyMFYyMEMxNiAxNS4zNCAxNC42NyAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K'
+                },
+                products: [
+                    { name: 'Vue.js Complete Guide', author: 'Nguyễn Văn J', quantity: 1, price: '150.000đ', icon: '💚' },
+                    { name: 'MongoDB Database', author: 'Trần Thị K', quantity: 1, price: '130.000đ', icon: '🍃' }
+                ]
+            }
+        };
+
+        // View order detail
+        function viewOrderDetail(orderId) {
+            const order = orderData[orderId];
+            if (order) {
+                // Update order information
+                document.getElementById('orderDetailId').textContent = order.id;
+                document.getElementById('orderCode').textContent = order.id;
+                document.getElementById('orderDate').textContent = order.date;
+                document.getElementById('orderStatus').textContent = order.statusText;
+                document.getElementById('orderStatus').className = `status-badge status-${order.status}`;
+                document.getElementById('paymentMethod').textContent = order.paymentMethod;
+                document.getElementById('shippingFee').textContent = order.shippingFee;
+                document.getElementById('totalAmount').textContent = order.total;
+                document.getElementById('orderNote').textContent = order.note;
+
+                // Update customer information
+                document.getElementById('customerName').textContent = order.customer.name;
+                document.getElementById('customerEmail').textContent = order.customer.email;
+                document.getElementById('customerPhone').textContent = order.customer.phone;
+                document.getElementById('shippingAddress').textContent = order.customer.address;
+                document.getElementById('customerAvatar').src = order.customer.avatar;
+
+                // Update products
+                const productsContainer = document.getElementById('orderProducts');
+                let productsHTML = '';
+                let subtotal = 0;
+                
+                order.products.forEach(product => {
+                    const price = parseInt(product.price.replace(/[^\d]/g, ''));
+                    subtotal += price * product.quantity;
+                    
+                    productsHTML += `
+                        <div class="product-item mb-3 p-3" style="border: 1px solid #e9ecef; border-radius: 8px;">
+                            <div class="d-flex align-items-center">
+                                <div class="product-image me-3">
+                                    ${product.icon}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">${product.name}</h6>
+                                    <small class="text-muted">Tác giả: ${product.author}</small>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <span class="text-muted">SL: ${product.quantity}</span>
+                                        <span class="price">${product.price}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                productsHTML += `
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Tổng cộng:</strong>
+                        <strong class="price">${subtotal.toLocaleString('vi-VN')}đ</strong>
+                    </div>
+                `;
+                
+                productsContainer.innerHTML = productsHTML;
+
+                // Update cancel button state
+                const cancelBtn = document.getElementById('cancelOrderBtn');
+                if (order.status === 'pending' || order.status === 'confirmed') {
+                    cancelBtn.disabled = false;
+                    cancelBtn.className = 'btn btn-danger';
+                } else {
+                    cancelBtn.disabled = true;
+                    cancelBtn.className = 'btn btn-secondary';
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+                modal.show();
+            }
+        }
+
+        // Cancel order
+        function cancelOrder(orderId) {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+                showNotification(`Đã hủy đơn hàng ${orderId}`, 'success');
+                // Update order status in the table
+                const rows = document.querySelectorAll('#ordersTableBody tr');
+                rows.forEach(row => {
+                    if (row.cells[0].textContent.includes(orderId)) {
+                        const statusCell = row.cells[4];
+                        statusCell.innerHTML = '<span class="status-badge status-cancelled">Đã hủy</span>';
+                        
+                        // Disable cancel button
+                        const cancelBtn = row.querySelector('.btn-danger');
+                        if (cancelBtn) {
+                            cancelBtn.disabled = true;
+                            cancelBtn.className = 'btn btn-sm btn-secondary';
+                            cancelBtn.title = 'Đã hủy';
+                        }
+                    }
+                });
+            }
+        }
+
+        // Cancel order from detail modal
+        function cancelOrderFromDetail() {
+            const orderId = document.getElementById('orderCode').textContent;
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+                showNotification(`Đã hủy đơn hàng ${orderId}`, 'success');
+                
+                // Update status in modal
+                document.getElementById('orderStatus').textContent = 'Đã hủy';
+                document.getElementById('orderStatus').className = 'status-badge status-cancelled';
+                
+                // Disable cancel button
+                document.getElementById('cancelOrderBtn').disabled = true;
+                document.getElementById('cancelOrderBtn').className = 'btn btn-secondary';
+                
+                // Update table
+                const rows = document.querySelectorAll('#ordersTableBody tr');
+                rows.forEach(row => {
+                    if (row.cells[0].textContent.includes(orderId)) {
+                        const statusCell = row.cells[4];
+                        statusCell.innerHTML = '<span class="status-badge status-cancelled">Đã hủy</span>';
+                        
+                        const cancelBtn = row.querySelector('.btn-danger');
+                        if (cancelBtn) {
+                            cancelBtn.disabled = true;
+                            cancelBtn.className = 'btn btn-sm btn-secondary';
+                        }
+                    }
+                });
+            }
+        }
+
+        // Update order status
+        function updateOrderStatus() {
+            showNotification('Cập nhật trạng thái đơn hàng - Tính năng đang phát triển', 'info');
+        }
+
+        // Filter orders by status
+        function filterOrders() {
+            const filterValue = document.getElementById('statusFilter').value.toLowerCase();
+            const rows = document.querySelectorAll('#ordersTableBody tr');
+            
+            rows.forEach(row => {
+                const statusBadge = row.querySelector('.status-badge');
+                const statusClass = statusBadge.className;
+                
+                if (!filterValue || statusClass.includes(`status-${filterValue}`)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            if (filterValue) {
+                showNotification(`Lọc theo trạng thái: ${filterValue}`, 'info');
+            }
+        }
+
+        // Search orders
+        function searchOrders() {
+            const searchTerm = document.getElementById('searchOrderInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#ordersTableBody tr');
+            
+            rows.forEach(row => {
+                const orderId = row.cells[0].textContent.toLowerCase();
+                const customerName = row.querySelector('h6').textContent.toLowerCase();
+                const phone = row.querySelector('small').textContent.toLowerCase();
+                
+                if (orderId.includes(searchTerm) || customerName.includes(searchTerm) || phone.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            if (searchTerm) {
+                showNotification(`Tìm kiếm: "${searchTerm}"`, 'info');
+            }
+        }
+
+        // Show notifications
+        function showNotifications() {
+            showNotification('Bạn có 3 thông báo mới!', 'info');
+        }
+
+        // Show user menu
+        function showUserMenu() {
+            showNotification('Menu người dùng - Tính năng đang phát triển', 'info');
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 
+                              type === 'info' ? 'alert-info' : 'alert-warning';
+            
+            notification.className = `alert ${alertClass} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 4000);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('show');
+            }
+        });
+
+        // Close mobile sidebar when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isToggleButton = event.target.closest('.btn');
+            
+            if (!isClickInsideSidebar && !isToggleButton && window.innerWidth <= 768) {
+                sidebar.classList.remove('show');
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa29c8f0b70953',t:'MTc1OTgwNjE4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+>>>>>>> c65f40339564f0800c53a954ccb5f34a50158b5a
