@@ -297,7 +297,7 @@
             </ul>
 
             <div class="d-flex align-items-center">
-                <a th:href="@{/user/login}" class="btn btn-auth btn-sm">
+                <a th:href="@{/login}" class="btn btn-auth btn-sm">
                     <i class="fas fa-sign-in-alt"></i> Đăng nhập
                 </a>
                 <a th:href="@{/user/register}" class="btn btn-auth btn-sm">
@@ -479,6 +479,7 @@
         const defaultIcon = '📚';
 
         productsToShow.forEach(product => {
+            // Thay đổi id thành idProducts
             const detailUrl = `/product_detail/${product.idProducts}`;
             const firstImageLink = product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null;
 
@@ -533,6 +534,7 @@
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
+                // SỬ DỤNG product.idProducts để đồng bộ
                 cart.push({ ...product, idProducts: productId, quantity: 1 });
             }
         }
@@ -544,6 +546,8 @@
     function orderNow(productId) {
         addToCart(productId);
         const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+        // Cập nhật modal trước khi hiển thị
+        updateCartModal();
         cartModal.show();
     }
 
@@ -551,6 +555,8 @@
         const cartCount = document.getElementById('cartCount');
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
         cartCount.textContent = totalItems;
+        // Cần gọi updateCartModal để dữ liệu trong modal luôn mới
+        updateCartModal();
     }
 
     function updateCartModal() {
@@ -593,6 +599,7 @@
     }
 
     function updateQuantity(productId, change) {
+        // SỬ DỤNG idProducts
         const item = cart.find(item => item.idProducts === productId);
         if (item) {
             item.quantity += change;
@@ -601,14 +608,18 @@
             } else {
                 localStorage.setItem('bookstoreCart', JSON.stringify(cart));
                 updateCartUI();
+                updateCartModal(); // Cập nhật Modal
             }
         }
     }
 
     function removeFromCart(productId) {
+        // SỬ DỤNG idProducts
         cart = cart.filter(item => item.idProducts !== productId);
         localStorage.setItem('bookstoreCart', JSON.stringify(cart));
         updateCartUI();
+        updateCartModal(); // Cập nhật Modal
+        showNotification('Đã xóa khỏi giỏ hàng!', 'info');
     }
 
     function checkout() {

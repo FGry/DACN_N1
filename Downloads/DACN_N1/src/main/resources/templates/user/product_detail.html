@@ -172,9 +172,9 @@
                 </li>
             </ul>
             <div class="d-flex align-items-center">
-                <button class="btn btn-outline-light me-3" data-bs-toggle="modal" data-bs-target="#cartModal">
+                <a class="btn btn-outline-light me-3" th:href="@{/user/cart}">
                     <i class="fas fa-shopping-cart"></i> Giỏ hàng (<span id="cartCount">0</span>)
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -367,7 +367,6 @@
                                         <i th:each="i : ${#numbers.sequence(1, comment.rate)}" class="fas fa-star"></i>
                                         <i th:each="i : ${#numbers.sequence(comment.rate + 1, 5)}" class="far fa-star"></i>
                                     </span>
-                                </span>
                             </div>
                             <small class="text-muted" th:text="${#temporals.format(comment.date, 'dd-MM-yyyy')}"></small>
                         </div>
@@ -403,7 +402,9 @@
                 <div>
                     <strong>Tổng cộng:</strong> <span id="totalPrice">0đ</span>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="checkout()">Thanh toán</button>
+                <a th:href="@{/user/cart}" class="btn btn-primary">
+                    Thanh toán
+                </a>
             </div>
         </div>
     </div>
@@ -574,6 +575,7 @@
     }
 
     function checkout() {
+        // Hàm này không còn được sử dụng do nút trong modal đã được thay bằng thẻ <a>
         if (cart.length === 0) {
             showNotification('Giỏ hàng trống!', 'warning');
             return;
