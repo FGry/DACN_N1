@@ -1,7 +1,7 @@
 package com.bookhub.comments;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page; // Thêm import Page
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,14 +13,17 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Controller
-@RequestMapping("/admin/comments")
 @RequiredArgsConstructor
 public class CommentsController {
 
     private final CommentsService commentsService;
 
-    /** Hiển thị danh sách tất cả đánh giá (Admin) - CÓ PHÂN TRANG */
-    @GetMapping
+    // ===================================
+    // === PHẦN ENDPOINT DÀNH CHO ADMIN (Giữ nguyên) ===
+    // ===================================
+
+    // 1. Xem danh sách tất cả bình luận/đánh giá
+    @GetMapping("/admin/comments")
     public String listAllCommentsForAdmin(
             @RequestParam(name = "page", defaultValue = "0") int pageNo,
             @RequestParam(name = "size", defaultValue = "20") int pageSize,
@@ -34,7 +37,7 @@ public class CommentsController {
         model.addAttribute("totalPages", pageComments.getTotalPages());
         model.addAttribute("totalElements", pageComments.getTotalElements());
 
-        // Truyền các tham số filter rỗng để Thymeleaf không bị lỗi
+        // Truyền các tham số filter rỗng
         model.addAttribute("typeFilter", "");
         model.addAttribute("statusFilter", "");
         model.addAttribute("rateFilter", "");
@@ -42,15 +45,15 @@ public class CommentsController {
         return "admin/review";
     }
 
-    /** Chi tiết đánh giá  */
-    @GetMapping("/detail/{id}")
+    // 2. Chi tiết đánh giá
+    @GetMapping("/admin/comments/detail/{id}")
     @ResponseBody
     public CommentsDTO getCommentDetail(@PathVariable("id") Integer id) {
         return commentsService.getCommentById(id);
     }
 
-    /** Duyệt/Đăng đánh giá (Thay đổi trạng thái) */
-    @GetMapping("/publish/{id}")
+    // 3. Duyệt/Đăng đánh giá
+    @GetMapping("/admin/comments/publish/{id}")
     public String publishComment(@PathVariable("id") Integer id, RedirectAttributes ra) {
         try {
             commentsService.updateCommentStatus(id, "PUBLISHED");
@@ -61,8 +64,8 @@ public class CommentsController {
         return "redirect:/admin/comments";
     }
 
-    /** Ẩn/Gỡ đánh giá (Thay đổi trạng thái) */
-    @GetMapping("/hide/{id}")
+    // 4. Ẩn/Gỡ đánh giá
+    @GetMapping("/admin/comments/hide/{id}")
     public String hideComment(@PathVariable("id") Integer id, RedirectAttributes ra) {
         try {
             commentsService.updateCommentStatus(id, "HIDDEN");
@@ -73,8 +76,8 @@ public class CommentsController {
         return "redirect:/admin/comments";
     }
 
-    /** Xóa đánh giá */
-    @GetMapping("/delete/{id}")
+    // 5. Xóa đánh giá
+    @GetMapping("/admin/comments/delete/{id}")
     public String deleteComment(@PathVariable("id") Integer id, RedirectAttributes ra) {
         try {
             commentsService.deleteComment(id);
@@ -85,11 +88,10 @@ public class CommentsController {
         return "redirect:/admin/comments";
     }
 
-    // --- PHƯƠNG THỨC MỚI: DUYỆT TẤT CẢ ĐANG CHỜ ---
-    @PostMapping("/approve-all")
+    // 6. DUYỆT HÀNG LOẠT
+    @PostMapping("/admin/comments/approve-all")
     public ResponseEntity<String> approveAllPendingComments() {
         try {
-            // Lệnh SQL update sẽ duyệt cả Bình luận và Đánh giá nếu status = 'PENDING'
             int count = commentsService.bulkApprovePendingComments();
             if (count > 0) {
                 return ResponseEntity.ok("Đã duyệt thành công " + count + " đánh giá đang chờ.");
@@ -103,8 +105,8 @@ public class CommentsController {
     }
 
 
-    /** Phản hồi đánh giá (qua AJAX từ Modal) */
-    @PostMapping("/reply/{id}")
+    // 7. Phản hồi đánh giá
+    @PostMapping("/admin/comments/reply/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> replyToComment(
             @PathVariable("id") Integer id,
@@ -114,13 +116,11 @@ public class CommentsController {
 
         try {
             if (replyText == null || replyText.trim().isEmpty()) {
-                // Trả về lỗi 400 Bad Request
                 return ResponseEntity.badRequest().body(Map.of("message", "Nội dung phản hồi không được để trống."));
             }
             commentsService.replyToComment(id, replyText);
             return ResponseEntity.ok(Map.of("message", "Phản hồi đã được gửi thành công."));
         } catch (IllegalStateException e) {
-            // Lỗi 400 nếu bình luận chưa được duyệt (PUBLISHED)
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -130,15 +130,20 @@ public class CommentsController {
         }
     }
 
-    // ... các phương thức public và private khác
-    @GetMapping("/public")
+    // =====================================
+    // === PHẦN ENDPOINT DÀNH CHO USER/PUBLIC ===
+    // =====================================
+
+    // 8. Xem danh sách tất cả bình luận công khai
+    @GetMapping("/comments/public")
     public String listAllComments(Model model) {
         List<CommentsDTO> comments = commentsService.getAllComments();
         model.addAttribute("comments", comments);
         return "comments/list";
     }
 
-    @GetMapping("/product/{id}")
+    // 9. Xem bình luận theo sản phẩm
+    @GetMapping("/comments/product/{id}")
     public String listCommentsByProduct(@PathVariable("id") Integer productId, Model model) {
         List<CommentsDTO> comments = commentsService.getCommentsByProduct(productId);
         model.addAttribute("comments", comments);
@@ -146,16 +151,92 @@ public class CommentsController {
         return "comments/product";
     }
 
-    @GetMapping("/new")
+    // 10. Hiển thị form tạo mới
+    @GetMapping("/comments/new")
     public String showCreateForm(Model model) {
         model.addAttribute("comment", new CommentsDTO());
         return "comments/new";
     }
 
-    @PostMapping("/save")
-    public String saveComment(@ModelAttribute("comment") CommentsDTO comment) {
+    /** 11a. Lưu ĐÁNH GIÁ (Phải có rate > 0) - Dành cho khách hàng ĐÃ MUA HÀNG */
+    @PostMapping("/comments/review/save")
+    public String saveReview(@ModelAttribute("newComment") CommentsDTO comment, RedirectAttributes ra) {
+        Integer currentUserId = getCurrentAuthenticatedUserId();
+
+        if (currentUserId == null) {
+            ra.addFlashAttribute("errorMessage", "Vui lòng đăng nhập để đánh giá.");
+            return "redirect:/products/" + comment.getProductId() + "#review";
+        }
+
+        // --- LOGIC BẮT BUỘC CÓ SAO (RATE) ---
+        if (comment.getRate() == null || comment.getRate() < 1 || comment.getRate() > 5) {
+            ra.addFlashAttribute("errorMessage", "Vui lòng chọn số sao để gửi Đánh giá.");
+            return "redirect:/products/" + comment.getProductId() + "#review";
+        }
+
+        // --- LOGIC KIỂM TRA ĐÃ MUA HÀNG ---
+        boolean hasPurchased = hasUserPurchasedProduct(currentUserId, comment.getProductId());
+
+        if (!hasPurchased) {
+            ra.addFlashAttribute("errorMessage", "Bạn chỉ có thể đánh giá sản phẩm sau khi đã mua hàng.");
+            return "redirect:/products/" + comment.getProductId() + "#review";
+        }
+        // ------------------------------------
+
+        // SỬA LỖI: Gán giá trị cho purchase_verified
+        comment.setUserId(currentUserId);
+        comment.setPurchaseVerified(hasPurchased); // Đặt là true nếu đã mua, false nếu logic cho phép
+
         commentsService.createComment(comment);
-        // Chuyển hướng về trang chi tiết sản phẩm sau khi gửi bình luận
-        return "redirect:/products/" + comment.getProductId();
+        ra.addFlashAttribute("successMessage", "Đánh giá của bạn đã được gửi thành công và đang chờ duyệt.");
+        return "redirect:/products/" + comment.getProductId() + "#review";
+    }
+
+    /** 11b. Lưu BÌNH LUẬN (Bắt buộc không có rate, chỉ có messages) - Dành cho khách hàng ĐÃ ĐĂNG NHẬP */
+    @PostMapping("/comments/comment-only/save")
+    public String saveCommentOnly(@ModelAttribute("newComment") CommentsDTO comment, RedirectAttributes ra) {
+        Integer currentUserId = getCurrentAuthenticatedUserId();
+
+        if (currentUserId == null) {
+            ra.addFlashAttribute("errorMessage", "Vui lòng đăng nhập để bình luận.");
+            return "redirect:/products/" + comment.getProductId() + "#comment";
+        }
+
+        // --- LOGIC BẮT BUỘC KHÔNG CÓ SAO (RATE) & CÓ TIN NHẮN ---
+        comment.setRate(null); // Đảm bảo rate là null/0 cho bình luận
+
+        if (comment.getMessages() == null || comment.getMessages().trim().isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "Nội dung bình luận không được để trống.");
+            return "redirect:/products/" + comment.getProductId() + "#comment";
+        }
+        // ------------------------------------
+
+        // SỬA LỖI: Gán giá trị cho purchase_verified
+        comment.setUserId(currentUserId);
+        comment.setPurchaseVerified(false); // Bình luận thường không cần xác minh mua hàng
+
+        commentsService.createComment(comment);
+        ra.addFlashAttribute("successMessage", "Bình luận của bạn đã được gửi thành công và đang chờ duyệt.");
+        return "redirect:/products/" + comment.getProductId() + "#comment";
+    }
+
+    // =====================================
+    // === HÀM GIẢ ĐỊNH (Cần thay thế bằng logic thực tế) ===
+    // =====================================
+
+    /** * Hàm giả định lấy ID người dùng đã đăng nhập.
+     * Trong thực tế: Lấy từ Spring SecurityContextHolder.
+     */
+    private Integer getCurrentAuthenticatedUserId() {
+        // GIẢ LẬP: Trả về ID 1 nếu đăng nhập, trả về null nếu chưa đăng nhập
+        return 1; // Ví dụ: Giả sử người dùng ID 1 đã đăng nhập
+    }
+
+    /** * Hàm giả định kiểm tra người dùng đã mua sản phẩm chưa.
+     * Trong thực tế: Cần truy vấn bảng Đơn hàng (Orders) và Chi tiết đơn hàng (OrderDetails)
+     */
+    private boolean hasUserPurchasedProduct(Integer userId, Integer productId) {
+        // GIẢ LẬP: Người dùng ID 1 đã mua hàng
+        return userId != null && userId.equals(1);
     }
 }

@@ -6,7 +6,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration 
+@Configuration
 public class SecurityConfig {
 	@Bean
 	BCryptPasswordEncoder passwordEncoder() {
@@ -15,10 +15,10 @@ public class SecurityConfig {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
-        .authorizeHttpRequests(auth -> auth
-            .anyRequest().permitAll()   
-        )
-        .csrf(csrf -> csrf.disable()); 
+				.authorizeHttpRequests(auth -> auth
+						.anyRequest().permitAll()
+				)
+				.csrf(csrf -> csrf.disable());
 
 		return http.build();
 	}

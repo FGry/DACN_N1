@@ -27,10 +27,11 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
-    private final String UPLOAD_DIR = "C:/bookhub_uploads/products/";
+    // Đường dẫn lưu trữ vật lý trong thư mục dự án (Chỉ cho môi trường Dev)
+    private final String UPLOAD_DIR = "src/main/resources/static/images/products/";
 
 
-    // Helper: Chuyển đổi Entity sang DTO (ĐÃ CẬP NHẬT)
+    // Helper: Chuyển đổi Entity sang DTO
     private ProductDTO convertToDTO(Product product) {
         if (product == null) return null;
         return ProductDTO.builder()
@@ -44,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
                 .stockQuantity(product.getStockQuantity())
                 .language(product.getLanguage())
                 .discount(product.getDiscount())
-                .description(product.getDescription()) // THÊM DÒNG NÀY
+                .description(product.getDescription())
                 .categoryNames(product.getCategories().stream()
                         .map(Category::getName)
                         .collect(Collectors.toList()))
@@ -57,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
-    // Helper: Chuyển đổi DTO sang Entity (ĐÃ CẬP NHẬT)
+    // Helper: Chuyển đổi DTO sang Entity (Logic lưu ảnh)
     private Product convertToEntity(ProductDTO dto, Product existingProduct) {
         Product product = existingProduct != null ? existingProduct : new Product();
 
@@ -72,9 +73,9 @@ public class ProductServiceImpl implements ProductService {
         product.setStockQuantity(dto.getStockQuantity());
         product.setLanguage(dto.getLanguage());
         product.setDiscount(dto.getDiscount());
-        product.setDescription(dto.getDescription()); // THÊM DÒNG NÀY
+        product.setDescription(dto.getDescription());
 
-        // 2. Cập nhật quan hệ ManyToMany với Category (Không đổi)
+        // 2. Cập nhật Category
         if (dto.getSelectedCategoryIds() != null && !dto.getSelectedCategoryIds().isEmpty()) {
             List<Category> categories = categoryRepository.findAllById(dto.getSelectedCategoryIds());
             product.setCategories(categories);
@@ -82,7 +83,7 @@ public class ProductServiceImpl implements ProductService {
             product.setCategories(new ArrayList<>());
         }
 
-        // 3. Cập nhật quan hệ OneToMany với ImageProduct (Không đổi)
+        // 3. Xử lý ảnh tải lên
         if (dto.getImageFiles() != null && !dto.getImageFiles().isEmpty() && !dto.getImageFiles().get(0).isEmpty()) {
 
             if (product.getImages() != null) {
@@ -114,7 +115,8 @@ public class ProductServiceImpl implements ProductService {
                         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
                     }
 
-                    String webPath = "/uploads/products/" + uniqueFilename;
+                    // ĐƯỜNG DẪN CÔNG KHAI LƯU VÀO DB (Khớp với WebConfig)
+                    String webPath = "/images/products/" + uniqueFilename;
 
                     ImageProduct image = ImageProduct.builder()
                             .image_link(webPath)
@@ -130,7 +132,7 @@ public class ProductServiceImpl implements ProductService {
         return product;
     }
 
-    // --- Implement Service Methods ---
+    // --- IMPLEMENTATION CÁC PHƯƠNG THỨC CHUẨN ---
 
     @Override
     @Transactional(readOnly = true)
@@ -150,7 +152,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void saveProduct(ProductDTO productDTO) {
-        // 1. Kiểm tra tên sản phẩm trùng lặp (không phân biệt hoa thường)
+        // 1. Kiểm tra tên sản phẩm trùng lặp
         Optional<Product> existingProductWithSameTitle = productRepository.findByTitleIgnoreCase(productDTO.getTitle());
 
         if (existingProductWithSameTitle.isPresent()) {
@@ -160,7 +162,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        // 2. Logic lưu sản phẩm (giữ nguyên)
+        // 2. Logic lưu sản phẩm
         Product existingProduct = null;
         if (productDTO.getIdProducts() != null) {
             existingProduct = productRepository.findById(productDTO.getIdProducts()).orElse(null);
@@ -170,9 +172,50 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
     }
 
-
     @Override
     public void deleteProductById(Integer id) {
         productRepository.deleteById(id);
+    }
+
+    // --- KHẮC PHỤC LỖI: TRIỂN KHAI PHƯƠNG THỨC BỊ THIẾU ---
+
+    /** TRIỂN KHAI: Tìm kiếm sản phẩm theo từ khóa */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductDTO> searchProducts(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return findAllProducts();
+        }
+        // Dùng phương thức Repository đã được thêm vào
+        List<Product> products = productRepository.findByTitleContainingIgnoreCase(keyword);
+
+        return products.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /** TRIỂN KHAI: Lọc sản phẩm theo ID Danh mục */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductDTO> getProductsByCategory(Integer categoryId) {
+        // Dùng phương thức Repository đã được thêm vào
+        List<Product> products = productRepository.findByCategoriesId_categories(categoryId);
+
+        return products.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /** TRIỂN KHAI: Chuyển đổi trạng thái (toggle) */
+    @Override
+    public boolean toggleProductStatus(Integer id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm có ID: " + id));
+
+        // Cần có logic cập nhật trạng thái trong Entity Product
+        // Ví dụ: product.setIsPublished(!product.getIsPublished());
+        // productRepository.save(product);
+
+        return true;
     }
 }

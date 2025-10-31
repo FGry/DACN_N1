@@ -1,27 +1,29 @@
 package com.bookhub.address;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddressDTO {
 
-    // Ánh xạ id_address sang idAddress
-    Integer idAddress;
-    // Trường địa chỉ đầy đủ
-    String address;
-    // Số điện thoại
-    String phone;
+    private Integer idAddress;
+    private String fullAddressDetail;
+    private String phone;
 
+    // Đại diện cho khóa ngoại tới User Entity
+    private Integer userId;
     public static AddressDTO fromEntity(Address address) {
+        if (address == null) return null;
         return AddressDTO.builder()
-                .idAddress(address.getId_address())
-                .address(address.getAddress())
+                .idAddress(address.getIdAddress())
+                .fullAddressDetail(address.getFullAddressDetail())
                 .phone(address.getPhone())
+                .userId(address.getUser() != null ? address.getUser().getIdUser() : null)
                 .build();
     }
 }

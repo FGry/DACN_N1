@@ -1,19 +1,21 @@
 package com.bookhub.product;
 
-import com.bookhub.product.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import java.util.Optional; // <-- THÊM IMPORT
+import java.util.List;
+import java.util.Optional;
 
-@Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
-    // THÊM PHƯƠNG THỨC NÀY:
-    /**
-     * Tìm kiếm sản phẩm theo tiêu đề (title), không phân biệt hoa thường.
-     * @param title Tiêu đề sản phẩm
-     * @return Optional chứa Product nếu tìm thấy
-     */
+    // Kiểm tra trùng tên (không phân biệt hoa thường)
     Optional<Product> findByTitleIgnoreCase(String title);
+
+    // Dùng cho tìm kiếm theo từ khóa (Ví dụ: theo tiêu đề)
+    List<Product> findByTitleContainingIgnoreCase(String title);
+
+    // LỌC THEO DANH MỤC (Many-to-Many) - KHẮC PHỤC LỖI CANNOT FIND SYMBOL
+    @Query("SELECT p FROM Product p JOIN p.categories c WHERE c.id_categories = :categoryId")
+    List<Product> findByCategoriesId_categories(@Param("categoryId") Integer categoryId);
 }

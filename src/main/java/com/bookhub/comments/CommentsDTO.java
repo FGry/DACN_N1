@@ -24,4 +24,5 @@ public class CommentsDTO {
     private String reply;
     private LocalDateTime replyDate;
     private String productImageUrl;
+    private Boolean purchaseVerified;
 }

@@ -385,30 +385,30 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html">Trang chủ</a>
+                        <a class="nav-link active" href="http://localhost:8080/">Trang chủ</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="product.html">Sản phẩm</a>
+                        <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="about.html">Giới thiệu</a>
+                        <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="contact.html">Liên hệ</a>
+                        <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="voucher.html">Voucher</a>
+                        <a class="nav-link" th:href="@{/user/voucher}">Voucher</a>
                     </li>
                 </ul>
                 
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-auth btn-sm" onclick="window.location.href='login.html'">
+                    <button class="btn btn-auth btn-sm" onclick="window.location.href='http://localhost:8080/login'">
                         <i class="fas fa-sign-in-alt"></i> Đăng nhập
                     </button>
-                    <button class="btn btn-auth btn-sm" onclick="window.location.href='register.html'">
+                    <button class="btn btn-auth btn-sm" onclick="window.location.href='http://localhost:8080/user/register'">
                         <i class="fas fa-user-plus"></i> Đăng ký
                     </button>
-                    <div class="cart-icon ms-3" onclick="window.location.href='cart.html'">
+                    <div class="cart-icon ms-3" onclick="window.location.href='http://localhost:8080/cart'">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="cart-badge" id="cartCount">0</span>
                     </div>
