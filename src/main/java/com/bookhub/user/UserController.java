@@ -3,6 +3,9 @@ package com.bookhub.user;
 import com.bookhub.address.Address;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,36 +17,33 @@ import java.util.regex.Pattern;
 
 @Controller
 @RequiredArgsConstructor
-// Bỏ @RequestMapping("/admin/users") để cho phép sử dụng các đường dẫn /admin/users và /users
 public class UserController {
 
-    private final UserService userService; // Đảm bảo UserService đã được định nghĩa
-    private static final String USER_SESSION_KEY = "currentUserId";
+    private final UserService userService;
 
     /**
-     * Helper: Thiết lập thông tin người dùng vào Model.
+     * Helper: Lấy User Entity đầy đủ từ DB dựa trên Principal (Email) của Spring Security
      */
-    private void setUserInfoToModel(HttpSession session, Model model) {
-        Integer userId = (Integer) session.getAttribute(USER_SESSION_KEY);
-        if (userId != null) {
-            Optional<User> userOpt = userService.findUserById(userId);
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
-                model.addAttribute("isLoggedIn", true);
-                model.addAttribute("currentUser", user);
-            } else {
-                session.invalidate();
-                model.addAttribute("isLoggedIn", false);
-            }
-        } else {
-            model.addAttribute("isLoggedIn", false);
+    private Optional<User> getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated() &&
+                !authentication.getPrincipal().equals("anonymousUser")) {
+
+            String email = authentication.getName();
+            // Đảm bảo UserService có phương thức findUserByEmail
+            return userService.findUserByEmail(email);
         }
+        return Optional.empty();
     }
 
+
     // ===========================================
-    // === PHẦN ENDPOINT DÀNH CHO ADMIN (GIỮ NGUYÊN) ===
+    // === PHẦN ENDPOINT DÀNH CHO ADMIN ===
     // ===========================================
 
+    // 1. Xem danh sách người dùng
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users")
     public String listUsers(Model model) {
         model.addAttribute("pageTitle", "Quản lý Người dùng");
@@ -51,12 +51,16 @@ public class UserController {
         return "admin/user";
     }
 
+    // 2. Xem chi tiết thông tin người dùng (API)
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users/detail/{id}")
     @ResponseBody
     public UserDTO getUserDetail(@PathVariable Integer id) {
         return userService.getUserById(id);
     }
 
+    // 3. Khóa/Mở khóa tài khoản
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users/toggle-lock/{id}")
     public String toggleLockUser(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
         try {
@@ -70,6 +74,8 @@ public class UserController {
         return "redirect:/admin/users";
     }
 
+    // 4. Cập nhật quyền người dùng
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/users/update-role/{id}")
     public String updateRole(@PathVariable Integer id,
                              @RequestParam("newRole") String newRole,
@@ -88,12 +94,6 @@ public class UserController {
     // === PHẦN ENDPOINT DÀNH CHO USER/AUTH ===
     // ====================================================
 
-    @GetMapping({"/", "/index", "/mainInterface.html"})
-    public String home(HttpSession session, Model model) {
-        setUserInfoToModel(session, model);
-        return "mainInterface";
-    }
-
     /** MAPPING: Hiển thị form Đăng ký (GET /register) */
     @GetMapping("/register")
     public String showRegisterForm() {
@@ -108,78 +108,44 @@ public class UserController {
             @RequestParam("email") String email,
             @RequestParam("phone") String phone,
             @RequestParam("password") String password,
-            RedirectAttributes redirectAttributes,
-            HttpSession session) {
+            RedirectAttributes redirectAttributes) {
 
         if (userService.isEmailExist(email)) {
             redirectAttributes.addFlashAttribute("error", "Email đã tồn tại.");
-            return "redirect:/register"; // Đã sửa: Redirect về GET /register
+            return "redirect:/register";
         }
 
         try {
-            User registeredUser = userService.registerNewUser(
-                    firstName, lastName, email, phone, password
-            );
-
-            session.setAttribute(USER_SESSION_KEY, registeredUser.getIdUser());
-            redirectAttributes.addFlashAttribute("success", "Đăng ký thành công! Vui lòng nhập địa chỉ.");
-
-            return "redirect:/user/address_setup.html"; // Giữ lại /user/ cho các trang sau đăng ký
+            userService.registerNewUser(firstName, lastName, email, phone, password);
+            redirectAttributes.addFlashAttribute("success", "Đăng ký thành công! Vui lòng đăng nhập.");
+            return "redirect:/login";
 
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi đăng ký: " + e.getMessage());
-            return "redirect:/register"; // Đã sửa: Redirect về GET /register
+            return "redirect:/register";
         }
     }
 
-    /** MAPPING: Hiển thị form Đăng nhập */
+    /** MAPPING: Hiển thị form Đăng nhập (GET /login) */
     @GetMapping("/login")
-    public String showLoginForm(HttpSession session) {
-        if (session.getAttribute(USER_SESSION_KEY) != null) {
-            return "redirect:/";
-        }
+    public String showLoginForm() {
         return "login";
-    }
-
-    /** MAPPING: Xử lý Đăng nhập */
-    @PostMapping("/login")
-    public String loginUser(
-            @RequestParam("email") String email,
-            @RequestParam("password") String password,
-            RedirectAttributes redirectAttributes,
-            HttpSession session) {
-
-        Optional<User> userOpt = userService.authenticate(email, password);
-
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            session.setAttribute(USER_SESSION_KEY, user.getIdUser());
-            redirectAttributes.addFlashAttribute("success", "Đăng nhập thành công!");
-            return "redirect:/";
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Email hoặc mật khẩu không chính xác.");
-            return "redirect:/login";
-        }
     }
 
     /** MAPPING: Xử lý Đăng xuất */
     @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
+    public String logout() { // Xóa tham số HttpSession session
+        // Để Spring Security xử lý quá trình đăng xuất. Mặc định nó sẽ chuyển hướng sau khi logout.
         return "redirect:/";
     }
 
     /** MAPPING: Hiển thị trang Hồ sơ cá nhân */
     @GetMapping("/user/profile")
-    public String showProfile(HttpSession session, Model model) {
-        Integer userId = (Integer) session.getAttribute(USER_SESSION_KEY);
-        if (userId == null) {
-            return "redirect:/login";
-        }
+    public String showProfile(Model model, RedirectAttributes redirectAttributes) {
+        Optional<User> userOpt = getAuthenticatedUser();
 
-        Optional<User> userOpt = userService.findUserById(userId);
         if (userOpt.isEmpty()) {
-            session.invalidate();
+            redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập để xem hồ sơ.");
             return "redirect:/login";
         }
 
@@ -195,17 +161,23 @@ public class UserController {
             @RequestParam("email") String email,
             @RequestParam("phone") String phone,
             @RequestParam("gender") String gender,
-            RedirectAttributes redirectAttributes,
-            HttpSession session) {
+            RedirectAttributes redirectAttributes) {
 
-        Integer currentUserId = (Integer) session.getAttribute(USER_SESSION_KEY);
-        if (currentUserId == null || !currentUserId.equals(idUser)) {
-            redirectAttributes.addFlashAttribute("error", "Bạn không có quyền chỉnh sửa hồ sơ này.");
+        Optional<User> currentUserOpt = getAuthenticatedUser();
+        if (currentUserOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Phiên đăng nhập đã hết hạn.");
             return "redirect:/login";
         }
 
         try {
-            userService.updateUser(idUser, username, email, phone, gender);
+            Integer currentUserId = currentUserOpt.get().getIdUser();
+
+            // Kiểm tra bảo mật: đảm bảo người dùng chỉ cập nhật hồ sơ của chính họ
+            if (!currentUserId.equals(idUser)) {
+                throw new RuntimeException("Truy cập trái phép.");
+            }
+
+            userService.updateUser(currentUserId, username, email, phone, gender);
             redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin cá nhân thành công!");
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi cập nhật: " + e.getMessage());
@@ -216,21 +188,22 @@ public class UserController {
 
     /** MAPPING: Hiển thị form Thiết lập Địa chỉ */
     @GetMapping("/user/address_setup.html")
-    public String showAddressSetup(HttpSession session, Model model) {
-        Integer userId = (Integer) session.getAttribute(USER_SESSION_KEY);
-        if (userId == null) {
+    public String showAddressSetup(Model model, RedirectAttributes redirectAttributes) {
+        Optional<User> userOpt = getAuthenticatedUser();
+        if (userOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Vui lòng đăng nhập để thiết lập địa chỉ.");
             return "redirect:/login";
         }
-        setUserInfoToModel(session, model);
 
-        User currentUser = (User) model.getAttribute("currentUser");
+        User currentUser = userOpt.get();
 
         model.addAttribute("currentStreet", "");
         model.addAttribute("currentDistrict", "");
         model.addAttribute("currentCity", "");
         model.addAttribute("currentNotes", "");
 
-        if (currentUser != null && currentUser.getFirstAddress() != null) {
+        // Logic phân tích địa chỉ
+        if (currentUser.getFirstAddress() != null) {
             String fullAddress = currentUser.getFirstAddress();
             Pattern pattern = Pattern.compile("^(.*?), (.*?), (.*?) \\(Ghi chú: (.*)\\)$");
             Matcher matcher = pattern.matcher(fullAddress);
@@ -250,7 +223,7 @@ public class UserController {
             }
         }
 
-        return "user/address_setup"; // Trả về view: /templates/user/address_setup.html
+        return "user/address_setup";
     }
 
     /** MAPPING: Xử lý Lưu Địa chỉ */
@@ -260,13 +233,14 @@ public class UserController {
             @RequestParam("district") String district,
             @RequestParam("street") String street,
             @RequestParam(value = "notes", required = false) String notes,
-            RedirectAttributes redirectAttributes,
-            HttpSession session) {
+            RedirectAttributes redirectAttributes) {
 
-        Integer userId = (Integer) session.getAttribute(USER_SESSION_KEY);
-        if (userId == null) {
+        Optional<User> userOpt = getAuthenticatedUser();
+        if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
+
+        Integer userId = userOpt.get().getIdUser();
 
         try {
             userService.saveUserAddress(userId, city, district, street, notes);
@@ -278,7 +252,7 @@ public class UserController {
         }
     }
 
-    /** MAPPING: Trang Cài đặt/Settings (Giữ nguyên) */
+    /** MAPPING: Trang Cài đặt/Settings */
     @GetMapping("/users/setting")
     public String profile() {
         return "user/setting";

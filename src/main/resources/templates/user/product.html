@@ -311,10 +311,10 @@
             <div class="d-flex align-items-center" id="authButtons">
 
                 <div id="loggedOutButtons" th:if="${!isLoggedIn}">
-                    <a th:href="@{/login}" class="btn btn-auth btn-sm">
+                    <a th:href="@{/login}" href="login.html" class="btn btn-auth btn-sm">
                         <i class="fas fa-sign-in-alt"></i> Đăng nhập
                     </a>
-                    <a th:href="@{/register}" class="btn btn-auth btn-sm">
+                    <a th:href="@{/register}" href="register.html" class="btn btn-auth btn-sm">
                         <i class="fas fa-user-plus"></i> Đăng ký
                     </a>
                 </div>
@@ -514,8 +514,8 @@
         const defaultIcon = '📚';
 
         productsToShow.forEach(product => {
-            // Thay đổi id thành idProducts
-            const detailUrl = `/product/${product.idProducts}`;
+
+            const detailUrl = `/products/${product.idProducts}`;
             const firstImageLink = product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null;
 
             const shortDescription = product.description

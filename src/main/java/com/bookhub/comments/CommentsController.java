@@ -183,9 +183,10 @@ public class CommentsController {
         }
         // ------------------------------------
 
-        // SỬA LỖI: Gán giá trị cho purchase_verified
+        // Gán giá trị bắt buộc trước khi lưu
         comment.setUserId(currentUserId);
-        comment.setPurchaseVerified(hasPurchased); // Đặt là true nếu đã mua, false nếu logic cho phép
+        // FIX: Đảm bảo gán giá trị cho purchase_verified để tránh lỗi NOT NULL
+        comment.setPurchaseVerified(hasPurchased);
 
         commentsService.createComment(comment);
         ra.addFlashAttribute("successMessage", "Đánh giá của bạn đã được gửi thành công và đang chờ duyệt.");
@@ -211,9 +212,10 @@ public class CommentsController {
         }
         // ------------------------------------
 
-        // SỬA LỖI: Gán giá trị cho purchase_verified
+        // Gán giá trị bắt buộc trước khi lưu
         comment.setUserId(currentUserId);
-        comment.setPurchaseVerified(false); // Bình luận thường không cần xác minh mua hàng
+        // FIX: Đảm bảo gán giá trị cho purchase_verified để tránh lỗi NOT NULL
+        comment.setPurchaseVerified(false);
 
         commentsService.createComment(comment);
         ra.addFlashAttribute("successMessage", "Bình luận của bạn đã được gửi thành công và đang chờ duyệt.");

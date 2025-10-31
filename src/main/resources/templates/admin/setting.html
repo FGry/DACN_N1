@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${pageTitle} + ' - Admin Panel'"></title>
+    <title th:text="${pageTitle} + ' - Admin Panel'">Cài đặt - Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -204,15 +204,6 @@
             color: #2c3e50;
         }
 
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #fff;
-            box-shadow: 0 0 0 2px #667eea;
-            margin-bottom: 20px;
-        }
 
         .notification-setting {
             display: flex;
@@ -235,6 +226,20 @@
             margin: 0;
             font-size: 0.9rem;
             color: #6c757d;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+            z-index: 100;
         }
         /* === KẾT THÚC CSS MỚI === */
     </style>
@@ -260,7 +265,7 @@
             <i class="fas fa-box"></i>
             <span>Quản lý sản phẩm</span>
         </a>
-        <a th:href="@{/admin/cart}" class="menu-item" onclick="showSection('cart')">
+        <a th:href="@{/admin/carts}" class="menu-item" onclick="showSection('cart')">
             <i class="fas fa-shopping-cart"></i>
             <span>Quản lý đơn hàng</span>
         </a>
@@ -284,7 +289,7 @@
             <i class="fas fa-cog"></i>
             <span>Cài đặt</span>
         </a>
-        <a th:href="@{/logout}" class="menu-item">
+        <a href="#" class="menu-item" onclick="confirmLogout('/logout')">
             <i class="fas fa-sign-out-alt"></i>
             <span>Đăng xuất</span>
         </a>
@@ -294,10 +299,21 @@
 <div class="main-content" id="mainContent">
     <header class="header">
         <div class="header-left">
-            <h1 class="header-title" th:text="${pageTitle}">Cài đặt hệ thống</h1> </div>
+            <h1 class="header-title" th:text="${pageTitle}">Cài đặt hệ thống</h1>
+        </div>
     </header>
 
     <div class="dashboard-content fade-in" id="settingsContent">
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <div class="settings-card">
             <ul class="nav nav-pills mb-4" id="settingsTab" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -320,15 +336,12 @@
             <div class="tab-content" id="settingsTabContent">
                 <div class="tab-pane fade show active" id="profile-settings" role="tabpanel" aria-labelledby="profile-tab">
                     <h5 class="mb-3">Thông tin cá nhân</h5>
-                    <form>
-                        <div class="text-center mb-4">
-                            <img src="placeholder-avatar.jpg" class="profile-avatar" alt="Admin Avatar">
-                            <input type="file" class="form-control" id="profileImage" accept="image/*">
-                        </div>
+                    <form th:action="@{/admin/setting/profile/update}" method="post">
+
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="fullName" class="form-label">Họ và Tên</label>
-                                <input type="text" class="form-control" id="fullName" th:value="${admin.fullName}" required>
+                                <input type="text" class="form-control" id="fullName" name="fullName" th:value="${admin.fullName}" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">Email</label>
@@ -336,7 +349,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="phoneNumber" class="form-label">Số điện thoại</label>
-                                <input type="tel" class="form-control" id="phoneNumber" th:value="${admin.phone}">
+                                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" th:value="${admin.phone}">
                             </div>
                             <div class="col-md-6">
                                 <label for="role" class="form-label">Vai trò</label>
@@ -388,22 +401,28 @@
 
                 <div class="tab-pane fade" id="security-settings" role="tabpanel" aria-labelledby="security-tab">
                     <h5 class="mb-3">Thay đổi Mật khẩu</h5>
-                    <form>
-                        <div class="mb-3">
+                    <form th:action="@{/admin/setting/security/change-password}" method="post">
+
+                        <div class="mb-3 password-container">
                             <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
-                            <input type="password" class="form-control" id="currentPassword" required>
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            <i class="fas fa-eye toggle-password" data-target="currentPassword"></i>
                         </div>
-                        <div class="mb-3">
+
+                        <div class="mb-3 password-container">
                             <label for="newPassword" class="form-label">Mật khẩu mới</label>
-                            <input type="password" class="form-control" id="newPassword" required>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            <i class="fas fa-eye toggle-password" data-target="newPassword"></i>
                         </div>
-                        <div class="mb-4">
+
+                        <div class="mb-4 password-container">
                             <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
-                            <input type="password" class="form-control" id="confirmPassword" required>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <i class="fas fa-eye toggle-password" data-target="confirmPassword"></i>
                         </div>
+
                         <button type="submit" class="btn btn-warning"><i class="fas fa-key me-2"></i> Thay đổi mật khẩu</button>
                     </form>
-
                     <h5 class="mt-5 mb-3">Xác thực Hai yếu tố (2FA)</h5>
                     <p class="text-muted">Thêm một lớp bảo mật bổ sung cho tài khoản của bạn.</p>
                     <button class="btn btn-outline-primary">Bật 2FA</button>
@@ -418,10 +437,18 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script th:inline="javascript">
+    function confirmLogout(logoutUrl) {
+        // Sử dụng hàm confirm() gốc của trình duyệt
+        if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống quản trị không?")) {
+            // Nếu người dùng nhấn OK, chuyển hướng đến URL đăng xuất
+            window.location.href = logoutUrl;
+        }
+        // Nếu người dùng nhấn Cancel, không làm gì cả
+    }
     /*<![CDATA[*/
 
-    // --- Logic Sidebar (Lấy từ review.html) ---
-    function toggleSidebar() { //
+    // --- Logic Sidebar (Giữ nguyên) ---
+    function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
         const toggleIcon = document.getElementById('toggleIcon');
@@ -438,8 +465,20 @@
         }
     }
 
-    // Các logic khác như AJAX, xử lý form sẽ cần được thêm vào Controller tương ứng
-    // Ví dụ: Xử lý submit form profile, lưu cài đặt thông báo, đổi mật khẩu.
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+        icon.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const targetInput = document.getElementById(targetId);
+
+            // Đổi loại input: text <-> password
+            const type = targetInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            targetInput.setAttribute('type', type);
+
+            // Đổi icon: mắt mở <-> mắt đóng
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    });
 
     /*]]>*/
 </script>

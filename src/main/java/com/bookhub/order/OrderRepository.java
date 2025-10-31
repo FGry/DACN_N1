@@ -3,29 +3,55 @@ package com.bookhub.order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
-    // ĐÃ SỬA LỖI: Thay thế phương thức tự động bằng @Query để tránh lỗi phân tích tên thuộc tính có gạch dưới.
-    // Tương đương với: WHERE UPPER(status_order) = UPPER(:statusOrder)
+    @Query("SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.user u " +
+            "LEFT JOIN FETCH o.orderDetails od")
+    List<Order> findAllWithUserAndDetails();
+
+    @Query("SELECT SUM(o.total) FROM Order o WHERE o.status_order = 'DELIVERED' " +
+            "AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year)")
+    Optional<Long> sumTotalDeliveredOrders(@Param("year") Integer year);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.status_order = 'DELIVERED' AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year)")
+    Long countDeliveredOrders(@Param("year") Integer year);
+
+    // 🔄 Cập nhật trong OrderRepository.java
+    @Query("SELECT new com.bookhub.order.ProductSaleStats(" +
+            "od.product.title, SUM(od.quantity), SUM(od.price_date * od.quantity)) " + // 🌟 SỬA ĐỔI TẠI ĐÂY
+            "FROM OrderDetail od JOIN od.order o " +
+            "WHERE o.status_order = 'DELIVERED' " +
+            "AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year) " +
+            "GROUP BY od.product.title " +
+            "ORDER BY SUM(od.quantity) DESC")
+    List<ProductSaleStats> findTopSellingProducts(@Param("year") Integer year, Pageable pageable);
+
+    // 🌟 TRUY VẤN MỚI: Lấy Doanh thu và Tháng cho biểu đồ
+    @Query("SELECT FUNCTION('MONTH', o.date), SUM(o.total) " +
+            "FROM Order o " +
+            "WHERE o.status_order = 'DELIVERED' " +
+            "AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year) " +
+            "GROUP BY FUNCTION('MONTH', o.date) " +
+            "ORDER BY FUNCTION('MONTH', o.date) ASC")
+    List<Object[]> findMonthlyRevenueAndProfit(@Param("year") Integer year);
+
+
     @Query("SELECT o FROM Order o WHERE UPPER(o.status_order) = UPPER(?1)")
     List<Order> findByStatus_orderIgnoreCase(String statusOrder);
 
-    // Tìm đơn hàng bằng ID và tải luôn thông tin chi tiết (JOIN FETCH)
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.orderDetails od WHERE o.id_order = ?1")
     Optional<Order> findByIdWithDetails(Integer orderId);
 
-    /**
-     * Tìm kiếm đơn hàng (theo ID, username hoặc SĐT)
-     * Sử dụng o.user.username (khớp với Entity User)
-     */
-    @Query("SELECT o FROM Order o WHERE " +
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.user u WHERE " +
             "CAST(o.id_order AS string) LIKE CONCAT('%', ?1, '%') OR " +
-            "o.user.username LIKE CONCAT('%', ?1, '%') OR " +
+            "u.username LIKE CONCAT('%', ?1, '%') OR " +
             "o.phone LIKE CONCAT('%', ?1, '%')")
     List<Order> searchOrders(String searchTerm);
 }

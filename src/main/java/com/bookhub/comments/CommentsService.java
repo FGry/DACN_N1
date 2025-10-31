@@ -102,9 +102,11 @@ public class CommentsService {
 
 
         if (dto.getRate() == null || dto.getRate() == 0) {
+            // Bình luận (Comment)
             status = "PUBLISHED";
             type = "COMMENT";
         } else {
+            // Đánh giá (Review)
             status = "PENDING";
             type = "REVIEW";
         }
@@ -118,6 +120,8 @@ public class CommentsService {
                 .status(status)
                 .type(type)
                 .replyDate(null)
+                // FIX: Lấy giá trị purchaseVerified đã được gán từ Controller
+                .purchaseVerified(dto.getPurchaseVerified())
                 .build();
 
         return convertToDTO(commentsRepository.save(comment));
@@ -166,6 +170,7 @@ public class CommentsService {
                 .reply(reply)
                 .replyDate(comment.getReplyDate())
                 .productImageUrl(productImageUrl)
+                .purchaseVerified(comment.getPurchaseVerified()) // Đảm bảo DTO cũng có trường này
                 .build();
     }
 }

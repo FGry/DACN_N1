@@ -1,6 +1,7 @@
 package com.bookhub.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
@@ -11,6 +12,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByUsername(String username);
 
-    // Thêm phương thức tìm kiếm theo ID
+    // Phương thức tìm kiếm theo ID (đã có)
     Optional<User> findByIdUser(Integer idUser);
+
+    // 🏆 QUAN TRỌNG: Thêm phương thức FETCH JOIN để tải danh sách địa chỉ
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.addresses a WHERE u.idUser = ?1")
+    Optional<User> findByIdWithAddresses(Integer idUser);
+
+
 }

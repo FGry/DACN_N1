@@ -3,17 +3,18 @@ package com.bookhub.product;
 import com.bookhub.category.CategoryRepository;
 import com.bookhub.comments.CommentsDTO;
 import com.bookhub.comments.CommentsService;
-import com.bookhub.user.User; // Cần import User Entity
-import com.bookhub.user.UserService; // Cần import UserService
-import jakarta.servlet.http.HttpSession; // Cần import HttpSession
+import com.bookhub.user.User;
+import com.bookhub.user.UserService; // Vẫn cần để tìm User cho Comments
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.security.Principal; // Dùng để lấy thông tin đăng nhập từ Spring Security
 import java.util.List;
 import java.util.Optional;
 
@@ -24,46 +25,24 @@ public class ProductController {
 	private final ProductService productService;
 	private final CategoryRepository categoryRepository;
 	private final CommentsService commentsService;
-	private final UserService userService; // Đã thêm: UserService để lấy thông tin người dùng
+	private final UserService userService; // Giữ lại để lấy User Entity cho Comments
 
-	private static final String USER_SESSION_KEY = "currentUserId";
-
-	/**
-	 * Helper: Thiết lập thông tin người dùng vào Model (Đã sao chép từ Auth/User Controller).
-	 */
-	private void setUserInfoToModel(HttpSession session, Model model) {
-		Integer userId = (Integer) session.getAttribute(USER_SESSION_KEY);
-		if (userId != null) {
-			Optional<User> userOpt = userService.findUserById(userId);
-			if (userOpt.isPresent()) {
-				User user = userOpt.get();
-				model.addAttribute("isLoggedIn", true);
-				model.addAttribute("currentUser", user);
-			} else {
-				session.invalidate();
-				model.addAttribute("isLoggedIn", false);
-			}
-		} else {
-			// KHẮC PHỤC LỖI: Đảm bảo biến này luôn được đặt là false nếu chưa đăng nhập
-			model.addAttribute("isLoggedIn", false);
-		}
-	}
-
+	// ĐÃ XÓA: Logic session thủ công (USER_SESSION_KEY và setUserInfoToModel)
 
 	// =====================================
 	// === 1. ENDPOINTS PUBLIC / VIEW & API ===
 	// =====================================
 
-	/** * [PUBLIC] View cho trang danh sách sản phẩm (GET /products) */
+	/** * [PUBLIC] View cho trang danh sách sản phẩm (GET /products)
+	 * GlobalAdvice sẽ tự động thêm isLoggedIn và currentUser.
+	 */
 	@GetMapping("/products")
 	public String listPublicProducts(
-			HttpSession session, // Đã thêm: HttpSession
 			Model model,
 			@RequestParam(name = "keyword", required = false) String keyword,
 			@RequestParam(name = "categoryId", required = false) Integer categoryId
 	) {
-		// KHẮC PHỤC LỖI: Gọi helper để truyền isLoggedIn và currentUser vào Model
-		setUserInfoToModel(session, model);
+		// *** KHÔNG CẦN LOGIC XÁC THỰC Ở ĐÂY NỮA ***
 
 		List<ProductDTO> products;
 		String title;
@@ -86,12 +65,13 @@ public class ProductController {
 		return "user/product";
 	}
 
-	/** * [PUBLIC] Hiển thị chi tiết sản phẩm (GET /product_detail/{id}) */
-	@GetMapping("/product/{id}")
-	public String viewProductDetail(@PathVariable("id") Integer id, HttpSession session, Model model) { // Đã thêm HttpSession
+	/** * [PUBLIC] Hiển thị chi tiết sản phẩm (GET /products/{id})
+	 */
+	@GetMapping("/products/{id}")
+	public String viewProductDetail(@PathVariable("id") Integer id, Principal principal, Model model) {
 
-		// KHẮC PHỤC LỖI: Gọi helper để truyền isLoggedIn và currentUser vào Model
-		setUserInfoToModel(session, model);
+		// GlobalAdvice đã thêm isLoggedIn và currentUser.
+		// Principal được dùng để lấy User ID cho form Comment.
 
 		try {
 			ProductDTO product = productService.findProductById(id);
@@ -102,9 +82,13 @@ public class ProductController {
 
 			CommentsDTO newComment = new CommentsDTO();
 			newComment.setProductId(id);
-			// Gán userId từ session nếu có, hoặc để null
-			Integer userId = (Integer) session.getAttribute(USER_SESSION_KEY);
-			newComment.setUserId(userId);
+
+			// Lấy userId từ Principal cho form comment
+			if (principal != null) {
+				// Lấy email/username từ Principal và tìm User Entity
+				Optional<User> userOpt = userService.findUserByEmail(principal.getName());
+				userOpt.ifPresent(user -> newComment.setUserId(user.getIdUser()));
+			}
 			model.addAttribute("newComment", newComment);
 
 			return "user/product_detail";
@@ -217,7 +201,6 @@ public class ProductController {
 	@GetMapping("/admin/products/toggle-status/{id}")
 	public String toggleProductStatus(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
 		try {
-			// Phương thức này tồn tại trong ProductService
 			productService.toggleProductStatus(id);
 			redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái sản phẩm ID " + id + " thành công.");
 		} catch (Exception e) {
