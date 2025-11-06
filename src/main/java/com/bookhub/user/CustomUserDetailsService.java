@@ -20,17 +20,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    /**
-     * Spring sẽ tự động tiêm (inject) UserRepository vào constructor này
-     */
     public CustomUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-
-    /**
-     * Phương thức cốt lõi được gọi bởi Spring Security để tải thông tin người dùng.
-     * Giá trị 'email' nhận được từ form đăng nhập (nhờ cấu hình usernameParameter("email")).
-     */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
@@ -45,21 +37,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 // Sử dụng Email làm Principal (tên đăng nhập/hiển thị)
                 user.getEmail(),
-                // Mật khẩu đã được mã hóa BCrypt
                 user.getPassword(),
                 authorities
         );
     }
 
-    /**
-     * Chuyển đổi String Role (VD: "ADMIN") thành Collection<GrantedAuthority> (VD: [ROLE_ADMIN])
-     */
     private Collection<? extends GrantedAuthority> mapRoleStringToAuthorities(String roleString) {
         if (roleString == null || roleString.trim().isEmpty()) {
             return Collections.emptyList();
         }
-
-        // Rất quan trọng: Thêm tiền tố "ROLE_" để khớp với hasRole("ADMIN")
         return List.of(new SimpleGrantedAuthority("ROLE_" + roleString.toUpperCase()));
     }
 }

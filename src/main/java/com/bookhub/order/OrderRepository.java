@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,17 +22,17 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.status_order = 'DELIVERED' AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year)")
     Long countDeliveredOrders(@Param("year") Integer year);
 
-    @Query("SELECT new com.bookhub.order.ProductSaleStats(" +
-            "od.product.title, SUM(od.quantity), SUM(od.price_date * od.quantity)) " +
+    // ĐÃ SỬA: Loại bỏ JPA Projection và trả về Object[] để OrderService tự mapping.
+    @Query("SELECT od.product.title, SUM(od.quantity), SUM(od.price_date * od.quantity) " +
             "FROM OrderDetail od JOIN od.order o " +
             "WHERE o.status_order = 'DELIVERED' " +
             "AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year) " +
             "AND od.product IS NOT NULL " +
             "GROUP BY od.product.title " +
             "ORDER BY SUM(od.quantity) DESC")
-    List<ProductSaleStats> findAllSellingProductsByYear(@Param("year") Integer year);
+    List<Object[]> findAllSellingProductsByYear(@Param("year") Integer year); // <-- Kiểu trả về là List<Object[]>
 
-    
+
     @Query("SELECT FUNCTION('MONTH', o.date), SUM(o.total) " +
             "FROM Order o " +
             "WHERE o.status_order = 'DELIVERED' " +
