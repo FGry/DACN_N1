@@ -1,5 +1,6 @@
 package com.bookhub.product;
 
+import com.bookhub.category.CategoryRepository; // Thêm import này
 import com.bookhub.comments.CommentsDTO;
 import com.bookhub.comments.CommentsService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ public class PublicProductController {
 
     private final ProductService productService;
     private final CommentsService commentsService;
+    private final CategoryRepository categoryRepository; // Thêm CategoryRepository
 
     // HIỂN THỊ DANH SÁCH SẢN PHẨM (Xử lý Tìm kiếm và Lọc)
     @GetMapping("/products")
@@ -45,6 +47,9 @@ public class PublicProductController {
 
         model.addAttribute("products", products);
         model.addAttribute("pageTitle", title);
+
+        // PHẦN BỔ SUNG: Truyền danh sách tất cả danh mục
+        model.addAttribute("allCategories", categoryRepository.findAll());
 
         return "user/product";
     }

@@ -266,6 +266,24 @@
             color: #2c3e50;
             font-weight: bold;
         }
+
+        /* BỔ SUNG: CSS cho các thẻ danh mục để chúng có chiều rộng cố định và khoảng cách */
+        .category-item {
+            /* Đặt chiều rộng tối đa cho thẻ */
+            width: 270px;
+            /* Thêm khoảng cách giữa các thẻ */
+            margin: 0 15px 30px 15px;
+            /* Đảm bảo nó không bị dãn */
+            flex-shrink: 0;
+        }
+
+        /* BỔ SUNG: CSS để căn giữa nút nếu nó là khối (như div) */
+        .center-block {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: fit-content; /* Đảm bảo khối chỉ rộng bằng nội dung */
+        }
     </style>
 </head>
 <body>
@@ -345,40 +363,21 @@
 
 <div class="container category-section text-center">
     <h2 class="mb-5">Danh mục sách</h2>
-    <div class="row justify-content-center">
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory(1)">
-                <div class="category-icon"><i class="fas fa-book"></i></div>
-                <h5>Sách giáo khoa</h5>
-                <p class="text-muted">Toán, Lý, Hóa, Sinh, Văn...</p>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory(2)">
+
+    <div class="d-flex flex-wrap justify-content-center">
+        <div th:each="category : ${allCategories}" class="category-item">
+            <div class="category-card" th:onclick="|filterByCategory(${category.id_categories})|">
                 <div class="category-icon"><i class="fas fa-bookmark"></i></div>
-                <h5>Sách tham khảo</h5>
-                <p class="text-muted">Bài tập nâng cao, luyện thi</p>
+                <h5 th:text="${category.name}">Tên Danh Mục</h5>
+                <p class="text-muted">Xem sách thuộc danh mục này</p>
             </div>
         </div>
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory(3)">
-                <div class="category-icon"><i class="fas fa-globe"></i></div>
-                <h5>Tiếng Anh</h5>
-                <p class="text-muted">Grammar, Vocabulary, IELTS</p>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory(4)">
-                <div class="category-icon"><i class="fas fa-lightbulb"></i></div>
-                <h5>Kỹ năng sống</h5>
-                <p class="text-muted">Tư duy, học tập hiệu quả</p>
-            </div>
-        </div>
-        <div class="col-12 mt-4">
-            <a th:href="@{/products#products}" class="btn btn-primary-custom">
-                <i class="fas fa-undo"></i> Xem tất cả
-            </a>
-        </div>
+    </div>
+
+    <div class="mt-4 center-block">
+        <a th:href="@{/products#products}" class="btn btn-primary-custom">
+            <i class="fas fa-undo"></i> Xem tất cả
+        </a>
     </div>
 </div>
 
@@ -465,7 +464,7 @@
         }
     });
 
-    // CẬP NHẬT HÀM FILTER THEO CATEGORY ĐỂ GỌI SERVER VÀ CUỘN
+    // CẬP NHẬT HÀM FILTER THEO CATEGORY ĐỂ GỌI SERVER VÀ CUỘN (Hàm này giữ nguyên và đã đúng)
     function filterByCategory(categoryId) {
         // Chuyển hướng về URL mới để Spring Boot Controller xử lý lọc
         window.location.href = `/products?categoryId=${categoryId}#products`;
