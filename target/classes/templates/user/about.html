@@ -1,0 +1,909 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giới thiệu - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .btn-auth {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-auth:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .cart-icon {
+            position: relative;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="books" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><text x="10" y="15" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.1)">📚</text></pattern></defs><rect width="100" height="100" fill="url(%23books)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 30px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .story-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .story-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            padding-left: 40px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 5px;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .timeline-year {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .timeline-content {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+
+        .value-card {
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .value-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .value-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .value-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .value-description {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+
+        .team-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .team-avatar {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            border: 5px solid #f8f9fa;
+        }
+
+        .team-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .team-position {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .team-description {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .team-social {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .team-social a {
+            width: 40px;
+            height: 40px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .team-social a:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+            margin: 60px 0;
+            border-radius: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .mission-vision {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 20px;
+            padding: 50px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .mission-vision h3 {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .mission-vision p {
+            color: #495057;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0;
+        }
+
+        .contact-cta {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 40px 0;
+        }
+
+        .btn-cta {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px 0 20px 0;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 60px 0;
+            }
+            
+            .section-card {
+                padding: 30px 20px;
+            }
+            
+            .story-timeline {
+                padding-left: 20px;
+            }
+            
+            .timeline-item {
+                padding-left: 30px;
+            }
+            
+            .mission-vision {
+                padding: 30px 20px;
+            }
+            
+            .contact-cta {
+                padding: 30px 20px;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/products}">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/user/voucher}">Voucher</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center" id="authButtons">
+
+                    <div id="loggedOutButtons" th:if="${!isLoggedIn}">
+                        <a th:href="@{/login}" href="login.html" class="btn btn-auth btn-sm">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                        </a>
+                        <a th:href="@{/register}" href="register.html" class="btn btn-auth btn-sm">
+                            <i class="fas fa-user-plus"></i> Đăng ký
+                        </a>
+                    </div>
+
+                    <div id="loggedInButtons" th:if="${isLoggedIn}">
+                        <div class="dropdown">
+                            <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="userNameDisplay" th:text="${currentUser.username}">Tài khoản</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                <li><a class="dropdown-item" th:href="@{/user/profile}">
+                                    <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                                </a></li>
+
+                                <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
+                                    <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
+                                </a></li>
+
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" th:href="@{/logout}">
+                                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content text-center">
+                <h1 class="display-3 fw-bold mb-4">
+                    <i class="fas fa-book-heart"></i> Về BookStore
+                </h1>
+                <p class="lead fs-4 mb-5">
+                    Đồng hành cùng hành trình học tập của bạn từ năm 2020
+                </p>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <p class="fs-5 opacity-90">
+                            Chúng tôi tự hào là cửa hàng sách học tập hàng đầu, cung cấp những cuốn sách chất lượng cao 
+                            với giá cả phải chăng, giúp học sinh cấp 3 đạt được thành công trong học tập.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Our Story -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-history"></i> Câu chuyện của chúng tôi
+            </h2>
+            <div class="row">
+                <div class="col-lg-6">
+                    <p class="lead text-muted mb-4">
+                        BookStore ra đời từ niềm đam mê giáo dục và mong muốn mang đến những cuốn sách chất lượng 
+                        cho học sinh Việt Nam.
+                    </p>
+                    <p class="text-muted mb-4">
+                        Bắt đầu từ một cửa hàng nhỏ, chúng tôi đã không ngừng phát triển và mở rộng để trở thành 
+                        một trong những nhà cung cấp sách học tập uy tín nhất. Với đội ngũ nhân viên tận tâm và 
+                        kinh nghiệm nhiều năm trong lĩnh vực giáo dục, chúng tôi hiểu rõ nhu cầu của học sinh 
+                        và phụ huynh.
+                    </p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="story-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-year">2020</div>
+                            <div class="timeline-content">
+                                Thành lập BookStore với cửa hàng đầu tiên tại TP.HCM, chuyên cung cấp sách giáo khoa và tham khảo.
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2021</div>
+                            <div class="timeline-content">
+                                Mở rộng sang lĩnh vực sách tiếng Anh và kỹ năng sống, phục vụ hơn 10,000 học sinh.
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2022</div>
+                            <div class="timeline-content">
+                                Ra mắt website bán hàng online, mở rộng phạm vi phục vụ toàn quốc.
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2023</div>
+                            <div class="timeline-content">
+                                Hợp tác với các nhà xuất bản lớn, cung cấp hơn 5,000 đầu sách khác nhau.
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2024</div>
+                            <div class="timeline-content">
+                                Phát triển ứng dụng di động và hệ thống giao hàng nhanh trong ngày.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mission & Vision -->
+        <div class="mission-vision">
+            <div class="row">
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <h3><i class="fas fa-bullseye"></i> Sứ mệnh</h3>
+                    <p>
+                        Cung cấp những cuốn sách chất lượng cao với giá cả hợp lý, hỗ trợ học sinh trong hành trình 
+                        học tập và phát triển bản thân. Chúng tôi cam kết mang đến dịch vụ tốt nhất và trải nghiệm 
+                        mua sắm thuận tiện cho khách hàng.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h3><i class="fas fa-eye"></i> Tầm nhìn</h3>
+                    <p>
+                        Trở thành cửa hàng sách học tập số 1 Việt Nam, góp phần nâng cao chất lượng giáo dục và 
+                        tạo ra một thế hệ học sinh có kiến thức vững vàng, tư duy sáng tạo và kỹ năng toàn diện 
+                        để thành công trong tương lai.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core Values -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-gem"></i> Giá trị cốt lõi
+            </h2>
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <h4 class="value-title">Chất lượng</h4>
+                        <p class="value-description">
+                            Chúng tôi chỉ cung cấp những cuốn sách chất lượng cao từ các nhà xuất bản uy tín, 
+                            đảm bảo nội dung chính xác và cập nhật.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h4 class="value-title">Uy tín</h4>
+                        <p class="value-description">
+                            Xây dựng lòng tin với khách hàng thông qua dịch vụ chuyên nghiệp, 
+                            giao hàng đúng hẹn và chính sách bảo hành rõ ràng.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4 class="value-title">Tận tâm</h4>
+                        <p class="value-description">
+                            Đội ngũ nhân viên luôn sẵn sàng tư vấn và hỗ trợ khách hàng chọn lựa 
+                            những cuốn sách phù hợp nhất.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h4 class="value-title">Đổi mới</h4>
+                        <p class="value-description">
+                            Không ngừng cải tiến và ứng dụng công nghệ mới để mang đến trải nghiệm 
+                            mua sắm tốt nhất cho khách hàng.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-section">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold">
+                        <i class="fas fa-chart-line"></i> Thành tựu của chúng tôi
+                    </h2>
+                    <p class="lead opacity-90">Những con số ấn tượng sau 4 năm hoạt động</p>
+                </div>
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="50000">0</span>
+                            <div class="stat-label">Khách hàng tin tưởng</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="5000">0</span>
+                            <div class="stat-label">Đầu sách đa dạng</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="98">0</span>
+                            <div class="stat-label">% Khách hàng hài lòng</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="24">0</span>
+                            <div class="stat-label">Giờ hỗ trợ/ngày</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-users"></i> Đội ngũ của chúng tôi
+            </h2>
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            👨‍💼
+                        </div>
+                        <h4 class="team-name">Nguyễn Văn An</h4>
+                        <div class="team-position">Giám đốc điều hành</div>
+                        <p class="team-description">
+                            Với hơn 10 năm kinh nghiệm trong lĩnh vực giáo dục, anh An đã dẫn dắt BookStore 
+                            trở thành thương hiệu uy tín trong ngành sách học tập.
+                        </p>
+                        <div class="team-social">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-facebook"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            👩‍💻
+                        </div>
+                        <h4 class="team-name">Trần Thị Bình</h4>
+                        <div class="team-position">Trưởng phòng Marketing</div>
+                        <p class="team-description">
+                            Chuyên gia marketing với niềm đam mê giáo dục, chị Bình đã xây dựng thành công 
+                            thương hiệu BookStore trong lòng khách hàng.
+                        </p>
+                        <div class="team-social">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            👨‍🔧
+                        </div>
+                        <h4 class="team-name">Lê Minh Cường</h4>
+                        <div class="team-position">Trưởng phòng Kỹ thuật</div>
+                        <p class="team-description">
+                            Kỹ sư IT tài năng, anh Cường đã phát triển hệ thống website và ứng dụng 
+                            hiện đại, mang đến trải nghiệm tuyệt vời cho khách hàng.
+                        </p>
+                        <div class="team-social">
+                            <a href="#"><i class="fab fa-github"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact CTA -->
+        <div class="contact-cta">
+            <h3 class="mb-4">
+                <i class="fas fa-phone-alt"></i> Bạn có câu hỏi gì không?
+            </h3>
+            <p class="lead text-muted mb-4">
+                Đội ngũ chăm sóc khách hàng của chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <a href="contact.html" class="btn-cta">
+                    <i class="fas fa-envelope"></i> Liên hệ ngay
+                </a>
+                <a href="tel:0123456789" class="btn-cta">
+                    <i class="fas fa-phone"></i> 0123 456 789
+                </a>
+                <a href="product.html" class="btn-cta">
+                    <i class="fas fa-shopping-bag"></i> Xem sản phẩm
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                    <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
+                    <div class="d-flex">
+                        <a href="https://www.facebook.com/user28092003" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên kết nhanh</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="http://localhost:8080/" class="text-white-50">Trang chủ</a></li>
+                        <li><a href="http://localhost:8080/products" class="text-white-50">Sản phẩm</a></li>
+                        <li><a href="#" class="text-white-50">Giới thiệu</a></li>
+                        <li><a href="http://localhost:8080/contact" class="text-white-50">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên hệ</h5>
+                    <p><i class="fas fa-phone"></i> 0123 456 789</p>
+                    <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, TP.HCM</p>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        // Load page on startup
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            animateCounters();
+        });
+
+        // Update cart count
+        function updateCartCount() {
+            const cartCount = document.getElementById('cartCount');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+        }
+
+        // Animate counter numbers
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-number');
+            
+            const animateCounter = (counter) => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                const increment = target / 100;
+                let current = 0;
+                
+                const updateCounter = () => {
+                    if (current < target) {
+                        current += increment;
+                        counter.textContent = Math.floor(current).toLocaleString();
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = target.toLocaleString();
+                    }
+                };
+                
+                updateCounter();
+            };
+            
+            // Intersection Observer to trigger animation when in view
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counter = entry.target;
+                        animateCounter(counter);
+                        observer.unobserve(counter);
+                    }
+                });
+            });
+            
+            counters.forEach(counter => {
+                observer.observe(counter);
+            });
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll effect to navbar
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%)';
+                navbar.style.backdropFilter = 'blur(10px)';
+            } else {
+                navbar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                navbar.style.backdropFilter = 'none';
+            }
+        });
+
+        // Add parallax effect to hero section
+        window.addEventListener('scroll', function() {
+            const hero = document.querySelector('.hero-section');
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * -0.5;
+            
+            if (hero) {
+                hero.style.transform = `translateY(${rate}px)`;
+            }
+        });
+
+        // Add animation on scroll for cards
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const cardObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards for animation
+        document.querySelectorAll('.section-card, .value-card, .team-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease';
+            cardObserver.observe(card);
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa35fce5ff08dd',t:'MTc1OTgwNjY4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

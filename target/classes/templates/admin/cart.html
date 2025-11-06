@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Quản lý Đơn hàng | BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* [CSS CỦA BẠN] */
+        body { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; margin: 0; padding: 0; }
+        .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 280px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; transition: all 0.3s ease; z-index: 1000; overflow-y: auto; }
+        .sidebar.collapsed { width: 80px; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; gap: 15px; }
+        .sidebar-logo { width: 45px; height: 45px; background: rgba(255, 255, 255, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .sidebar-title { font-size: 1.4rem; font-weight: bold; margin: 0; transition: opacity 0.3s ease; }
+        .sidebar.collapsed .sidebar-title { opacity: 0; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item { display: block; padding: 15px 20px; color: rgba(255, 255, 255, 0.8); text-decoration: none; transition: all 0.3s ease; border: none; background: none; width: 100%; text-align: left; position: relative; }
+        .menu-item:hover { background: rgba(255, 255, 255, 0.1); color: white; transform: translateX(5px); }
+        .menu-item.active { background: rgba(255, 255, 255, 0.15); color: white; border-right: 4px solid white; }
+        .menu-item i { width: 20px; margin-right: 15px; font-size: 1.1rem; }
+        .sidebar.collapsed .menu-item { padding: 15px; text-align: center; }
+        .sidebar.collapsed .menu-item span { display: none; }
+        .sidebar.collapsed .menu-item i { margin-right: 0; }
+        .sidebar-toggle { position: absolute; top: 25px; right: -15px; width: 30px; height: 30px; background: white; border: none; border-radius: 50%; color: #667eea; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; }
+        .sidebar-toggle:hover { transform: scale(1.1); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+        .main-content { margin-left: 280px; transition: margin-left 0.3s ease; min-height: 100vh; }
+        .main-content.expanded { margin-left: 80px; }
+        .header { background: white; padding: 20px 30px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #6c757d;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .notification-btn:hover {
+            color: #667eea;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 25px;
+            transition: background 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: #f8f9fa;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-info h6 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .user-info small {
+            color: #6c757d;
+        }
+        .dashboard-content { padding: 30px; }
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
+        .action-left { display: flex; gap: 15px; }
+        .action-right { display: flex; gap: 15px; align-items: center; }
+        .search-box { position: relative; display: flex; align-items: center; }
+        .search-box i { position: absolute; left: 15px; color: #6c757d; z-index: 1; }
+        .search-box input { padding: 10px 15px 10px 45px; border: 1px solid #dee2e6; border-radius: 25px; width: 300px; font-size: 0.9rem; transition: all 0.3s ease; }
+        .search-box input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .form-select { border-radius: 10px; border: 1px solid #dee2e6; padding: 10px 15px; min-width: 180px; }
+        .table-container { background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); overflow: hidden; margin-bottom: 25px; }
+        .table { margin: 0; }
+        .table thead th { background: #f8f9fa; border: none; padding: 20px 15px; font-weight: 600; color: #2c3e50; font-size: 0.9rem; }
+        .table tbody td { padding: 20px 15px; border-top: 1px solid #f1f3f4; vertical-align: middle; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-avatar-table { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid #e9ecef; }
+        .user-avatar-table img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info h6 { margin: 0 0 5px; font-size: 0.95rem; font-weight: 600; color: #2c3e50; }
+        .price { font-weight: 600; color: #28a745; font-size: 1rem; }
+        .quantity-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: #e3f2fd; color: #1976d2; }
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-badge.status-PENDING { background: #fff8e1; color: #f57c00; }
+        .status-badge.status-CONFIRMED { background: #e8f5e8; color: #2e7d32; }
+        .status-badge.status-SHIPPING { background: #e3f2fd; color: #1976d2; }
+        .status-badge.status-DELIVERED { background: #e8f5e8; color: #388e3c; }
+        .status-badge.status-CANCELLED { background: #ffebee; color: #d32f2f; }
+        .action-buttons { display: flex; gap: 8px; }
+        .action-buttons .btn { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.3s ease; }
+        .action-buttons .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f3f4; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { font-weight: 600; color: #495057; min-width: 120px; }
+        .detail-value { color: #2c3e50; font-weight: 500; }
+        .detail-value.price { color: #28a745; font-weight: 600; font-size: 1.1rem; }
+        .product-item { border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-bottom: 10px; }
+        .product-image { width: 40px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; flex-shrink: 0; }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.show { transform: translateX(0); } .main-content { margin-left: 0; } .main-content.expanded { margin-left: 0; } .action-bar { flex-direction: column; gap: 15px; align-items: stretch; } .search-box input { width: 100%; } .table-container { overflow-x: auto; } .table { min-width: 800px; } }
+    </style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-chevron-left" id="toggleIcon"></i>
+    </button>
+
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <i class="fas fa-book-open"></i>
+        </div>
+        <h2 class="sidebar-title">BookStore</h2>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a th:href="@{/admin/home}" class="menu-item " onclick="showSection('home')">
+            <i class="fas fa-box"></i>
+            <span>Trang chủ</span>
+        </a>
+        <a th:href="@{/admin/products}" class="menu-item " onclick="showSection('products')">
+            <i class="fas fa-box"></i>
+            <span>Quản lý sản phẩm</span>
+        </a>
+        <a th:href="@{/admin/carts}" class="menu-item active" onclick="showSection('orders')">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Quản lý đơn hàng</span>
+        </a>
+        <a th:href="@{/admin/users}" class="menu-item" onclick="showSection('users')">
+            <i class="fas fa-users"></i>
+            <span>Quản lý tài khoản</span>
+        </a>
+        <a th:href="@{/admin/vouchers}" class="menu-item" onclick="showSection('vouchers')">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Quản lý voucher</span>
+        </a>
+        <a th:href="@{/admin/comments}" class="menu-item "> <i class="fas fa-star"></i>
+            <span>Quản lý đánh giá</span>
+        </a>
+        <a th:href="@{/admin/revenue}" class="menu-item" onclick="showSection('analytics')">
+            <i class="fas fa-chart-line"></i>
+            <span>Thống kê doanh thu</span>
+        </a>
+        <a th:href="@{/admin/setting}" class="menu-item" onclick="showSection('settings')">
+            <i class="fas fa-cog"></i>
+            <span>Cài đặt</span>
+        </a>
+        <a href="#" class="menu-item" onclick="confirmLogout('/logout')">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Đăng xuất</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content" id="mainContent">
+    <header class="header">
+        <div class="header-left">
+            <button class="d-md-none btn btn-link" onclick="toggleMobileSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="header-title">Quản lý đơn hàng</h1>
+        </div>
+
+        <div class="header-actions">
+            <button class="notification-btn" onclick="showNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+
+            <a th:href="@{/admin/setting}" class="user-profile" style="text-decoration: none; color: inherit;">
+                <div class="user-avatar">A</div>
+                <div class="user-info d-none d-md-block">
+                    <h6>Admin User</h6>
+                    <small>Quản trị viên</small>
+                </div>
+                <i class="fas fa-chevron-down d-none d-md-block"></i>
+            </a>
+        </div>
+    </header>
+
+    <div class="dashboard-content fade-in" id="ordersContent">
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            [[${successMessage}]] <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            [[${errorMessage}]] <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="action-bar">
+            <div class="action-left">
+                <select class="form-select" id="statusFilter" onchange="filterAndSearchOrders()">
+                    <option value="">Tất cả trạng thái</option>
+                    <option th:each="status : ${statuses}"
+                            th:value="${status}"
+                            th:selected="${status == currentFilterStatus}"
+                            th:text="${status == 'PENDING' ? 'Chờ xử lý' :
+                                            (status == 'CONFIRMED' ? 'Đã xác nhận' :
+                                            (status == 'SHIPPING' ? 'Đang giao' :
+                                            (status == 'DELIVERED' ? 'Đã giao' : 'Đã hủy')))}">Trạng thái</option>
+                </select>
+            </div>
+            <div class="action-right">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Tìm kiếm đơn hàng..." id="searchOrderInput"
+                           th:value="${currentSearchTerm}" onkeyup="filterAndSearchOrders()">
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Mã đơn hàng</th>
+                    <th>Thông tin khách hàng</th>
+                    <th>Số sản phẩm</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày đặt</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                <tr th:each="order : ${orders}">
+                    <td><strong th:text="${order.orderCode}">#DH001</strong></td>
+                    <td>
+                        <div class="user-info">
+                            <div>
+                                <h6 th:text="${order.customerUsername}">Username</h6>
+                                <small class="text-muted" th:text="${order.customerPhone}">0901234567</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="quantity-badge" th:text="${order.totalProducts + ' sản phẩm'}">3 sản phẩm</span></td>
+                    <td><span class="price" th:text="${order.totalAmountFormatted}">450.000đ</span></td>
+                    <td>
+                                <span class="status-badge"
+                                      th:classappend="'status-' + ${order.status}"
+                                      th:text="${order.status == 'PENDING' ? 'Chờ xử lý' :
+                                                (order.status == 'CONFIRMED' ? 'Đã xác nhận' :
+                                                (order.status == 'SHIPPING' ? 'Đang giao' :
+                                                (order.status == 'DELIVERED' ? 'Đã giao' : 'Đã hủy')))}">
+                                    Trạng thái
+                                </span>
+                    </td>
+                    <td th:text="${order.dateFormatted}">20/11/2024</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-info" th:attr="onclick='viewOrderDetail(\'' + ${order.idOrder} + '\')'" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+
+                            <button th:if="${order.status != 'DELIVERED' and order.status != 'CANCELLED'}"
+                                    class="btn btn-sm btn-danger"
+                                    th:attr="onclick='cancelOrder(\'' + ${order.idOrder} + '\')'"
+                                    title="Hủy đơn hàng">
+                                <i class="fas fa-times"></i>
+                            </button>
+
+                            <button th:unless="${order.status != 'DELIVERED' and order.status != 'CANCELLED'}"
+                                    class="btn btn-sm btn-secondary"
+                                    disabled
+                                    title="Không thể hủy">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${orders == null or #lists.isEmpty(orders)}">
+                    <td colspan="7" class="text-center">Không tìm thấy đơn hàng nào.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Hiển thị [[${orders != null ? #lists.size(orders) : 0}]] đơn hàng
+            </div>
+            <nav>
+            </nav>
+        </div>
+    </div>
+
+    <div class="modal fade" id="orderDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chi tiết đơn hàng <span id="orderDetailId"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Thông tin đơn hàng</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="detail-row"><span class="detail-label">Mã đơn hàng:</span><span class="detail-value" id="detailOrderCode"></span></div>
+                                    <div class="detail-row"><span class="detail-label">Ngày đặt:</span><span class="detail-value" id="detailOrderDate"></span></div>
+                                    <div class="detail-row"><span class="detail-label">Trạng thái:</span><span class="detail-value"><span id="detailOrderStatus" class="status-badge"></span></span></div>
+                                    <div class="detail-row"><span class="detail-label">Thanh toán:</span><span class="detail-value" id="detailPaymentMethod"></span></div>
+                                    <div class="detail-row"><span class="detail-label">Tổng tiền:</span><span class="detail-value price" id="detailTotalAmount"></span></div>
+                                    <div class="detail-row"><span class="detail-label">Ghi chú:</span><span class="detail-value" id="detailOrderNote"></span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>Thông tin khách hàng</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="detail-row"><span class="detail-label">Username:</span><span class="detail-value" id="detailCustomerUsername"></span></div>
+                                    <div class="detail-row"><span class="detail-label">Số điện thoại:</span><span class="detail-value" id="detailCustomerPhone"></span></div>
+                                    <div class="detail-row"><span class="detail-label">Địa chỉ giao hàng:</span><span class="detail-value" id="detailShippingAddress"></span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0"><i class="fas fa-box me-2"></i>Thông tin sản phẩm</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="detailOrderProducts">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <select id="statusUpdater" class="form-select me-2" style="width: auto;">
+                        <option th:each="status : ${statuses}"
+                                th:value="${status}"
+                                th:text="${status == 'PENDING' ? 'Chờ xử lý' :
+                                            (status == 'CONFIRMED' ? 'Đã xác nhận' :
+                                            (status == 'SHIPPING' ? 'Đang giao' :
+                                            (status == 'DELIVERED' ? 'Đã giao' : 'Đã hủy')))}">Trạng thái</option>
+                    </select>
+                    <button type="button" class="btn btn-warning" onclick="updateOrderStatusFromModal()">
+                        <i class="fas fa-edit"></i> Cập nhật
+                    </button>
+                    <button type="button" class="btn btn-danger" id="cancelOrderBtn" onclick="cancelOrderFromModal()">
+                        <i class="fas fa-times"></i> Hủy đơn
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function confirmLogout(logoutUrl) {
+        // Sử dụng hàm confirm() gốc của trình duyệt
+        if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống quản trị không?")) {
+            // Nếu người dùng nhấn OK, chuyển hướng đến URL đăng xuất
+            window.location.href = logoutUrl;
+        }
+        // Nếu người dùng nhấn Cancel, không làm gì cả
+    }
+
+    const API_URL = '/admin/carts';
+    let currentOrderId = null;
+    const orderDetailModal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+
+    // --- CÁC HÀM TIỆN ÍCH ---
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        const alertClass = type === 'success' ? 'alert-success' :
+            type === 'error' ? 'alert-danger' :
+                type === 'info' ? 'alert-info' : 'alert-warning';
+
+        notification.className = `alert ${alertClass} position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+        notification.innerHTML = `${message}<button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>`;
+
+        document.body.appendChild(notification);
+        setTimeout(() => { if (notification.parentElement) { notification.remove(); } }, 4000);
+    }
+
+    function getStatusText(status) {
+        switch(status) {
+            case 'PENDING': return 'Chờ xử lý';
+            case 'CONFIRMED': return 'Đã xác nhận';
+            case 'SHIPPING': return 'Đang giao';
+            case 'DELIVERED': return 'Đã giao';
+            case 'CANCELLED': return 'Đã hủy';
+            default: return status;
+        }
+    }
+
+    // --- CHỨC NĂNG LỌC/TÌM KIẾM (GỌI PAGE RELOAD) ---
+    // SỬA LỖI: Hàm này chịu trách nhiệm chuyển hướng đến Controller
+    function filterAndSearchOrders() {
+        const status = document.getElementById('statusFilter').value;
+        const searchTerm = document.getElementById('searchOrderInput').value;
+
+        // Lấy URL hiện tại (chỉ phần gốc)
+        let url = new URL(window.location.origin + window.location.pathname);
+
+        // Thêm tham số trạng thái
+        if (status && status !== '') {
+            url.searchParams.set('filterStatus', status);
+        } else {
+            url.searchParams.delete('filterStatus');
+        }
+
+        // Thêm tham số tìm kiếm
+        if (searchTerm && searchTerm.trim() !== '') {
+            url.searchParams.set('searchTerm', searchTerm.trim());
+        } else {
+            url.searchParams.delete('searchTerm');
+        }
+
+        // Chuyển hướng đến URL mới
+        window.location.href = url.href;
+    }
+
+
+    // 4. XEM CHI TIẾT ĐƠN HÀNG (AJAX)
+    function viewOrderDetail(id) {
+        currentOrderId = id;
+        // SỬA: Dùng API_URL vì nó có vẻ được định nghĩa là /admin/carts
+        fetch(`${API_URL}/detail/${id}`)
+            .then(response => {
+                if (!response.ok) {
+                    // Thử đọc response text để biết lỗi server
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("Lỗi: Server không trả về dữ liệu JSON. Có thể do lỗi phân quyền.");
+                }
+                return response.json();
+            })
+            .then(order => {
+                renderOrderDetailModal(order);
+                orderDetailModal.show();
+                // Đặt giá trị cho select box cập nhật trạng thái
+                document.getElementById('statusUpdater').value = order.status;
+            })
+            .catch(error => {
+                console.error('Fetch detail error:', error);
+                showNotification(`Lỗi khi tải chi tiết đơn hàng: ${error.message}`, 'error');
+            });
+    }
+
+    function renderOrderDetailModal(order) {
+        document.getElementById('orderDetailId').textContent = order.orderCode;
+        document.getElementById('detailOrderCode').textContent = order.orderCode;
+        document.getElementById('detailOrderDate').textContent = order.dateFormatted;
+        document.getElementById('detailOrderStatus').textContent = getStatusText(order.status);
+        document.getElementById('detailOrderStatus').className = `status-badge status-${order.status}`;
+        document.getElementById('detailPaymentMethod').textContent = order.paymentMethod;
+        document.getElementById('detailTotalAmount').textContent = order.totalAmountFormatted;
+        document.getElementById('detailOrderNote').textContent = order.note || 'Không có';
+
+        document.getElementById('detailCustomerUsername').textContent = order.customerUsername;
+        document.getElementById('detailCustomerPhone').textContent = order.customerPhone;
+        document.getElementById('detailShippingAddress').textContent = order.address;
+
+        const productsContainer = document.getElementById('detailOrderProducts');
+        productsContainer.innerHTML = '';
+        let subtotal = 0;
+
+        order.productDetails.forEach(detail => {
+            const priceNum = detail.priceAtDate || 0;
+            subtotal += priceNum * detail.quantity;
+
+            productsContainer.insertAdjacentHTML('beforeend', `
+                <div class="product-item mb-3 p-3" style="border: 1px solid #e9ecef; border-radius: 8px;">
+                    <div class="d-flex align-items-center">
+                        <div class="product-image me-3">📚</div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${detail.productName || 'Sản phẩm không xác định'}</h6>
+                            <small class="text-muted">Tác giả: ${detail.productAuthor || 'N/A'}</small>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="text-muted">SL: ${detail.quantity}</span>
+                                <span class="price">${detail.priceAtDateFormatted}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        });
+
+        productsContainer.insertAdjacentHTML('beforeend', `
+            <hr>
+            <div class="d-flex justify-content-between">
+                <strong>Tổng cộng:</strong>
+                <strong class="price">${subtotal.toLocaleString('vi-VN')}đ</strong>
+            </div>
+        `);
+
+        const cancelBtn = document.getElementById('cancelOrderBtn');
+        if (order.status === 'DELIVERED' || order.status === 'CANCELLED') {
+            cancelBtn.disabled = true;
+            cancelBtn.className = 'btn btn-secondary';
+            cancelBtn.textContent = 'Đã hủy/Đã giao';
+        } else {
+            cancelBtn.disabled = false;
+            cancelBtn.className = 'btn btn-danger';
+            cancelBtn.textContent = 'Hủy đơn';
+        }
+    }
+
+
+    // 5. CẬP NHẬT TRẠNG THÁI TỪ MODAL (POST)
+    function updateOrderStatusFromModal() {
+        const newStatus = document.getElementById('statusUpdater').value;
+        if (!currentOrderId) return showNotification('Lỗi: Không tìm thấy ID đơn hàng.', 'error');
+
+        if (confirm(`Bạn có chắc chắn muốn chuyển trạng thái đơn hàng #${currentOrderId} sang ${getStatusText(newStatus)}?`)) {
+
+            // Dùng AJAX POST (để dễ xử lý CSRF nếu nó được bật)
+            $.ajax({
+                url: `${API_URL}/update-status/${currentOrderId}`,
+                type: 'POST',
+                data: { newStatus: newStatus },
+                // LƯU Ý: Nếu CSRF được bật, bạn cần gửi token kèm theo
+                success: function(response) {
+                    showNotification('Cập nhật trạng thái thành công!', 'success');
+                    // Tải lại trang sau khi cập nhật
+                    setTimeout(() => { window.location.reload(); }, 500);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Update status error:', error);
+                    showNotification('Lỗi khi cập nhật trạng thái đơn hàng. Vui lòng kiểm tra quyền ADMIN.', 'error');
+                }
+            });
+        }
+    }
+
+    // 6. HỦY ĐƠN HÀNG (TỪ BẢNG) (GET)
+    function cancelOrder(id) {
+        if (confirm(`Bạn có chắc chắn muốn HỦY đơn hàng #${id} này không? Hành động không thể hoàn tác.`)) {
+            // Chuyển hướng để Controller xử lý
+            window.location.href = `${API_URL}/cancel/${id}`;
+        }
+    }
+
+    // 7. HỦY ĐƠN HÀNG (TỪ MODAL) (GET)
+    function cancelOrderFromModal() {
+        if (!currentOrderId) return showNotification('Lỗi: Không tìm thấy ID đơn hàng.', 'error');
+
+        if (confirm(`Bạn có chắc chắn muốn HỦY đơn hàng #${currentOrderId} này không? Hành động không thể hoàn tác.`)) {
+            orderDetailModal.hide();
+            // Chuyển hướng để Controller xử lý
+            window.location.href = `${API_URL}/cancel/${currentOrderId}`;
+        }
+    }
+
+    // --- CÁC HÀM CHUNG KHÁC ---
+    let sidebarCollapsed = false;
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleIcon = document.getElementById('toggleIcon');
+        sidebarCollapsed = !sidebarCollapsed;
+        if (sidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            toggleIcon.classList.remove('fa-chevron-left');
+            toggleIcon.classList.add('fa-chevron-right');
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('expanded');
+            toggleIcon.classList.remove('fa-chevron-right');
+            toggleIcon.classList.add('fa-chevron-left');
+        }
+    }
+    function toggleMobileSidebar() {
+        document.getElementById('sidebar').classList.toggle('show');
+    }
+    // Lắng nghe DOMContentLoaded để khôi phục trạng thái bộ lọc
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Khôi phục trạng thái Filter Status
+        const statusFilter = document.getElementById('statusFilter');
+        const filterStatus = urlParams.get('filterStatus');
+        if (filterStatus) {
+            statusFilter.value = filterStatus;
+        } else {
+            statusFilter.value = ''; // Đặt về tất cả
+        }
+
+        // Khôi phục trạng thái Search Term
+        const searchInput = document.getElementById('searchOrderInput');
+        const searchTerm = urlParams.get('searchTerm');
+        if (searchTerm) {
+            searchInput.value = searchTerm;
+        } else {
+            searchInput.value = '';
+        }
+    });
+
+
+</script>
+</body>
+</html>
