@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống kê doanh thu - BookStore Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <style>
+        /* CSS CỦA BẠN (Đã giữ nguyên) */
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9; /* Màu nền nhẹ hơn */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar-logo {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .sidebar-title {
+            opacity: 0;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            /* Cải tiến: Thêm màu nền nhẹ và làm nổi bật hơn */
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-right: 4px solid white;
+            font-weight: 600;
+        }
+
+        .menu-item i {
+            width: 20px;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); /* Bóng nhẹ hơn */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #6c757d;
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+
+        .notification-btn:hover {
+            color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 25px;
+            transition: background 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: #f0f3f8; /* Màu hover nhẹ hơn */
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-info h6 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .user-info small {
+            color: #6c757d;
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            padding: 30px;
+        }
+
+        /* Card styles for content sections */
+        .content-card {
+            background: white;
+            border-radius: 15px; /* Bo góc nhẹ nhàng hơn */
+            padding: 30px;
+            /* Cải tiến Shadow: tạo độ sâu tốt hơn */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), 0 2px 5px rgba(0, 0, 0, 0.03);
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .content-card:hover {
+            /* Hiệu ứng hover nhẹ */
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-card-header {
+            border-bottom: 1px solid #e9ecef; /* Đường kẻ nhẹ hơn */
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex; /* Bật flexbox để chứa nút chọn biểu đồ */
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        /* Thẻ thống kê nhỏ */
+        .summary-card {
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-card .icon {
+            font-size: 2rem;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+
+        .summary-card h5 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .summary-card h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+
+        .summary-card.revenue {
+            background: linear-gradient(45deg, #28a745, #218838); /* Xanh lá */
+        }
+
+        .summary-card.orders {
+            background: linear-gradient(45deg, #ffc107, #e0a800); /* Vàng */
+        }
+
+        /* Thay đổi layout cột summary khi bỏ Lợi nhuận gộp */
+        .col-lg-4:nth-child(2) {
+            display: none;
+        }
+        .col-lg-4:nth-child(3) {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        .col-lg-4:nth-child(1) {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        @media (max-width: 768px) {
+            .col-lg-4:nth-child(1), .col-lg-4:nth-child(3) {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+
+        /* Table styles */
+        .analytics-table th {
+            color: #6c757d;
+            font-weight: 600;
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        .analytics-table tbody tr:hover {
+            /* Cải tiến: Hiệu ứng hover cho dòng bảng */
+            background-color: #f8f9fa;
+        }
+
+        /* Cải tiến: Căn phải cho các cột số liệu */
+        .analytics-table th:nth-child(3),
+        .analytics-table th:nth-child(4),
+        .analytics-table th:nth-child(5) {
+            text-align: right;
+        }
+
+        .analytics-table td:nth-child(3),
+        .analytics-table td:nth-child(4),
+        .analytics-table td:nth-child(5) {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        /* Cột tỷ lệ tăng trưởng */
+        .analytics-table .text-success,
+        .analytics-table .text-danger {
+            font-weight: 600;
+        }
+
+        /* Chart specific style */
+        .chart-container {
+            position: relative;
+            height: 400px; /* Chiều cao cố định cho biểu đồ */
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .chart-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .main-content.expanded {
+                margin-left: 0;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .dashboard-content {
+                padding: 20px;
+            }
+
+            .content-card {
+                padding: 20px;
+            }
+
+            .content-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+        .sidebar-toggle {
+            position: absolute;
+            top: 25px;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            color: #667eea;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-chevron-left" id="toggleIcon"></i>
+    </button>
+
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <i class="fas fa-book-open"></i>
+        </div>
+        <h2 class="sidebar-title">BookStore</h2>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a th:href="@{/admin/home}" class="menu-item " onclick="showSection('home')">
+            <i class="fas fa-box"></i>
+            <span>Trang chủ</span>
+        </a>
+        <a th:href="@{/admin/products}" class="menu-item " onclick="showSection('products')">
+            <i class="fas fa-box"></i>
+            <span>Quản lý sản phẩm</span>
+        </a>
+        <a th:href="@{/admin/carts}" class="menu-item" onclick="showSection('cart')">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Quản lý đơn hàng</span>
+        </a>
+        <a th:href="@{/admin/users}" class="menu-item" onclick="showSection('users')">
+            <i class="fas fa-users"></i>
+            <span>Quản lý tài khoản</span>
+        </a>
+        <a th:href="@{/admin/vouchers}" class="menu-item" onclick="showSection('vouchers')">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Quản lý voucher</span>
+        </a>
+        <a th:href="@{/admin/comments}" class="menu-item "> <i class="fas fa-star"></i>
+            <span>Quản lý đánh giá</span>
+        </a>
+        <a th:href="@{/admin/revenue}" class="menu-item active" onclick="showSection('vevenue')">
+            <i class="fas fa-chart-line"></i>
+            <span>Thống kê doanh thu</span>
+        </a>
+        <a th:href="@{/admin/setting}" class="menu-item" onclick="showSection('setting')">
+            <i class="fas fa-cog"></i>
+            <span>Cài đặt</span>
+        </a>
+        <a href="#" class="menu-item" onclick="confirmLogout('/logout')">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Đăng xuất</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content" id="mainContent">
+    <header class="header">
+        <div class="header-left">
+            <button class="d-md-none btn btn-link" onclick="toggleMobileSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="header-title">Thống kê doanh thu</h1>
+        </div>
+
+        <div class="header-actions">
+            <button class="notification-btn" onclick="showNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+
+            <div class="user-profile" onclick="showUserMenu()">
+                <div class="user-avatar">A</div>
+                <div class="user-info d-none d-md-block">
+                    <h6>Admin User</h6>
+                    <small>Quản trị viên</small>
+                </div>
+                <i class="fas fa-chevron-down d-none d-md-block"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-content fade-in">
+
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="summary-card revenue">
+                    <i class="fas fa-dollar-sign icon"></i>
+                    <h5>Tổng Doanh Thu (<span th:text="${currentYear}">2025</span>)</h5>
+                    <h3 id="totalRevenue" th:text="${totalRevenueFormatted ?: '₫0'}">₫425,800,000</h3>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3" style="display: none;">
+                <div class="summary-card profit">
+                    <i class="fas fa-chart-bar icon"></i>
+                    <h5>Lợi Nhuận Gộp (<span th:text="${currentYear}">2025</span>)</h5>
+                    <h3 id="totalProfit" th:text="${totalProfitFormatted ?: '₫0'}">₫170,320,000</h3>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12 mb-3">
+                <div class="summary-card orders">
+                    <i class="fas fa-shopping-bag icon"></i>
+                    <h5>Tổng Số Đơn Hàng Đã Giao (<span th:text="${currentYear}">2025</span>)</h5>
+                    <h3 id="totalOrders" th:text="${totalOrdersCount ?: 0}">5,200</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="content-card-header">
+                <h4 class="content-card-title" id="chartTitle">Biểu đồ Doanh thu (Đang tải...)</h4>
+
+                <div class="chart-controls">
+                    <form th:action="@{/admin/revenue}" method="get" class="d-flex align-items-center gap-2">
+                        <label for="yearFilter" class="form-label mb-0 me-2 d-none d-sm-inline">Năm:</label>
+                        <select id="yearFilter" name="year" class="form-select form-select-sm" onchange="this.form.submit()" style="width: auto; display: inline-block;">
+                            <option th:each="yearOption : ${listYears}"
+                                    th:value="${yearOption}"
+                                    th:text="${yearOption}"
+                                    th:selected="${yearOption == currentYear}">2025</option>
+                            <option th:unless="${listYears != null and #lists.contains(listYears, currentYear)}" th:value="${currentYear}" th:text="${currentYear}" selected>2025</option>
+                        </select>
+                    </form>
+
+                    <div class="chart-filter-selector">
+                        <label for="timeFilter" class="form-label mb-0 me-2 d-none d-sm-inline">Lọc theo:</label>
+                        <select id="timeFilter" class="form-select form-select-sm" onchange="updateChartAndTitle()" style="width: auto; display: inline-block;">
+                            <option value="monthly" selected>Tháng</option>
+                            <option value="quarterly">Quý</option>
+                            <option value="yearly">Năm</option>
+                        </select>
+                    </div>
+
+                    <div class="chart-type-selector">
+                        <label for="chartType" class="form-label mb-0 me-2 d-none d-sm-inline">Dạng biểu đồ:</label>
+                        <select id="chartType" class="form-select form-select-sm" onchange="changeChartType(this.value)" style="width: auto; display: inline-block;">
+                            <option value="combined" selected>Kết hợp (Cột + Đường)</option>
+                            <option value="bar">Cột (Bar/Column)</option>
+                            <option value="line">Đường (Line)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div id="chartNoDataMessage" class="d-none text-center text-muted" style="padding-top: 150px;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Không có dữ liệu biểu đồ cho kỳ này. Vui lòng kiểm tra dữ liệu từ Controller.
+                </div>
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="content-card-header">
+                <h4 class="content-card-title">Top 5 Sản phẩm bán chạy nhất</h4>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover analytics-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Số lượng bán</th>
+                        <th>Tổng doanh thu</th>
+                        <th>Tỷ lệ (%)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="product, stat : ${topSellingProducts}">
+                        <td th:text="${stat.count}">1</td>
+                        <td th:text="${product.name}">Lập trình JavaScript Nâng cao</td>
+                        <td th:text="${#numbers.formatInteger(product.quantitySold, 0, 'COMMA')}">450</td>
+                        <td th:text="${#numbers.formatCurrency(product.totalRevenue)}">₫81,000,000</td>
+                        <td th:text="${product.saleRatio != null ? #numbers.formatDecimal(product.saleRatio, 0, 1) + '%' : 'N/A'}">30%</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(topSellingProducts)}">
+                        <td colspan="5" class="text-center text-muted">Chưa có dữ liệu sản phẩm bán chạy trong kỳ này.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    const MOCK_CHART_DATA = {
+        monthly: {
+            title: "Biểu đồ Doanh thu 6 tháng gần nhất",
+            labels: ["T6", "T7", "T8", "T9", "T10", "T11"],
+            revenue: [120, 150, 140, 180, 200, 250],
+        },
+        quarterly: {
+            title: "Biểu đồ Doanh thu theo Quý",
+            labels: ["Quý 1", "Quý 2", "Quý 3", "Quý 4"],
+            revenue: [300, 350, 400, 450],
+        },
+    };
+
+    const REAL_CHART_DATA = /*[[${chartData}]]*/ null || MOCK_CHART_DATA;
+
+
+    function confirmLogout(logoutUrl) {
+        if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống quản trị không?")) {
+            window.location.href = logoutUrl;
+        }
+    }
+    let sidebarCollapsed = false;
+    let revenueChartInstance = null; // Biến lưu trữ đối tượng Chart.js
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Khởi tạo biểu đồ mặc định (theo tháng)
+        updateChartAndTitle();
+    });
+
+    // Hàm chung để cập nhật biểu đồ và tiêu đề
+    function updateChartAndTitle() {
+        const timeFilter = document.getElementById('timeFilter').value;
+        const chartType = document.getElementById('chartType').value;
+        const noDataMsg = document.getElementById('chartNoDataMessage');
+        const canvas = document.getElementById('revenueChart');
+
+        if (!REAL_CHART_DATA || !REAL_CHART_DATA[timeFilter] || !REAL_CHART_DATA[timeFilter].revenue) {
+            if (revenueChartInstance) {
+                revenueChartInstance.destroy();
+                revenueChartInstance = null;
+            }
+            noDataMsg.classList.remove('d-none');
+            canvas.classList.add('d-none');
+            document.getElementById('chartTitle').textContent = `Biểu đồ Doanh thu (Thiếu dữ liệu: ${timeFilter})`;
+            console.error(`Lỗi: Không tìm thấy dữ liệu biểu đồ cho kỳ '${timeFilter}' trong biến REAL_CHART_DATA.`);
+            return; // Dừng nếu không có dữ liệu
+        }
+
+        noDataMsg.classList.add('d-none');
+        canvas.classList.remove('d-none');
+        document.getElementById('chartTitle').textContent = REAL_CHART_DATA[timeFilter].title;
+        renderRevenueChart(chartType, timeFilter);
+    }
+
+    // Hàm chỉ thay đổi dạng biểu đồ (giữ nguyên dữ liệu)
+    function changeChartType(type) {
+        const timeFilter = document.getElementById('timeFilter').value;
+        renderRevenueChart(type, timeFilter);
+    }
+
+    // Hàm vẽ biểu đồ chính
+    function renderRevenueChart(chartType, timePeriod) {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const dataSet = REAL_CHART_DATA[timePeriod];
+
+        // Hủy biểu đồ cũ nếu tồn tại
+        if (revenueChartInstance) {
+            revenueChartInstance.destroy();
+        }
+
+        const labels = dataSet.labels;
+        const revenueDataRaw = dataSet.revenue;
+        // Đã bỏ profitDataRaw
+
+        // Cấu hình datasets dựa trên dạng biểu đồ
+        let datasets = [];
+
+        const barColor = 'rgba(102, 126, 234, 0.8)'; // #667eea (Doanh thu)
+
+        // Cấu hình trục Y mặc định
+        const scalesConfig = {
+            x: { grid: { display: false } },
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Doanh thu (Triệu VNĐ)' },
+                ticks: { callback: function(value) {
+                        // 🌟 SỬA LỖI KÝ HIỆU TIỀN TỆ: Thêm "₫" sau "Tr"
+                        return value + ' Tr ₫';
+                    } }
+            }
+        };
+
+        // --- Cấu hình cho từng loại đồ thị ---
+        // Khi không có profit, Combined cũng chỉ là Bar/Line
+        if (chartType === 'combined') {
+            chartType = 'bar'; // Đặt lại về dạng Bar đơn
+        }
+
+        // Đồ thị cột hoặc đường đơn giản (chỉ hiển thị Doanh thu thuần)
+        datasets = [
+            {
+                label: 'Doanh thu thuần',
+                data: revenueDataRaw,
+                backgroundColor: chartType === 'bar' ? barColor : 'rgba(102, 126, 234, 0.3)',
+                borderColor: barColor,
+                borderWidth: 2,
+                borderRadius: 5,
+                type: chartType, // Sử dụng loại đã được điều chỉnh
+                fill: chartType === 'line' ? 'start' : false,
+                yAxisID: 'y' // Chỉ còn một trục Y
+            }
+        ];
+
+        // Xóa trục Y thứ hai (y1) nếu tồn tại
+        delete scalesConfig.y1;
+
+        const chartData = {
+            labels: labels,
+            datasets: datasets
+        };
+
+        // 🌟 SỬA LỖI KÝ HIỆU TIỀN TỆ: Format số thủ công, nối thêm '₫'
+        const formatCurrency = (value) => {
+            // 1. Format số (ví dụ: 123.456)
+            let formattedNumber = new Intl.NumberFormat('vi-VN', {
+                style: 'decimal', // Đã đổi sang decimal
+                minimumFractionDigits: 0
+            }).format(value * 1000000); // Nhân với 1 triệu vì data đang ở đơn vị Triệu VNĐ
+
+            // 2. Nối thêm ký hiệu VND
+            return formattedNumber + '₫';
+        };
+
+        const config = {
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) {
+                                    label += formatCurrency(context.parsed.y); // Sử dụng hàm format mới
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: scalesConfig
+            }
+        };
+
+        // Khởi tạo biểu đồ và gán vào biến toàn cục
+        revenueChartInstance = new Chart(ctx, config);
+    }
+
+    // --- CÁC HÀM KHÁC (giữ nguyên) ---
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        let sidebarCollapsed = sidebar.classList.contains('collapsed');
+        sidebarCollapsed = !sidebarCollapsed;
+
+        if (sidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            toggleIcon.classList.remove('fa-chevron-left');
+            toggleIcon.classList.add('fa-chevron-right');
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('expanded');
+            toggleIcon.classList.remove('fa-chevron-right');
+            toggleIcon.classList.add('fa-chevron-left');
+        }
+    }
+
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('show');
+    }
+
+    function showSection(section) {
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        const targetElement = event.currentTarget;
+        if(targetElement) {
+            targetElement.classList.add('active');
+        }
+
+        const titles = {
+            'products': 'Quản lý sản phẩm', 'orders': 'Quản lý đơn hàng', 'users': 'Quản lý tài khoản',
+            'vouchers': 'Quản lý voucher', 'vevenue': 'Thống kê doanh thu', 'setting': 'Cài đặt'
+        };
+
+        document.querySelector('.header-title').textContent = titles[section] || 'Thống kê doanh thu';
+        showNotification(`Chuyển đến ${titles[section]}`, 'info');
+    }
+
+    function showNotifications() {
+        showNotification('Bạn có 3 thông báo mới!', 'info');
+    }
+
+    function showUserMenu() {
+        showNotification('Menu người dùng - Tính năng đang phát triển', 'info');
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        const alertClass = type === 'success' ? 'alert-success' :
+            type === 'error' ? 'alert-danger' :
+                type === 'info' ? 'alert-info' : 'alert-warning';
+
+        notification.className = `alert ${alertClass} position-fixed fade show`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px; opacity: 0; transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; transform: translateX(20px);';
+        notification.setAttribute('role', 'alert');
+        notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()" aria-label="Close"></button>
+            `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.opacity = 1;
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+
+
+        setTimeout(() => {
+            notification.style.opacity = 0;
+            notification.style.transform = 'translateX(20px)';
+
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 300);
+        }, 4000);
+    }
+
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 768) {
+            document.getElementById('sidebar').classList.remove('show');
+        }
+    });
+
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isToggleButton = event.target.closest('.btn-link');
+
+        if (!isClickInsideSidebar && !isToggleButton && window.innerWidth <= 768 && sidebar.classList.contains('show')) {
+            sidebar.classList.remove('show');
+        }
+    });
+</script>
+</body>
+</html>
