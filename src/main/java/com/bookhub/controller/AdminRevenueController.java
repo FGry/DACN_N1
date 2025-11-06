@@ -11,6 +11,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+// ===== IMPORT MỚI ĐƯỢC THÊM VÀO =====
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import jakarta.servlet.http.HttpServletResponse; // Đã đổi sang jakarta
+import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.Locale;
+// ===== KẾT THÚC IMPORT MỚI =====
+
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.Collections;
@@ -45,7 +55,13 @@ public class AdminRevenueController {
         model.addAttribute("listYears", listYears);
         model.addAttribute("totalRevenueFormatted", formatCurrency(totalRevenue));
         model.addAttribute("totalOrdersCount", totalDeliveredOrders);
+
         List<ProductSaleStats> topProducts = stats.getTopSellingProducts();
+
+        // ===== BẮT ĐẦU DEBUG [1] =====
+        System.out.println("DEBUG [TRANG WEB]: Lấy dữ liệu cho trang web. Số lượng Top Products: " + (topProducts != null ? topProducts.size() : "NULL"));
+        // ===== KẾT THÚC DEBUG [1] =====
+
         List<Map<String, Object>> topProductsForView = prepareTopProductsForView(topProducts, totalRevenue);
         model.addAttribute("topSellingProducts", topProductsForView);
         model.addAttribute("chartData", getRealChartData(stats.getMonthlyRevenue()));
@@ -53,6 +69,125 @@ public class AdminRevenueController {
 
         return "admin/revenue";
     }
+
+    // ===== BẮT ĐẦU CODE MỚI THÊM VÀO =====
+
+    /**
+     * Endpoint xử lý yêu cầu xuất báo cáo doanh thu ra file Excel.
+     * Được kích hoạt bởi nút "Xuất Excel" trên giao diện.
+     *
+     * @param year Năm cần xuất báo cáo
+     * @param response Đối tượng HttpServletResponse để ghi file Excel vào
+     * @throws IOException Nếu có lỗi trong quá trình ghi file
+     */
+    @GetMapping("/admin/revenue/export")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void exportRevenueReport(
+            @RequestParam("year") int year,
+            HttpServletResponse response) throws IOException {
+
+        // --- 1. LẤY DỮ LIỆU ---
+        RevenueStatsDTO stats = orderService.getRevenueDashboardStats(year);
+        long totalRevenue = stats.getTotalRevenue();
+        long totalOrders = stats.getTotalDeliveredOrders();
+        List<ProductSaleStats> topProducts = stats.getTopSellingProducts();
+
+        // ===== BẮT ĐẦU DEBUG [2] =====
+        System.out.println("DEBUG [XUẤT EXCEL]: Lấy dữ liệu cho file Excel. Số lượng Top Products: " + (topProducts != null ? topProducts.size() : "NULL"));
+        // ===== KẾT THÚC DEBUG [2] =====
+
+        // Chuẩn bị định dạng tiền tệ
+        Locale vn = new Locale("vi", "VN");
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(vn);
+
+        // --- 2. TẠO FILE EXCEL BẰNG APACHE POI ---
+        Workbook workbook = new XSSFWorkbook();
+
+        // --- Sheet 1: Tổng quan ---
+        Sheet summarySheet = workbook.createSheet("Tổng quan Doanh thu " + year);
+        summarySheet.setColumnWidth(0, 7000); // Tăng độ rộng cột A
+        summarySheet.setColumnWidth(1, 5000); // Tăng độ rộng cột B
+
+        // Tạo font và style cho tiêu đề
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 14);
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFont(headerFont);
+
+        // Tiêu đề
+        Row titleRow = summarySheet.createRow(0);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("Báo cáo Doanh thu năm " + year);
+        titleCell.setCellStyle(headerStyle);
+
+        // Dữ liệu tổng quan
+        Row revenueRow = summarySheet.createRow(2);
+        revenueRow.createCell(0).setCellValue("Tổng Doanh Thu:");
+        revenueRow.createCell(1).setCellValue(currencyFormatter.format(totalRevenue));
+
+        Row orderRow = summarySheet.createRow(3);
+        orderRow.createCell(0).setCellValue("Tổng Số Đơn Hàng Đã Giao:");
+        orderRow.createCell(1).setCellValue(totalOrders);
+
+
+        // --- Sheet 2: Top Sản phẩm Bán chạy ---
+        Sheet productSheet = workbook.createSheet("Top Sản phẩm Bán chạy");
+        String[] headers = {"#", "Tên sản phẩm", "Số lượng bán", "Tổng doanh thu", "Tỷ lệ (%)"};
+
+        // Tạo hàng tiêu đề
+        Row headerRow = productSheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle); // Sử dụng lại style tiêu đề
+        }
+
+        // Đổ dữ liệu
+        int rowNum = 1;
+
+        // Thêm kiểm tra null để an toàn
+        if (topProducts != null) {
+            for (ProductSaleStats product : topProducts) {
+                Row row = productSheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(rowNum - 1);
+                row.createCell(1).setCellValue(product.getProductName());
+                row.createCell(2).setCellValue(product.getTotalQuantity());
+                row.createCell(3).setCellValue(currencyFormatter.format(product.getTotalRevenue()));
+
+                // Tính toán lại tỷ lệ (giống hệt hàm prepareTopProductsForView)
+                double saleRatio = (totalRevenue > 0)
+                        ? (product.getTotalRevenue().doubleValue() / totalRevenue) * 100
+                        : 0.0;
+
+                row.createCell(4).setCellValue(String.format("%.1f%%", saleRatio));
+            }
+        } // Kết thúc kiểm tra if (topProducts != null)
+
+        // Tự động điều chỉnh độ rộng cột cho sheet sản phẩm
+        for (int i = 0; i < headers.length; i++) {
+            productSheet.autoSizeColumn(i);
+        }
+
+        // --- 3. THIẾT LẬP RESPONSE ĐỂ TẢI FILE ---
+        String fileName = "BaoCaoDoanhThu_" + year + ".xlsx";
+
+        // Báo cho trình duyệt biết đây là file Excel
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        // Báo cho trình duyệt tải file về với tên chỉ định
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+        // Ghi workbook ra OutputStream của response
+        workbook.write(response.getOutputStream());
+
+        // Đóng workbook để giải phóng tài nguyên
+        workbook.close();
+    }
+
+    // ===== KẾT THÚC CODE MỚI THÊM VÀO =====
+
+
+    // --- CÁC PHƯƠNG THỨC HELPER HIỆN CÓ (Giữ nguyên) ---
 
     private String formatCurrency(long value) {
         if (value == 0) return "₫0";

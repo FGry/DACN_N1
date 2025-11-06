@@ -4,12 +4,12 @@ import com.bookhub.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.PageRequest;
+// import org.springframework.data.domain.PageRequest; // <- Đã loại bỏ, không cần thiết nữa
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Collectors; // <- Đảm bảo import này
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.Locale;
@@ -21,7 +21,7 @@ import java.util.Collections;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
+    private final ProductRepository productRepository; // (Biến này có vẻ chưa được dùng, nhưng không sao)
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -80,9 +80,21 @@ public class OrderService {
         stats.setTotalRevenue(getTotalRevenue(year));
         stats.setTotalDeliveredOrders(getTotalDeliveredOrders(year));
 
+        // ===== BẮT ĐẦU SỬA LỖI GỠ DEBUG =====
         // 2. Sản phẩm bán chạy (Top 5)
-        List<ProductSaleStats> topProducts = orderRepository.findTopSellingProducts(year, PageRequest.of(0, 5));
-        stats.setTopSellingProducts(topProducts);
+
+        // Bước 1: Gọi phương thức mới (đã xóa Pageable) để lấy TẤT CẢ sản phẩm
+        List<ProductSaleStats> allTopProducts = orderRepository.findAllSellingProductsByYear(year);
+
+        // Bước 2: Tự lọc lấy 5 sản phẩm đầu tiên bằng Java Stream
+        // Điều này đảm bảo logic giống hệt nhau cho cả Web và Excel
+        List<ProductSaleStats> top5Products = allTopProducts.stream()
+                .limit(5)
+                .collect(Collectors.toList());
+
+        // Bước 3: Gán danh sách Top 5 đã được lọc
+        stats.setTopSellingProducts(top5Products);
+        // ===== KẾT THÚC SỬA LỖI GỠ DEBUG =====
 
         // 3. Doanh thu theo tháng (Dữ liệu thực tế cho biểu đồ)
         stats.setMonthlyRevenue(getMonthlyRevenueData(year));
@@ -93,6 +105,7 @@ public class OrderService {
 
     // ===============================================
     // === CÁC HÀM CRUD & MAPPING CŨ ===
+    // (Giữ nguyên toàn bộ)
     // ===============================================
 
     public List<OrderDTO> findAllOrders() {

@@ -9,20 +9,13 @@ import java.nio.file.Paths;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    private final String STATIC_UPLOAD_ROOT = "src/main/resources/static/images/products/";
+    private String uploadPath = "file:D:/DoAnNhom1/DACN_N1/src/main/resources/static/images/";
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Lấy đường dẫn tuyệt đối cho thư mục vật lý bạn đang dùng
-        String absolutePath = Paths.get("src/main/resources/static/images/products/").toAbsolutePath().toString();
-
-        // SỬA TÊN RESOURCE HANDLER TỪ /images/products/** THÀNH /uploads/products/**
-        registry.addResourceHandler("/uploads/products/**")
-                // Ánh xạ tới thư mục vật lý của bạn
-                .addResourceLocations("file:" + absolutePath + "/");
-
-        // Giữ lại cấu hình mặc định cho các tài nguyên tĩnh
-        registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/");
+        registry
+                .addResourceHandler("/uploads/**") // URL mà trình duyệt sẽ gọi
+                .addResourceLocations(uploadPath);     // Nơi Spring Boot sẽ tìm file trên ổ cứng
     }
+
 }

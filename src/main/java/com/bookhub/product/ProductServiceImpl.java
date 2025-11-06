@@ -28,10 +28,8 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
 
     // Đường dẫn lưu trữ vật lý trong thư mục dự án (Chỉ cho môi trường Dev)
-    private final String UPLOAD_DIR = "src/main/resources/static/images/products/";
+    private final String UPLOAD_DIR = "D:/DoAnNhom1/DACN_N1/src/main/resources/static/images/products";
 
-
-    // Helper: Chuyển đổi Entity sang DTO
     private ProductDTO convertToDTO(Product product) {
         if (product == null) return null;
         return ProductDTO.builder()
@@ -116,7 +114,7 @@ public class ProductServiceImpl implements ProductService {
                     }
 
                     // ĐƯỜNG DẪN CÔNG KHAI LƯU VÀO DB (Khớp với WebConfig)
-                    String webPath = "/images/products/" + uniqueFilename;
+                    String webPath = "/uploads/products/" + uniqueFilename;
 
                     ImageProduct image = ImageProduct.builder()
                             .image_link(webPath)

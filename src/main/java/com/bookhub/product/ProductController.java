@@ -27,15 +27,6 @@ public class ProductController {
 	private final CommentsService commentsService;
 	private final UserService userService; // Giữ lại để lấy User Entity cho Comments
 
-	// ĐÃ XÓA: Logic session thủ công (USER_SESSION_KEY và setUserInfoToModel)
-
-	// =====================================
-	// === 1. ENDPOINTS PUBLIC / VIEW & API ===
-	// =====================================
-
-	/** * [PUBLIC] View cho trang danh sách sản phẩm (GET /products)
-	 * GlobalAdvice sẽ tự động thêm isLoggedIn và currentUser.
-	 */
 	@GetMapping("/products")
 	public String listPublicProducts(
 			Model model,

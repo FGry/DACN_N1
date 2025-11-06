@@ -565,6 +565,11 @@
                             <option value="line">Đường (Line)</option>
                         </select>
                     </div>
+                    <div class="export-action ms-lg-2">
+                        <a th:href="@{/admin/revenue/export(year=${currentYear})}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-file-excel me-1"></i> Xuất Excel
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="chart-container">

@@ -23,17 +23,17 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.status_order = 'DELIVERED' AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year)")
     Long countDeliveredOrders(@Param("year") Integer year);
 
-    // 🔄 Cập nhật trong OrderRepository.java
     @Query("SELECT new com.bookhub.order.ProductSaleStats(" +
-            "od.product.title, SUM(od.quantity), SUM(od.price_date * od.quantity)) " + // 🌟 SỬA ĐỔI TẠI ĐÂY
+            "od.product.title, SUM(od.quantity), SUM(od.price_date * od.quantity)) " +
             "FROM OrderDetail od JOIN od.order o " +
             "WHERE o.status_order = 'DELIVERED' " +
             "AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year) " +
+            "AND od.product IS NOT NULL " +
             "GROUP BY od.product.title " +
             "ORDER BY SUM(od.quantity) DESC")
-    List<ProductSaleStats> findTopSellingProducts(@Param("year") Integer year, Pageable pageable);
+    List<ProductSaleStats> findAllSellingProductsByYear(@Param("year") Integer year);
 
-    // 🌟 TRUY VẤN MỚI: Lấy Doanh thu và Tháng cho biểu đồ
+    
     @Query("SELECT FUNCTION('MONTH', o.date), SUM(o.total) " +
             "FROM Order o " +
             "WHERE o.status_order = 'DELIVERED' " +

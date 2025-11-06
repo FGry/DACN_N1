@@ -30,6 +30,20 @@ public class SecurityConfig {
 				.formLogin(form -> form
 						.loginPage("/login")
 						.usernameParameter("email")
+						// Thêm successHandler để kiểm tra vai trò và chuyển hướng
+						.successHandler((request, response, authentication) -> {
+							// Kiểm tra xem người dùng đã xác thực có vai trò ADMIN hay không
+							boolean isAdmin = authentication.getAuthorities().stream()
+									.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+							if (isAdmin) {
+								// Nếu là ADMIN, chuyển hướng đến /admin/home
+								response.sendRedirect("/admin/home");
+							} else {
+								// Nếu không phải ADMIN, chuyển hướng đến trang mặc định (ví dụ: trang chủ)
+								response.sendRedirect("/");
+							}
+						})
 						.permitAll()
 				)
 				.logout(logout -> logout
