@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quên mật khẩu - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="books" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse"><text x="12.5" y="18" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.05)">📚</text></pattern></defs><rect width="100" height="100" fill="url(%23books)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .forgot-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 450px;
+            margin: 20px;
+        }
+
+        .forgot-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .forgot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+        }
+
+        .brand-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .brand-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .brand-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .step.inactive {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 20px;
+            height: 2px;
+            background: #e9ecef;
+            transform: translateY(-50%);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step.completed::after {
+            background: #28a745;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .section-description {
+            color: #6c757d;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .form-control {
+            background: rgba(248, 249, 250, 0.8);
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 15px 20px 15px 50px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            background: white;
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            outline: none;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+
+        .form-control.is-valid {
+            border-color: #28a745;
+        }
+
+        .form-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 1.1rem;
+            z-index: 3;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 1.1rem;
+            z-index: 3;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .invalid-feedback {
+            display: block;
+            font-size: 0.8rem;
+            color: #dc3545;
+            margin-top: 5px;
+        }
+
+        .valid-feedback {
+            display: block;
+            font-size: 0.8rem;
+            color: #28a745;
+            margin-top: 5px;
+        }
+
+        .verification-code {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .code-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: rgba(248, 249, 250, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .code-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            outline: none;
+            background: white;
+        }
+
+        .code-input.is-valid {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .resend-section {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .resend-text {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .resend-timer {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .resend-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .resend-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .resend-link.disabled {
+            color: #6c757d;
+            cursor: not-allowed;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-loading {
+            position: relative;
+        }
+
+        .btn-loading .spinner {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+            animation: successPulse 2s infinite;
+        }
+
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .back-links {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .back-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 15px;
+            transition: all 0.3s ease;
+        }
+
+        .back-links a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-home:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 576px) {
+            .forgot-card {
+                padding: 40px 30px;
+                margin: 15px;
+                border-radius: 20px;
+            }
+            
+            .back-home {
+                top: 20px;
+                left: 20px;
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .brand-logo {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+            }
+            
+            .brand-title {
+                font-size: 1.8rem;
+            }
+            
+            .step {
+                width: 35px;
+                height: 35px;
+                margin: 0 5px;
+                font-size: 0.9rem;
+            }
+            
+            .step::after {
+                width: 10px;
+            }
+            
+            .verification-code {
+                gap: 8px;
+            }
+            
+            .code-input {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Back to Home -->
+    <a href="index.html" class="back-home">
+        <i class="fas fa-arrow-left"></i> Về trang chủ
+    </a>
+
+    <!-- Forgot Password Container -->
+    <div class="forgot-container">
+        <div class="forgot-card fade-in">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <div class="brand-logo">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h1 class="brand-title">BookStore</h1>
+                <p class="brand-subtitle">Khôi phục mật khẩu</p>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">1</div>
+                <div class="step inactive" id="step2">2</div>
+                <div class="step inactive" id="step3">3</div>
+            </div>
+
+            <!-- Step 1: Enter Email -->
+            <div class="form-section" id="emailStep">
+                <h2 class="section-title">Nhập email của bạn</h2>
+                <p class="section-description">
+                    Chúng tôi sẽ gửi mã xác thực đến email này để khôi phục mật khẩu
+                </p>
+                
+                <form id="emailForm" onsubmit="handleEmailSubmit(event)">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Địa chỉ email</label>
+                        <div class="position-relative">
+                            <i class="fas fa-envelope form-icon"></i>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   placeholder="Nhập địa chỉ email của bạn"
+                                   required>
+                            <div class="invalid-feedback" id="emailError"></div>
+                            <div class="valid-feedback" id="emailSuccess"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="emailBtn">
+                        <i class="fas fa-paper-plane"></i> Gửi mã xác thực
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 2: Verify Code -->
+            <div class="form-section" id="codeStep" style="display: none;">
+                <h2 class="section-title">Nhập mã xác thực</h2>
+                <p class="section-description">
+                    Mã xác thực 6 số đã được gửi đến email: <strong id="sentEmail"></strong>
+                </p>
+                
+                <form id="codeForm" onsubmit="handleCodeSubmit(event)">
+                    <div class="verification-code">
+                        <input type="text" class="code-input" maxlength="1" id="code1" oninput="moveToNext(this, 'code2')" onkeydown="moveToPrev(event, this, null)">
+                        <input type="text" class="code-input" maxlength="1" id="code2" oninput="moveToNext(this, 'code3')" onkeydown="moveToPrev(event, this, 'code1')">
+                        <input type="text" class="code-input" maxlength="1" id="code3" oninput="moveToNext(this, 'code4')" onkeydown="moveToPrev(event, this, 'code2')">
+                        <input type="text" class="code-input" maxlength="1" id="code4" oninput="moveToNext(this, 'code5')" onkeydown="moveToPrev(event, this, 'code3')">
+                        <input type="text" class="code-input" maxlength="1" id="code5" oninput="moveToNext(this, 'code6')" onkeydown="moveToPrev(event, this, 'code4')">
+                        <input type="text" class="code-input" maxlength="1" id="code6" oninput="moveToNext(this, null)" onkeydown="moveToPrev(event, this, 'code5')">
+                    </div>
+                    
+                    <div class="invalid-feedback text-center" id="codeError"></div>
+                    
+                    <div class="resend-section">
+                        <div class="resend-text">
+                            Không nhận được mã? 
+                            <span class="resend-timer" id="resendTimer" style="display: none;">
+                                Gửi lại sau <span id="countdown">60</span>s
+                            </span>
+                            <a class="resend-link" id="resendLink" onclick="resendCode()" style="display: none;">
+                                Gửi lại mã
+                            </a>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="codeBtn">
+                        <i class="fas fa-check"></i> Xác thực
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 3: Reset Password -->
+            <div class="form-section" id="passwordStep" style="display: none;">
+                <h2 class="section-title">Tạo mật khẩu mới</h2>
+                <p class="section-description">
+                    Nhập mật khẩu mới cho tài khoản của bạn
+                </p>
+                
+                <form id="passwordForm" onsubmit="handlePasswordSubmit(event)">
+                    <div class="form-group">
+                        <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                        <div class="position-relative">
+                            <i class="fas fa-lock form-icon"></i>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="newPassword" 
+                                   placeholder="Nhập mật khẩu mới"
+                                   required>
+                            <i class="fas fa-eye password-toggle" 
+                               id="newPasswordToggle" 
+                               onclick="togglePassword('newPassword', 'newPasswordToggle')"></i>
+                            <div class="invalid-feedback" id="newPasswordError"></div>
+                            <div class="valid-feedback" id="newPasswordSuccess"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmNewPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                        <div class="position-relative">
+                            <i class="fas fa-lock form-icon"></i>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="confirmNewPassword" 
+                                   placeholder="Nhập lại mật khẩu mới"
+                                   required>
+                            <i class="fas fa-eye password-toggle" 
+                               id="confirmNewPasswordToggle" 
+                               onclick="togglePassword('confirmNewPassword', 'confirmNewPasswordToggle')"></i>
+                            <div class="invalid-feedback" id="confirmNewPasswordError"></div>
+                            <div class="valid-feedback" id="confirmNewPasswordSuccess"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="passwordBtn">
+                        <i class="fas fa-save"></i> Cập nhật mật khẩu
+                    </button>
+                </form>
+            </div>
+
+            <!-- Success Message -->
+            <div class="form-section" id="successStep" style="display: none;">
+                <div class="success-message">
+                    <div class="success-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h2 class="section-title">Thành công!</h2>
+                    <p class="section-description">
+                        Mật khẩu của bạn đã được cập nhật thành công.<br>
+                        Bạn có thể đăng nhập với mật khẩu mới.
+                    </p>
+                    
+                    <a href="login.html" class="btn-primary" style="display: inline-block; text-decoration: none;">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập ngay
+                    </a>
+                </div>
+            </div>
+
+            <!-- Back Links -->
+            <div class="back-links">
+                <a href="login.html">
+                    <i class="fas fa-arrow-left"></i> Quay lại đăng nhập
+                </a>
+                <a href="register.html">
+                    Tạo tài khoản mới
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentStep = 1;
+        let verificationCode = '';
+        let userEmail = '';
+        let resendTimer = null;
+        let countdownValue = 60;
+
+        // Load page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                showNotification('Bạn đã đăng nhập rồi!', 'info');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+                return;
+            }
+
+            // Setup validation
+            setupValidation();
+        });
+
+        // Handle email form submission
+        function handleEmailSubmit(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            
+            if (!validateEmail(email)) {
+                return;
+            }
+            
+            // Check if email exists
+            if (!checkEmailExists(email)) {
+                showFieldError('email', 'Email này không tồn tại trong hệ thống');
+                return;
+            }
+            
+            // Show loading state
+            showLoading('emailBtn', true, 'Đang gửi mã...');
+            
+            // Simulate sending email
+            setTimeout(() => {
+                userEmail = email;
+                verificationCode = generateVerificationCode();
+                
+                showNotification(`Mã xác thực đã được gửi đến ${email}`, 'success');
+                showLoading('emailBtn', false);
+                
+                // Move to step 2
+                nextStep();
+                startResendTimer();
+            }, 2000);
+        }
+
+        // Handle code form submission
+        function handleCodeSubmit(event) {
+            event.preventDefault();
+            
+            const enteredCode = getEnteredCode();
+            
+            if (enteredCode.length !== 6) {
+                showCodeError('Vui lòng nhập đầy đủ 6 số');
+                return;
+            }
+            
+            // Show loading state
+            showLoading('codeBtn', true, 'Đang xác thực...');
+            
+            // Simulate code verification
+            setTimeout(() => {
+                if (enteredCode === verificationCode) {
+                    showNotification('Mã xác thực chính xác!', 'success');
+                    showLoading('codeBtn', false);
+                    nextStep();
+                } else {
+                    showLoading('codeBtn', false);
+                    showCodeError('Mã xác thực không chính xác');
+                    shakeCodeInputs();
+                }
+            }, 1500);
+        }
+
+        // Handle password form submission
+        function handlePasswordSubmit(event) {
+            event.preventDefault();
+            
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+            
+            if (!validatePasswords(newPassword, confirmPassword)) {
+                return;
+            }
+            
+            // Show loading state
+            showLoading('passwordBtn', true, 'Đang cập nhật...');
+            
+            // Simulate password update
+            setTimeout(() => {
+                // Update password in storage (demo)
+                updateUserPassword(userEmail, newPassword);
+                
+                showNotification('Mật khẩu đã được cập nhật thành công!', 'success');
+                showLoading('passwordBtn', false);
+                nextStep();
+            }, 2000);
+        }
+
+        // Move to next step
+        function nextStep() {
+            const currentStepElement = document.getElementById(`step${currentStep}`);
+            const currentFormElement = getCurrentFormElement();
+            
+            // Update step indicator
+            currentStepElement.classList.remove('active');
+            currentStepElement.classList.add('completed');
+            
+            // Hide current form
+            currentFormElement.style.display = 'none';
+            
+            // Move to next step
+            currentStep++;
+            
+            if (currentStep <= 4) {
+                const nextStepElement = document.getElementById(`step${currentStep}`);
+                const nextFormElement = getCurrentFormElement();
+                
+                // Update step indicator
+                if (nextStepElement) {
+                    nextStepElement.classList.remove('inactive');
+                    nextStepElement.classList.add('active');
+                }
+                
+                // Show next form with animation
+                nextFormElement.style.display = 'block';
+                nextFormElement.classList.add('slide-in-right');
+                
+                // Update sent email display
+                if (currentStep === 2) {
+                    document.getElementById('sentEmail').textContent = userEmail;
+                    document.getElementById('code1').focus();
+                }
+            }
+        }
+
+        // Get current form element
+        function getCurrentFormElement() {
+            switch (currentStep) {
+                case 1: return document.getElementById('emailStep');
+                case 2: return document.getElementById('codeStep');
+                case 3: return document.getElementById('passwordStep');
+                case 4: return document.getElementById('successStep');
+                default: return document.getElementById('emailStep');
+            }
+        }
+
+        // Validate email
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!email) {
+                showFieldError('email', 'Vui lòng nhập email');
+                return false;
+            }
+            
+            if (!emailRegex.test(email)) {
+                showFieldError('email', 'Email không hợp lệ');
+                return false;
+            }
+            
+            showFieldSuccess('email', 'Email hợp lệ');
+            return true;
+        }
+
+        // Check if email exists (demo)
+        function checkEmailExists(email) {
+            const demoEmails = ['admin@bookstore.vn', 'user@bookstore.vn'];
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const registeredEmails = registeredUsers.map(user => user.email);
+            
+            return demoEmails.includes(email) || registeredEmails.includes(email);
+        }
+
+        // Generate verification code
+        function generateVerificationCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // Get entered verification code
+        function getEnteredCode() {
+            let code = '';
+            for (let i = 1; i <= 6; i++) {
+                code += document.getElementById(`code${i}`).value;
+            }
+            return code;
+        }
+
+        // Validate passwords
+        function validatePasswords(password, confirmPassword) {
+            let isValid = true;
+            
+            // Reset validation
+            resetPasswordValidation();
+            
+            // Validate new password
+            if (!password) {
+                showFieldError('newPassword', 'Vui lòng nhập mật khẩu mới');
+                isValid = false;
+            } else if (password.length < 6) {
+                showFieldError('newPassword', 'Mật khẩu phải có ít nhất 6 ký tự');
+                isValid = false;
+            } else {
+                showFieldSuccess('newPassword', 'Mật khẩu hợp lệ');
+            }
+            
+            // Validate confirm password
+            if (!confirmPassword) {
+                showFieldError('confirmNewPassword', 'Vui lòng xác nhận mật khẩu');
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                showFieldError('confirmNewPassword', 'Mật khẩu xác nhận không khớp');
+                isValid = false;
+            } else if (confirmPassword) {
+                showFieldSuccess('confirmNewPassword', 'Mật khẩu khớp');
+            }
+            
+            return isValid;
+        }
+
+        // Update user password (demo)
+        function updateUserPassword(email, newPassword) {
+            // Update in registered users
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const userIndex = registeredUsers.findIndex(user => user.email === email);
+            
+            if (userIndex !== -1) {
+                registeredUsers[userIndex].password = newPassword;
+                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+            }
+            
+            // Note: In a real application, this would be handled securely on the server
+            console.log(`Password updated for ${email}: ${newPassword}`);
+        }
+
+        // Code input navigation
+        function moveToNext(current, nextId) {
+            if (current.value.length === 1 && nextId) {
+                document.getElementById(nextId).focus();
+            }
+            
+            // Auto-submit when all fields are filled
+            if (!nextId && current.value.length === 1) {
+                const code = getEnteredCode();
+                if (code.length === 6) {
+                    setTimeout(() => {
+                        document.getElementById('codeForm').dispatchEvent(new Event('submit'));
+                    }, 100);
+                }
+            }
+        }
+
+        function moveToPrev(event, current, prevId) {
+            if (event.key === 'Backspace' && current.value.length === 0 && prevId) {
+                document.getElementById(prevId).focus();
+            }
+        }
+
+        // Start resend timer
+        function startResendTimer() {
+            countdownValue = 60;
+            document.getElementById('resendTimer').style.display = 'inline';
+            document.getElementById('resendLink').style.display = 'none';
+            
+            resendTimer = setInterval(() => {
+                countdownValue--;
+                document.getElementById('countdown').textContent = countdownValue;
+                
+                if (countdownValue <= 0) {
+                    clearInterval(resendTimer);
+                    document.getElementById('resendTimer').style.display = 'none';
+                    document.getElementById('resendLink').style.display = 'inline';
+                }
+            }, 1000);
+        }
+
+        // Resend verification code
+        function resendCode() {
+            verificationCode = generateVerificationCode();
+            showNotification(`Mã xác thực mới đã được gửi đến ${userEmail}`, 'success');
+            startResendTimer();
+            
+            // Clear current code inputs
+            for (let i = 1; i <= 6; i++) {
+                const input = document.getElementById(`code${i}`);
+                input.value = '';
+                input.classList.remove('is-valid');
+            }
+            
+            document.getElementById('code1').focus();
+        }
+
+        // Setup validation
+        function setupValidation() {
+            const emailInput = document.getElementById('email');
+            
+            emailInput.addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    validateEmail(this.value.trim());
+                }
+            });
+            
+            // Setup password validation
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmNewPassword');
+            
+            if (newPasswordInput) {
+                newPasswordInput.addEventListener('input', function() {
+                    if (this.value.length >= 6) {
+                        showFieldSuccess('newPassword', 'Mật khẩu hợp lệ');
+                    } else if (this.value.length > 0) {
+                        showFieldError('newPassword', 'Mật khẩu phải có ít nhất 6 ký tự');
+                    }
+                    
+                    // Revalidate confirm password if it has value
+                    if (confirmPasswordInput && confirmPasswordInput.value) {
+                        if (this.value === confirmPasswordInput.value) {
+                            showFieldSuccess('confirmNewPassword', 'Mật khẩu khớp');
+                        } else {
+                            showFieldError('confirmNewPassword', 'Mật khẩu không khớp');
+                        }
+                    }
+                });
+            }
+            
+            if (confirmPasswordInput) {
+                confirmPasswordInput.addEventListener('input', function() {
+                    const newPassword = newPasswordInput.value;
+                    if (this.value === newPassword && this.value.length > 0) {
+                        showFieldSuccess('confirmNewPassword', 'Mật khẩu khớp');
+                    } else if (this.value.length > 0) {
+                        showFieldError('confirmNewPassword', 'Mật khẩu không khớp');
+                    }
+                });
+            }
+        }
+
+        // Show field error
+        function showFieldError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(fieldId + 'Error');
+            const successElement = document.getElementById(fieldId + 'Success');
+            
+            if (field && errorElement) {
+                field.classList.add('is-invalid');
+                field.classList.remove('is-valid');
+                errorElement.textContent = message;
+                if (successElement) successElement.textContent = '';
+            }
+        }
+
+        // Show field success
+        function showFieldSuccess(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(fieldId + 'Error');
+            const successElement = document.getElementById(fieldId + 'Success');
+            
+            if (field && successElement) {
+                field.classList.add('is-valid');
+                field.classList.remove('is-invalid');
+                successElement.textContent = message;
+                if (errorElement) errorElement.textContent = '';
+            }
+        }
+
+        // Show code error
+        function showCodeError(message) {
+            const errorElement = document.getElementById('codeError');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Reset password validation
+        function resetPasswordValidation() {
+            const fields = ['newPassword', 'confirmNewPassword'];
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                const errorElement = document.getElementById(fieldId + 'Error');
+                const successElement = document.getElementById(fieldId + 'Success');
+                
+                if (field) {
+                    field.classList.remove('is-invalid', 'is-valid');
+                }
+                if (errorElement) errorElement.textContent = '';
+                if (successElement) successElement.textContent = '';
+            });
+        }
+
+        // Shake code inputs
+        function shakeCodeInputs() {
+            const codeInputs = document.querySelectorAll('.code-input');
+            codeInputs.forEach(input => {
+                input.classList.add('shake');
+                setTimeout(() => {
+                    input.classList.remove('shake');
+                }, 500);
+            });
+        }
+
+        // Show loading state
+        function showLoading(btnId, loading, text = 'Đang xử lý...') {
+            const btn = document.getElementById(btnId);
+            
+            if (loading) {
+                btn.disabled = true;
+                btn.classList.add('btn-loading');
+                btn.innerHTML = `
+                    <span class="spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                    <span style="opacity: 0;">${text}</span>
+                `;
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('btn-loading');
+                
+                // Restore original button content based on step
+                if (btnId === 'emailBtn') {
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi mã xác thực';
+                } else if (btnId === 'codeBtn') {
+                    btn.innerHTML = '<i class="fas fa-check"></i> Xác thực';
+                } else if (btnId === 'passwordBtn') {
+                    btn.innerHTML = '<i class="fas fa-save"></i> Cập nhật mật khẩu';
+                }
+            }
+        }
+
+        // Toggle password visibility
+        function togglePassword(inputId, toggleId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleIcon = document.getElementById(toggleId);
+            
+            if (passwordInput && toggleIcon) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 
+                              type === 'info' ? 'alert-info' : 'alert-warning';
+            
+            notification.className = `alert ${alertClass} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Demo: Log verification code to console for testing
+        console.log('Demo mode: Verification code will be logged to console');
+        
+        // Override generateVerificationCode for demo
+        const originalGenerateCode = generateVerificationCode;
+        generateVerificationCode = function() {
+            const code = originalGenerateCode();
+            console.log(`Verification code: ${code}`);
+            showNotification(`Demo: Mã xác thực là ${code}`, 'info');
+            return code;
+        };
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa37d525aa08dd',t:'MTc1OTgwNjc1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
