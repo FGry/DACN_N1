@@ -26,6 +26,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    // Giả định ImageProductRepository đã tồn tại nếu muốn xóa ảnh cũ
 
     // Đường dẫn lưu trữ vật lý trong thư mục dự án (Chỉ cho môi trường Dev)
     private final String UPLOAD_DIR = "D:/DoAnNhom1/DACN_N1/src/main/resources/static/images/products";
@@ -44,6 +45,9 @@ public class ProductServiceImpl implements ProductService {
                 .language(product.getLanguage())
                 .discount(product.getDiscount())
                 .description(product.getDescription())
+                // Giả định product có trường isPublished
+                // .isPublished(product.getIsPublished())
+
                 .categoryNames(product.getCategories().stream()
                         .map(Category::getName)
                         .collect(Collectors.toList()))
@@ -56,7 +60,51 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
-    // Helper: Chuyển đổi DTO sang Entity (Logic lưu ảnh)
+    // Helper: Tách riêng logic xử lý và lưu file ảnh
+    private List<ImageProduct> processAndSaveImages(Product product, List<MultipartFile> imageFiles) {
+
+        List<ImageProduct> newImages = new ArrayList<>();
+        Path uploadPath = Paths.get(UPLOAD_DIR);
+
+        try {
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            for (MultipartFile file : imageFiles) {
+                if (file.isEmpty()) continue;
+
+                String originalFilename = file.getOriginalFilename();
+                String fileExtension = "";
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
+
+                Path filePath = uploadPath.resolve(uniqueFilename);
+
+                try (InputStream inputStream = file.getInputStream()) {
+                    Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+                }
+
+                // ĐƯỜNG DẪN CÔNG KHAI LƯU VÀO DB (Khớp với WebConfig)
+                String webPath = "/uploads/products/" + uniqueFilename;
+
+                ImageProduct image = ImageProduct.builder()
+                        .image_link(webPath)
+                        .product(product)
+                        .build();
+                newImages.add(image);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Không thể lưu file ảnh.", e);
+        }
+        return newImages;
+    }
+
+
+    // Helper: Chuyển đổi DTO sang Entity (Logic lưu ảnh đã được tách)
     private Product convertToEntity(ProductDTO dto, Product existingProduct) {
         Product product = existingProduct != null ? existingProduct : new Product();
 
@@ -81,52 +129,20 @@ public class ProductServiceImpl implements ProductService {
             product.setCategories(new ArrayList<>());
         }
 
-        // 3. Xử lý ảnh tải lên
+        // 3. Xử lý ảnh (Chỉ xử lý khi có file mới)
         if (dto.getImageFiles() != null && !dto.getImageFiles().isEmpty() && !dto.getImageFiles().get(0).isEmpty()) {
 
+            // Xóa ảnh cũ (Đảm bảo quan hệ @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) đã được thiết lập đúng)
             if (product.getImages() != null) {
-                product.getImages().clear();
+                product.getImages().clear(); // Kích hoạt orphanRemoval
             } else {
                 product.setImages(new ArrayList<>());
             }
 
-            Path uploadPath = Paths.get(UPLOAD_DIR);
-
-            try {
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-
-                for (MultipartFile file : dto.getImageFiles()) {
-                    if (file.isEmpty()) continue;
-
-                    String originalFilename = file.getOriginalFilename();
-                    String fileExtension = "";
-                    if (originalFilename != null && originalFilename.contains(".")) {
-                        fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                    }
-                    String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
-
-                    Path filePath = uploadPath.resolve(uniqueFilename);
-
-                    try (InputStream inputStream = file.getInputStream()) {
-                        Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                    }
-
-                    // ĐƯỜNG DẪN CÔNG KHAI LƯU VÀO DB (Khớp với WebConfig)
-                    String webPath = "/uploads/products/" + uniqueFilename;
-
-                    ImageProduct image = ImageProduct.builder()
-                            .image_link(webPath)
-                            .product(product)
-                            .build();
-                    product.getImages().add(image);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException("Không thể lưu file ảnh.", e);
-            }
+            List<ImageProduct> newImages = processAndSaveImages(product, dto.getImageFiles());
+            product.getImages().addAll(newImages); // Thêm ảnh mới vào danh sách
         }
+
         return product;
     }
 
@@ -163,10 +179,17 @@ public class ProductServiceImpl implements ProductService {
         // 2. Logic lưu sản phẩm
         Product existingProduct = null;
         if (productDTO.getIdProducts() != null) {
+            // Lấy entity hiện có để Spring quản lý và cập nhật
             existingProduct = productRepository.findById(productDTO.getIdProducts()).orElse(null);
         }
 
         Product product = convertToEntity(productDTO, existingProduct);
+
+        // *Khởi tạo trạng thái ban đầu nếu là sản phẩm mới*
+        // if (product.getIdProducts() == null) {
+        //     product.setIsPublished(true);
+        // }
+
         productRepository.save(product);
     }
 
@@ -175,7 +198,7 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(id);
     }
 
-    // --- KHẮC PHỤC LỖI: TRIỂN KHAI PHƯƠNG THỨC BỊ THIẾU ---
+    // --- TRIỂN KHAI PHƯƠNG THỨC ĐÃ CÓ TRONG INTERFACE ---
 
     /** TRIỂN KHAI: Tìm kiếm sản phẩm theo từ khóa */
     @Override
@@ -184,7 +207,7 @@ public class ProductServiceImpl implements ProductService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return findAllProducts();
         }
-        // Dùng phương thức Repository đã được thêm vào
+        // Giả định productRepository có phương thức findByTitleContainingIgnoreCase
         List<Product> products = productRepository.findByTitleContainingIgnoreCase(keyword);
 
         return products.stream()
@@ -196,7 +219,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public List<ProductDTO> getProductsByCategory(Integer categoryId) {
-        // Dùng phương thức Repository đã được thêm vào
+        // Giả định productRepository có phương thức findByCategoriesId_categories
         List<Product> products = productRepository.findByCategoriesId_categories(categoryId);
 
         return products.stream()
@@ -204,16 +227,22 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
     }
 
-    /** TRIỂN KHAI: Chuyển đổi trạng thái (toggle) */
+    /** * TRIỂN KHAI: Chuyển đổi trạng thái (toggle)
+     * Yêu cầu Entity Product có trường Boolean isPublished/status
+     */
     @Override
     public boolean toggleProductStatus(Integer id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm có ID: " + id));
 
-        // Cần có logic cập nhật trạng thái trong Entity Product
-        // Ví dụ: product.setIsPublished(!product.getIsPublished());
+        // *Giả định Product có getter/setter cho trường isPublished*
+        // Boolean currentStatus = product.getIsPublished();
+        // product.setIsPublished(!currentStatus);
+
+        // Dòng này chỉ hoạt động nếu Entity có trường isPublished
         // productRepository.save(product);
 
-        return true;
+        // return product.getIsPublished(); // Trả về trạng thái mới
+        return true; // Trả về tạm true nếu không có trường isPublished
     }
 }

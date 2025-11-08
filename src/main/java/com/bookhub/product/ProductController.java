@@ -3,8 +3,9 @@ package com.bookhub.product;
 import com.bookhub.category.CategoryRepository;
 import com.bookhub.comments.CommentsDTO;
 import com.bookhub.comments.CommentsService;
+import com.bookhub.order.OrderService; // ⬅️ NEW: Cần cho logic kiểm tra đơn hàng
 import com.bookhub.user.User;
-import com.bookhub.user.UserService; // Vẫn cần để tìm User cho Comments
+import com.bookhub.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.security.Principal; // Dùng để lấy thông tin đăng nhập từ Spring Security
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,7 +27,8 @@ public class ProductController {
 	private final ProductService productService;
 	private final CategoryRepository categoryRepository;
 	private final CommentsService commentsService;
-	private final UserService userService; // Giữ lại để lấy User Entity cho Comments
+	private final UserService userService;
+	private final OrderService orderService; // ⬅️ Đã thêm OrderService
 
 	@GetMapping("/products")
 	public String listPublicProducts(
@@ -33,8 +36,6 @@ public class ProductController {
 			@RequestParam(name = "keyword", required = false) String keyword,
 			@RequestParam(name = "categoryId", required = false) Integer categoryId
 	) {
-		// *** KHÔNG CẦN LOGIC XÁC THỰC Ở ĐÂY NỮA ***
-
 		List<ProductDTO> products;
 		String title;
 
@@ -56,39 +57,74 @@ public class ProductController {
 		return "user/product";
 	}
 
+	/** * Helper: Lấy User Entity từ Principal
+	 */
+	private Optional<User> getAuthenticatedUser(Principal principal) {
+		if (principal == null) {
+			return Optional.empty();
+		}
+		return userService.findUserByEmail(principal.getName());
+	}
+
+
 	/** * [PUBLIC] Hiển thị chi tiết sản phẩm (GET /products/{id})
 	 */
 	@GetMapping("/products/{id}")
 	public String viewProductDetail(@PathVariable("id") Integer id, Principal principal, Model model) {
 
-		// GlobalAdvice đã thêm isLoggedIn và currentUser.
-		// Principal được dùng để lấy User ID cho form Comment.
-
 		try {
 			ProductDTO product = productService.findProductById(id);
 			model.addAttribute("product", product);
 
-			List<CommentsDTO> publishedComments = commentsService.getCommentsByProduct(id);
-			model.addAttribute("publishedComments", publishedComments);
+			Optional<User> userOpt = getAuthenticatedUser(principal);
+			Integer currentUserId = userOpt.map(User::getIdUser).orElse(null);
 
-			CommentsDTO newComment = new CommentsDTO();
-			newComment.setProductId(id);
+			// 1. Lấy tất cả đánh giá đã duyệt
+			List<CommentsDTO> allPublishedComments = commentsService.getCommentsByProduct(id);
 
-			// Lấy userId từ Principal cho form comment
-			if (principal != null) {
-				// Lấy email/username từ Principal và tìm User Entity
-				Optional<User> userOpt = userService.findUserByEmail(principal.getName());
-				userOpt.ifPresent(user -> newComment.setUserId(user.getIdUser()));
+			// 2. Phân loại đánh giá
+			CommentsDTO myReview = null;
+			boolean canReview = false;
+
+			if (currentUserId != null) {
+				// 2a. Lấy đánh giá của bản thân (nếu có)
+				Optional<CommentsDTO> existingReview = allPublishedComments.stream()
+						.filter(c -> currentUserId.equals(c.getUserId()) && c.getRate() != null && c.getRate() > 0)
+						.findFirst();
+
+				if (existingReview.isPresent()) {
+					myReview = existingReview.get();
+				}
+
+				// 2b. Kiểm tra quyền đánh giá (Chỉ đánh giá khi đã giao hàng VÀ chưa có đánh giá nào cho lần mua đó)
+				canReview = orderService.hasDeliveredProduct(currentUserId, id);
+
+				// Nếu đã có đánh giá, người dùng chỉ có thể CHỈNH SỬA, không thể TẠO mới.
+				if (myReview != null) {
+					// Vẫn đặt canReview=true để hiển thị form EDIT
+					// Logic chỉnh sửa/tạo mới sẽ được xử lý trong View
+				}
 			}
-			model.addAttribute("newComment", newComment);
+
+			// 3. Truyền biến vào Model
+			model.addAttribute("newComment", new CommentsDTO()); // Cần cho form tạo mới
+			model.addAttribute("myReview", myReview); // Đánh giá của riêng người dùng
+			model.addAttribute("canReview", canReview); // ⬅️ FIX: Luôn là boolean (true/false)
+			model.addAttribute("isLoggedIn", principal != null); // Có đăng nhập không
+
+			// Danh sách đầy đủ các comments (bao gồm cả review và comment, bao gồm cả của mình)
+			// View sẽ tự lọc (reviewed/comment-only) và loại trừ myReview.
+			model.addAttribute("publishedComments", allPublishedComments);
 
 			return "user/product_detail";
 
 		} catch (RuntimeException e) {
 			model.addAttribute("errorMessage", "Sản phẩm không tồn tại.");
-			return "error/404";
+			// Quay về trang lỗi hoặc danh sách sản phẩm thay vì 'error/404'
+			return "redirect:/products";
 		}
 	}
+
 
 	/** * [API PUBLIC] Lấy chi tiết sản phẩm bằng ID (GET /api/products/{id}) */
 	@GetMapping("/api/products/{id}")

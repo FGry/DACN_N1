@@ -15,7 +15,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // Phương thức tìm kiếm theo ID (đã có)
     Optional<User> findByIdUser(Integer idUser);
 
-    // 🏆 QUAN TRỌNG: Thêm phương thức FETCH JOIN để tải danh sách địa chỉ
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.addresses a WHERE u.idUser = ?1")
     Optional<User> findByIdWithAddresses(Integer idUser);
 

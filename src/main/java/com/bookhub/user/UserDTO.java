@@ -17,30 +17,21 @@ public class UserDTO {
 
     Integer idUser;
     String username;
-    // Đã loại bỏ 'password' vì lý do bảo mật
     String email;
     String gender;
     String phone;
     String roles;
-    Boolean isLocked; // Trường đã thêm
+    Boolean isLocked;
     LocalDate createDate;
     List<AddressDTO> addresses;
 
-    // --- PHƯƠNG THỨC CHUYỂN ĐỔI ---
-
-    /**
-     * Phương thức tĩnh chuyển đổi từ User Entity sang UserDTO.
-     * Lưu ý: Cần đảm bảo Address Entity có phương thức fromEntity(Address address).
-     */
     public static UserDTO fromEntity(User user) {
         if (user == null) return null;
 
-        // Kiểm tra Address có bị Lazy Load hay không
         List<AddressDTO> addressDtos = null;
         if (user.getAddresses() != null) {
             addressDtos = user.getAddresses().stream()
-                    // Giả định bạn có một phương thức tĩnh 'fromEntity' trong AddressDTO
-                    // Nếu không, bạn cần tạo lớp Mapper riêng hoặc sửa AddressDTO.java
+
                     .map(AddressDTO::fromEntity)
                     .collect(Collectors.toList());
         }
@@ -52,12 +43,10 @@ public class UserDTO {
                 .gender(user.getGender())
                 .phone(user.getPhone())
                 .roles(user.getRoles())
-                .isLocked(user.getIsLocked()) // Ánh xạ trường isLocked
+                .isLocked(user.getIsLocked())
                 .createDate(user.getCreateDate())
                 .addresses(addressDtos)
                 .build();
     }
 
-    // Phương thức giả định cho AddressDTO (Nếu bạn chưa thêm vào AddressDTO.java):
-    // Bạn cần đảm bảo đã thêm: public static AddressDTO fromEntity(Address address) { ... } vào AddressDTO.java
 }

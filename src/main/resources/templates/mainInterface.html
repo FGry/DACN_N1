@@ -55,6 +55,7 @@
             color: white;
             font-size: 1.2rem;
             position: relative;
+            cursor: pointer;
         }
 
         .cart-badge {
@@ -130,18 +131,16 @@
             color: #667eea;
         }
 
+        /* START: SỬA CSS CĂN CHỈNH THẺ SẢN PHẨM */
         .product-card {
+            display: flex;
+            flex-direction: column;
             background: white;
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             margin-bottom: 30px;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
 
         .product-image {
@@ -154,27 +153,47 @@
             color: #e67e22;
         }
 
+        .product-image img {
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+            padding: 10px;
+        }
+
         .product-info {
+            display: flex;
+            flex-direction: column;
+            min-height: 180px;
             padding: 20px;
+            flex-grow: 1;
         }
 
         .product-title {
+            height: 40px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 10px;
             cursor: pointer;
         }
 
-        .product-title:hover {
-            color: #667eea;
+        .product-info .text-muted {
+            height: 36px;
+            overflow: hidden;
+            margin-bottom: 10px;
         }
 
         .product-price {
+            margin-top: auto;
             color: #e74c3c;
             font-size: 1.2rem;
             font-weight: bold;
             margin-bottom: 15px;
         }
+        /* END: SỬA CSS CĂN CHỈNH THẺ SẢN PHẨM */
 
         .btn-add-cart {
             background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
@@ -263,6 +282,37 @@
             border-radius: 15px 15px 0 0;
         }
 
+        /* CSS cho Modal Cart Chi Tiết */
+        #cartModal .modal-body img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 5px;
+            margin-right: 15px;
+            border: 1px solid #eee;
+        }
+        #cartModal .modal-body .cart-item-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        #cartModal .modal-body .cart-item-detail:last-child {
+            border-bottom: none;
+        }
+        /* THÊM CSS CURSOR CHO TÊN SẢN PHẨM TRONG MODAL */
+        #cartModal .item-title-link {
+            cursor: pointer;
+            color: #343a40;
+            text-decoration: none;
+        }
+        #cartModal .item-title-link:hover {
+            color: #667eea;
+            text-decoration: underline;
+        }
+
+
         @media (max-width: 768px) {
             .hero-banner {
                 padding: 40px 0;
@@ -345,10 +395,10 @@
                     </div>
                 </div>
 
-                <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
+                <div class="cart-icon ms-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#cartModal">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-badge" id="cartCount">0</span>
-                </a>
+                </div>
             </div>
         </div>
     </div>
@@ -361,9 +411,9 @@
                 <div class="hero-content">
                     <h1>Khám phá thế giới tri thức</h1>
                     <p>Cửa hàng sách học tập hàng đầu dành cho học sinh, sinh viên. Chúng tôi cung cấp đầy đủ sách giáo khoa, sách tham khảo và tài liệu học tập chất lượng cao.</p>
-                    <button class="btn btn-primary-custom">
+                    <a th:href="@{/products}" class="btn btn-primary-custom">
                         <i class="fas fa-book"></i> Khám phá ngay
-                    </button>
+                    </a>
                 </div>
             </div>
             <div class="col-lg-6">
@@ -403,28 +453,28 @@
     <h2 class="mb-5">Danh mục sách</h2>
     <div class="row justify-content-center">
         <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory('giaokho')">
+            <div class="category-card" onclick="filterByCategory(1)">
                 <div class="category-icon"><i class="fas fa-book"></i></div>
                 <h5>Sách giáo khoa</h5>
                 <p class="text-muted">Toán, Lý, Hóa, Sinh, Văn...</p>
             </div>
         </div>
         <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory('thamkhao')">
+            <div class="category-card" onclick="filterByCategory(2)">
                 <div class="category-icon"><i class="fas fa-bookmark"></i></div>
                 <h5>Sách tham khảo</h5>
                 <p class="text-muted">Bài tập nâng cao, luyện thi</p>
             </div>
         </div>
         <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory('tienganh')">
+            <div class="category-card" onclick="filterByCategory(3)">
                 <div class="category-icon"><i class="fas fa-globe"></i></div>
                 <h5>Tiếng Anh</h5>
                 <p class="text-muted">Grammar, Vocabulary, IELTS</p>
             </div>
         </div>
         <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory('kynang')">
+            <div class="category-card" onclick="filterByCategory(4)">
                 <div class="category-icon"><i class="fas fa-lightbulb"></i></div>
                 <h5>Kỹ năng sống</h5>
                 <p class="text-muted">Tư duy, học tập hiệu quả</p>
@@ -434,12 +484,28 @@
 </div>
 
 
-<div class="container" id="products">
+<div class="container" id="featured-products">
     <h2 class="text-center mb-5">Sản phẩm nổi bật</h2>
     <div class="row" id="productList">
+        <div th:if="${products == null || products.isEmpty()}" class="col-12 text-center">
+            <div class="alert alert-info">
+                <strong>Thông báo:</strong> Hiện chưa có sản phẩm nổi bật nào để hiển thị.
+            </div>
+        </div>
     </div>
 </div>
-
+<div class="container" id="all-products" style="margin-top: 50px;">
+    <h2 class="text-center mb-5"><i class="fas fa-store"></i> Tất cả sản phẩm</h2>
+    <div class="row" id="allProductList">
+        <div th:if="${allProductsForHome == null || allProductsForHome.isEmpty()}" class="col-12 text-center">
+            <div class="alert alert-info">
+                <strong>Thông báo:</strong> Cửa hàng hiện chưa có sản phẩm nào.
+            </div>
+        </div>
+    </div>
+    <nav class="d-flex justify-content-center mt-5" id="pagination-container">
+    </nav>
+</div>
 <div class="container" id="about" style="margin-top: 60px;">
     <div class="row">
         <div class="col-lg-8 mx-auto text-center">
@@ -487,12 +553,11 @@
             </div>
             <div class="modal-body">
                 <div id="cartItems">
-                    <p class="text-center text-muted">Giỏ hàng trống</p>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <h5>Tổng cộng: <span id="totalPrice">0đ</span></h5>
-                    <a th:href="@{/user/cart}" class="btn btn-primary-custom">
-                        <i class="fas fa-credit-card"></i> Thanh toán
+                    <a th:href="@{/user/cart}" href="/user/cart" id="checkoutBtn" class="btn btn-primary-custom disabled">
+                        <i class="fas fa-credit-card"></i> Thanh toán (Đi đến giỏ hàng)
                     </a>
                 </div>
             </div>
@@ -532,91 +597,212 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script th:inline="javascript">
-    // Lấy dữ liệu sản phẩm từ Model (nếu có) hoặc dùng dữ liệu mẫu
-    const products = /*[[${products}]]*/ [
-        {
-            id: 1,
-            name: "Toán học 12 - Sách giáo khoa",
-            price: 45000,
-            category: "giaokho",
-            description: "Sách giáo khoa Toán học lớp 12, chương trình mới",
-            icon: "📚"
-        },
-        {
-            id: 2,
-            name: "Vật lý 11 - Bài tập nâng cao",
-            price: 65000,
-            category: "thamkhao",
-            description: "Bộ sách bài tập Vật lý nâng cao với nhiều dạng bài hay",
-            icon: "⚡"
-        },
-        {
-            id: 3,
-            name: "English Grammar in Use",
-            price: 120000,
-            category: "tienganh",
-            description: "Sách ngữ pháp tiếng Anh cơ bản đến nâng cao",
-            icon: "🇬🇧"
-        },
-        {
-            id: 4,
-            name: "Hóa học 10 - Sách giáo khoa",
-            price: 42000,
-            category: "giaokho",
-            description: "Sách giáo khoa Hóa học lớp 10, chương trình chuẩn",
-            icon: "🧪"
-        },
-        {
-            id: 5,
-            name: "Kỹ năng học tập hiệu quả",
-            price: 85000,
-            category: "kynang",
-            description: "Hướng dẫn phương pháp học tập hiệu quả cho học sinh",
-            icon: "💡"
-        },
-        {
-            id: 6,
-            name: "Văn học 12 - Tuyển tập",
-            price: 55000,
-            category: "giaokho",
-            description: "Tuyển tập văn học Việt Nam và thế giới lớp 12",
-            icon: "📖"
-        }
+    // --- 1. KHAI BÁO DỮ LIỆU SẢN PHẨM ---
+    // SẢN PHẨM NỔI BẬT (danh sách đã lọc 4 sản phẩm)
+    const featuredProductsFromController = /*[[${products}]]*/ [];
+    // TẤT CẢ SẢN PHẨM (Giả định Controller truyền TOÀN BỘ danh sách)
+    const allProductsData = /*[[${allProductsForHome}]]*/ []; // Tên biến này sẽ được đổi thành allProductsData
+
+    // --- LOGIC PHÂN TRANG FRONTEND ---
+    const productsPerPage = 12;
+    let currentPage = 1;
+    let totalPages = 0;
+
+
+    // Dữ liệu mẫu (sử dụng khi Controller không gửi dữ liệu)
+    const mockProducts = [
+        // ... (13 mock products như trong yêu cầu trước)
+        { id: 1, idProducts: 1, title: "Toán học 12 - Sách giáo khoa", price: 45000, description: "Sách giáo khoa Toán học lớp 12, chương trình mới", icon: "📚", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=T12']},
+        { id: 2, idProducts: 2, title: "Vật lý 11 - Bài tập nâng cao", price: 65000, description: "Bộ sách bài tập Vật lý nâng cao với nhiều dạng bài hay", icon: "⚡", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=L11']},
+        { id: 3, idProducts: 3, title: "English Grammar in Use", price: 120000, description: "Sách ngữ pháp tiếng Anh cơ bản đến nâng cao", icon: "🇬🇧", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=ENG']},
+        { id: 4, idProducts: 4, title: "Hóa học 10 - Sách giáo khoa", price: 42000, description: "Sách giáo khoa Hóa học lớp 10, chương trình chuẩn", icon: "🧪", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=H10']},
+        { id: 5, idProducts: 5, title: "Sinh học 12", price: 50000, description: "Sách giáo khoa Sinh học lớp 12", icon: "🧬", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=B12']},
+        { id: 6, idProducts: 6, title: "Luyện thi IELTS", price: 200000, description: "Bộ sách luyện thi IELTS 4 kỹ năng", icon: "📝", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=IELTS']},
+        { id: 7, idProducts: 7, title: "Văn học 10 - Tập 1", price: 38000, description: "Sách giáo khoa Văn học lớp 10", icon: "📜", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=V10']},
+        { id: 8, idProducts: 8, title: "Lịch sử Thế giới", price: 75000, description: "Sách tham khảo Lịch sử Thế giới", icon: "🕰️", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=HIS']},
+        { id: 9, idProducts: 9, title: "Kỹ năng quản lý thời gian", price: 90000, description: "Sách kỹ năng sống giúp quản lý thời gian hiệu quả", icon: "⏰", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=TIME']},
+        { id: 10, idProducts: 10, title: "Tiếng Anh giao tiếp A2", price: 110000, description: "Sách học tiếng Anh giao tiếp trình độ A2", icon: "🗣️", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=ENGA2']},
+        { id: 11, idProducts: 11, title: "Toán nâng cao 11", price: 85000, description: "Tuyển tập các bài toán nâng cao lớp 11", icon: "➕", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=TNC11']},
+        { id: 12, idProducts: 12, title: "Địa lý 12", price: 40000, description: "Sách giáo khoa Địa lý lớp 12", icon: "🌍", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=DLY12']},
+        { id: 13, idProducts: 13, title: "Giáo dục công dân 12", price: 30000, description: "Sách giáo khoa GDCD lớp 12", icon: "⚖️", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=GDCD']},
     ];
 
-    // Sử dụng 'bookstoreCart' để đồng bộ với các trang khác
-    let cart = JSON.parse(localStorage.getItem('bookstoreCart') || '[]');
-    let currentProducts = [...products];
 
-    // Load products on page load
+    // SẢN PHẨM NỔI BẬT (4 sản phẩm đầu)
+    const featuredProducts = featuredProductsFromController.length > 0 ? featuredProductsFromController : mockProducts.slice(0, 4);
+
+    // TẤT CẢ SẢN PHẨM (Dùng cho phân trang)
+    const allProducts = allProductsData.length > 0 ? allProductsData : mockProducts;
+
+    // Dùng danh sách đầy đủ để tra cứu chung (getProductById)
+    const products = allProducts;
+
+
+    // --- 2. LOGIC GIỎ HÀNG (GUEST CART) ---
+    let cart = JSON.parse(localStorage.getItem('bookstoreCart') || '[]');
+
     document.addEventListener('DOMContentLoaded', function() {
-        displayProducts(products);
-        updateCartUI();
+        // HIỂN THỊ SẢN PHẨM NỔI BẬT
+        if (featuredProducts && featuredProducts.length > 0) {
+            displayProducts(featuredProducts, 'productList');
+        }
+
+        // THIẾT LẬP VÀ HIỂN THỊ TRANG SẢN PHẨM ĐẦU TIÊN
+        if (allProducts && allProducts.length > 0) {
+            setupPagination();
+            renderProductsPage(currentPage);
+        }
+
+        updateCartUI(); // Gọi ngay khi tải trang để cập nhật Badge và Modal
     });
 
-    // (Không cần checkLoginStatus() vì Thymeleaf đã xử lý việc hiển thị)
 
-    // PHẦN LOGIC SẢN PHẨM (GIỮ NGUYÊN)
-    function displayProducts(productsToShow) {
-        const productList = document.getElementById('productList');
+    // --- HÀM PHÂN TRANG (PAGINATION) ---
+
+    function setupPagination() {
+        totalPages = Math.ceil(allProducts.length / productsPerPage);
+        renderPaginationButtons();
+    }
+
+    function renderProductsPage(page) {
+        currentPage = page;
+        const startIndex = (page - 1) * productsPerPage;
+        const endIndex = startIndex + productsPerPage;
+        const productsToShow = allProducts.slice(startIndex, endIndex);
+
+        displayProducts(productsToShow, 'allProductList');
+        renderPaginationButtons();
+
+        // Cuộn lên đầu mục sản phẩm khi chuyển trang
+        document.getElementById('all-products').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderPaginationButtons() {
+        const paginationContainer = document.getElementById('pagination-container');
+        paginationContainer.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        let paginationHTML = '<ul class="pagination">';
+
+        // Nút Previous
+        paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                              <a class="page-link" href="#" onclick="renderProductsPage(${currentPage - 1}); return false;">&laquo;</a>
+                           </li>`;
+
+        // Các nút số trang
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `<li class="page-item ${currentPage === i ? 'active' : ''}">
+                                 <a class="page-link" href="#" onclick="renderProductsPage(${i}); return false;">${i}</a>
+                              </li>`;
+        }
+
+        // Nút Next
+        paginationHTML += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                              <a class="page-link" href="#" onclick="renderProductsPage(${currentPage + 1}); return false;">&raquo;</a>
+                           </li>`;
+
+        paginationHTML += '</ul>';
+        paginationContainer.innerHTML = paginationHTML;
+    }
+
+
+    // --- CÁC HÀM TIỆN ÍCH ---
+
+    function formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    }
+
+    function getProductById(productId) {
+        // Tìm kiếm sản phẩm trong danh sách tra cứu chung
+        return products.find(p => p.idProducts === productId || p.id === productId);
+    }
+
+    // HÀM MỚI: Xử lý linh hoạt việc lấy đường dẫn ảnh từ product.imageLinks
+    function getFirstImageLink(product) {
+        if (!product.imageLinks || product.imageLinks.length === 0) {
+            return null;
+        }
+
+        let link = product.imageLinks[0];
+
+        // Trường hợp 1 & 2: Dữ liệu là đối tượng ImageProduct hoặc DTO
+        if (typeof link === 'object' && link !== null) {
+            // Ưu tiên truy cập thuộc tính mà bạn đã khai báo trong Entity (image_link)
+            if (link.image_link) {
+                link = link.image_link;
+            } else if (link.imageLink) {
+                link = link.imageLink;
+            } else {
+                return null;
+            }
+        }
+
+        // Trường hợp 3: Chuẩn hóa đường dẫn: LOẠI BỎ PREFIX VẬT LÝ VÀ FILE
+        if (typeof link === 'string') {
+            // Loại bỏ 'file:'
+            if (link.startsWith('file:')) {
+                link = link.substring(link.indexOf('/images/')); // Giả định đường dẫn công khai bắt đầu từ /images/
+            }
+            // Loại bỏ các đường dẫn tuyệt đối không cần thiết
+            let staticPath = '/src/main/resources/static';
+            if (link.includes(staticPath)) {
+                link = link.substring(link.indexOf('/images/'));
+            }
+
+            return link;
+        }
+
+        return null;
+    }
+
+
+    // --- HÀM HIỂN THỊ SẢN PHẨM TRÊN PAGE ---
+    // THAY ĐỔI: Thêm tham số containerId để hiển thị ở khu vực mong muốn
+    function displayProducts(productsToShow, containerId) {
+        const productList = document.getElementById(containerId);
+        if (!productList) return; // Bảo vệ nếu không tìm thấy container
         productList.innerHTML = '';
 
+        const defaultIcon = '<i class="fas fa-book fa-5x"></i>';
+
         productsToShow.forEach(product => {
+            const productId = product.idProducts || product.id;
+            const detailUrl = `/products/${productId}`;
+
+            // Xử lý mô tả ngắn
+            const shortDescription = product.description
+                ? (product.description.length > 50 ? product.description.substring(0, 50) + '...' : product.description)
+                : 'Chưa có mô tả.';
+
+            // Lấy đường dẫn ảnh cho thẻ (sử dụng hàm mới)
+            const imageLink = getFirstImageLink(product);
+            // Dùng placeholder nhỏ cho thẻ sản phẩm nếu không có link hợp lệ
+            const imageContent = imageLink
+                ? `<img src="${imageLink}" alt="${product.title || product.name}">`
+                : (product.icon || defaultIcon);
+
+            // Lấy giá hiển thị
+            const displayPrice = product.price || 0;
+
             const productCard = `
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-6">
                         <div class="product-card">
                             <div class="product-image">
-                                ${product.icon}
+                                ${imageContent}
                             </div>
                             <div class="product-info">
-                                <h5 class="product-title" onclick="showProductDetail(${product.id})">${product.name}</h5>
-                                <p class="text-muted">${product.description}</p>
-                                <div class="product-price">${formatPrice(product.price)}</div>
+                                <h5 class="product-title" onclick="showProductDetail(${productId})">${product.title || product.name}</h5>
+                                <p class="text-muted">${shortDescription}</p>
+                                <div class="product-price">${formatPrice(displayPrice)}</div>
                                 <div class="d-flex">
-                                    <button class="btn btn-add-cart" onclick="addToCart(${product.id})">
+                                    <button class="btn btn-add-cart" onclick="addToCart(${productId})">
                                         <i class="fas fa-cart-plus"></i> Thêm vào giỏ
                                     </button>
-                                    <button class="btn btn-order" onclick="orderNow(${product.id})">
+                                    <button class="btn btn-order" onclick="orderNow(${productId})">
                                         <i class="fas fa-shopping-bag"></i> Đặt hàng
                                     </button>
                                 </div>
@@ -628,39 +814,32 @@
         });
     }
 
-    function formatPrice(price) {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND'
-        }).format(price);
-    }
-
-    function searchBooks() {
-        // Chuyển hướng sang trang products để Spring Boot Controller xử lý
-        const searchTerm = document.getElementById('searchInput').value.trim();
-        if (searchTerm) {
-            window.location.href = `/user/product?keyword=${searchTerm}`;
-        }
-    }
-
-    function filterByCategory(category) {
-        // Chuyển hướng sang trang products để Spring Boot Controller xử lý
-        window.location.href = `/user/product?category=${category}`;
-    }
+    // --- CÁC HÀM XỬ LÝ KHÁC (GIỮ NGUYÊN) ---
 
     function addToCart(productId) {
-        const product = products.find(p => p.id === productId);
-        const existingItem = cart.find(item => item.id === productId);
+        const product = getProductById(productId);
+        const existingItem = cart.find(item => item.idProducts === productId);
+
+        if (!product) return;
 
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
-            cart.push({ ...product, quantity: 1, idProducts: productId }); // Đảm bảo idProducts tồn tại
+            // LƯU ĐƯỜNG DẪN ẢNH ĐÃ ĐƯỢC XỬ LÝ VÀO LOCALSTORAGE
+            const imageLink = getFirstImageLink(product);
+
+            cart.push({
+                idProducts: productId,
+                title: product.title || product.name,
+                price: product.price,
+                quantity: 1,
+                imageLink: imageLink
+            });
         }
 
         localStorage.setItem('bookstoreCart', JSON.stringify(cart));
         updateCartUI();
-        showNotification('Đã thêm vào giỏ hàng!', 'success');
+        showNotification(`Đã thêm ${product.title || product.name} vào giỏ hàng!`, 'success');
     }
 
     function orderNow(productId) {
@@ -676,49 +855,90 @@
         updateCartModal();
     }
 
+    /**
+     * Modal Giỏ hàng hiển thị chi tiết sản phẩm (ảnh, tên, giá, số lượng).
+     */
     function updateCartModal() {
         const cartItems = document.getElementById('cartItems');
         const totalPrice = document.getElementById('totalPrice');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+
+        let total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
 
         if (cart.length === 0) {
-            cartItems.innerHTML = '<p class="text-center text-muted">Giỏ hàng trống</p>';
+            cartItems.innerHTML = '<p class="text-center text-muted p-4">Giỏ hàng tạm thời đang trống.</p>';
             totalPrice.textContent = '0đ';
+            checkoutBtn.classList.add('disabled');
             return;
         }
 
         let cartHTML = '';
-        let total = 0;
 
         cart.forEach(item => {
-            const itemTotal = item.price * item.quantity;
-            total += itemTotal;
+            const itemId = item.idProducts;
+            const imgSource = item.imageLink || 'https://via.placeholder.com/60x60/DEDEDE?text=Book';
 
             cartHTML += `
-                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                <div class="cart-item-detail">
+                    <div class="d-flex align-items-center">
+                        <img src="${imgSource}" alt="${item.title}" loading="lazy">
                         <div>
-                            <h6 class="mb-0">${item.name}</h6>
-                            <small class="text-muted">${formatPrice(item.price)} x ${item.quantity}</small>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.id}, -1)">-</button>
-                            <span class="mx-2">${item.quantity}</span>
-                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.id}, 1)">+</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <a href="#" class="item-title-link" onclick="showProductDetail(${itemId}); return false;">
+                                <h6 class="mb-0">${item.title}</h6>
+                            </a>
+                            <small class="text-muted">${formatPrice(item.price)}</small>
                         </div>
                     </div>
-                `;
+
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-outline-secondary me-1" onclick="updateQuantityModal(${itemId}, -1)">-</button>
+                        <span class="mx-2 fw-bold">${item.quantity}</span>
+                        <button class="btn btn-sm btn-outline-secondary me-3" onclick="updateQuantityModal(${itemId}, 1)">+</button>
+
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${itemId})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
         });
 
         cartItems.innerHTML = cartHTML;
         totalPrice.textContent = formatPrice(total);
+        checkoutBtn.classList.remove('disabled');
     }
 
-    function updateQuantity(productId, change) {
-        const item = cart.find(item => item.id === productId);
+    function updateQuantityModal(productId, change) {
+        const item = cart.find(item => item.idProducts === productId || item.id === productId);
         if (item) {
-            item.quantity += change;
+            let newQuantity = item.quantity + change;
+
+            if (newQuantity < 1) {
+                showNotification('Sử dụng nút xóa để loại bỏ hoàn toàn sản phẩm.', 'warning');
+                return;
+            }
+
+            item.quantity = newQuantity;
+            localStorage.setItem('bookstoreCart', JSON.stringify(cart));
+            updateCartUI();
+        }
+    }
+
+
+    function updateQuantity(productId, change) {
+        const item = cart.find(item => item.idProducts === productId || item.id === productId);
+        if (item) {
+            let newQuantity = item.quantity + change;
+
+            if (newQuantity < 1) {
+                showNotification('Sử dụng nút xóa để loại bỏ hoàn toàn sản phẩm.', 'warning');
+                return;
+            }
+
+            item.quantity = newQuantity;
+
             if (item.quantity <= 0) {
                 removeFromCart(productId);
             } else {
@@ -729,19 +949,25 @@
     }
 
     function removeFromCart(productId) {
-        cart = cart.filter(item => item.id !== productId);
+        cart = cart.filter(item => item.idProducts !== productId && item.id !== productId);
         localStorage.setItem('bookstoreCart', JSON.stringify(cart));
         updateCartUI();
+        showNotification('Đã xóa khỏi giỏ hàng!', 'info');
     }
 
-    function checkout() {
-        // Chuyển hướng đến trang giỏ hàng chính thức
-        window.location.href = '/user/cart';
+    function searchBooks() {
+        const searchTerm = document.getElementById('searchInput').value.trim();
+        if (searchTerm) {
+            window.location.href = `/products?keyword=${searchTerm}`;
+        }
+    }
+
+    function filterByCategory(categoryId) {
+        window.location.href = `/products?categoryId=${categoryId}`;
     }
 
     function showProductDetail(productId) {
-        // Chuyển hướng đến trang chi tiết sản phẩm chính thức
-        window.location.href = `/user/product_detail/${productId}`;
+        window.location.href = `/products/${productId}`;
     }
 
     function showNotification(message, type) {
@@ -765,27 +991,6 @@
             }
         }, 3000);
     }
-
-    // Search on Enter key
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchBooks();
-        }
-    });
-
-    // Smooth scrolling for navigation links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
 </script>
 </body>
 </html>

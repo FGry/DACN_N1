@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
@@ -21,35 +22,62 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 				.authorizeHttpRequests(auth -> auth
-						// Quy tắc 1: Chỉ ADMIN mới truy cập /admin/**
+						// 1. CÁC ĐƯỜNG DẪN CÔNG KHAI
+						.requestMatchers(
+								// FIX LỖI ẢNH: Cho phép truy cập vào các đường dẫn tài nguyên tĩnh
+								"/css/**", "/js/**", "/images/**", "/webjars/**",
+								"/uploads/**",
+
+								"/",
+								"/login",
+								"/register",
+								"/products/**",
+								"/api/orders"
+						).permitAll()
+
+						// 2. CÁC ĐƯỜNG DẪN CỦA USER (Yêu cầu phải ĐĂNG NHẬP)
+						.requestMatchers(
+								"/user/**",
+								"/api/users/**",
+								"/api/orders/detail/**"
+						).authenticated()
+
+						// 3. QUY TẮC ADMIN: Chỉ ADMIN mới truy cập /admin/**
 						.requestMatchers("/admin/**").hasRole("ADMIN")
 
-						// Quy tắc 2: Tất cả các trang khác đều công khai
-						.anyRequest().permitAll()
+						// 4. Các request còn lại: Yêu cầu xác thực (Fallback)
+						.anyRequest().authenticated()
 				)
+
+				// --- CẤU HÌNH LOGIN ---
 				.formLogin(form -> form
 						.loginPage("/login")
 						.usernameParameter("email")
-						// Thêm successHandler để kiểm tra vai trò và chuyển hướng
 						.successHandler((request, response, authentication) -> {
-							// Kiểm tra xem người dùng đã xác thực có vai trò ADMIN hay không
+							// Kiểm tra vai trò để chuyển hướng
 							boolean isAdmin = authentication.getAuthorities().stream()
 									.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
 							if (isAdmin) {
-								// Nếu là ADMIN, chuyển hướng đến /admin/home
 								response.sendRedirect("/admin/home");
 							} else {
-								// Nếu không phải ADMIN, chuyển hướng đến trang mặc định (ví dụ: trang chủ)
 								response.sendRedirect("/");
 							}
 						})
 						.permitAll()
 				)
+
+				// --- CẤU HÌNH LOGOUT ---
 				.logout(logout -> logout
+						.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
 						.logoutSuccessUrl("/")
+						.invalidateHttpSession(true)  // FIX: Hủy phiên HTTP
+						.clearAuthentication(true)    // FIX: Xóa ngữ cảnh xác thực
+						.deleteCookies("JSESSIONID")  // NÊN CÓ
 						.permitAll()
 				)
+
+				// --- XỬ LÝ NGOẠI LỆ ---
 				.exceptionHandling(exceptions -> exceptions
 						.accessDeniedHandler((request, response, accessDeniedException) -> {
 							String requestUri = request.getRequestURI();

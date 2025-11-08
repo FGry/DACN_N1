@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* ==================== BASE STYLES ==================== */
         body {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -52,6 +51,7 @@
             color: white;
             font-size: 1.2rem;
             position: relative;
+            cursor: pointer;
         }
 
         .cart-badge {
@@ -69,7 +69,6 @@
             justify-content: center;
         }
 
-        /* ==================== PRODUCT GALLERY ==================== */
         .product-gallery {
             position: sticky;
             top: 20px;
@@ -77,8 +76,8 @@
 
         .main-image {
             border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Bóng đổ mạnh hơn */
-            height: 480px; /* Tăng chiều cao */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            height: 480px;
             object-fit: contain;
             width: 100%;
             margin-bottom: 20px;
@@ -98,7 +97,7 @@
             height: 90px;
             object-fit: contain;
             cursor: pointer;
-            border: 3px solid transparent; /* Viền dày hơn */
+            border: 3px solid transparent;
             border-radius: 10px;
             transition: all 0.3s ease;
             padding: 5px;
@@ -108,17 +107,16 @@
         }
 
         .thumbnail.active, .thumbnail:hover {
-            border-color: #764ba2; /* Màu tím đậm hơn */
+            border-color: #764ba2;
             transform: scale(1.05);
         }
 
-        /* ==================== PRODUCT DETAILS ==================== */
         .product-details {
             padding-left: 30px;
         }
 
         .product-price-detail {
-            font-size: 2.8rem; /* Kích thước lớn hơn */
+            font-size: 2.8rem;
             font-weight: 700;
             color: #e74c3c;
             margin-bottom: 5px;
@@ -131,12 +129,11 @@
             margin-left: 20px;
         }
 
-        /* CTA Buttons */
         .btn-add-cart-detail {
-            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%); /* Màu xanh Teal */
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
             border: none;
             color: white;
-            padding: 15px 40px; /* Lớn hơn */
+            padding: 15px 40px;
             border-radius: 30px;
             font-weight: 600;
             transition: all 0.3s;
@@ -148,10 +145,10 @@
         }
 
         .btn-order-detail {
-            background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%); /* Màu đỏ tươi */
+            background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%);
             border: none;
             color: white;
-            padding: 15px 40px; /* Lớn hơn */
+            padding: 15px 40px;
             border-radius: 30px;
             font-weight: 600;
             transition: all 0.3s;
@@ -162,22 +159,21 @@
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
         }
 
-        /* Quantity Control - CẬP NHẬT Ở ĐÂY */
         .quantity-control {
-            display: flex; /* Sử dụng flexbox để các phần tử nằm ngang */
-            align-items: center; /* Căn giữa theo chiều dọc */
-            border: 1px solid #ced4da; /* Thêm viền chung */
-            border-radius: 8px; /* Bo tròn góc */
-            overflow: hidden; /* Đảm bảo các button không bị tràn viền */
+            display: flex;
+            align-items: center;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            overflow: hidden;
         }
         .quantity-control button {
-            width: 45px; /* Chiều rộng cố định cho nút */
-            height: 45px; /* Chiều cao cố định */
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: none; /* Xóa viền riêng của button */
-            background-color: #f8f9fa; /* Màu nền nhạt */
+            border: none;
+            background-color: #f8f9fa;
             color: #495057;
             font-size: 1.2rem;
             transition: background-color 0.2s;
@@ -186,23 +182,20 @@
             background-color: #e2e6ea;
         }
         .quantity-control input {
-            width: 60px; /* Điều chỉnh chiều rộng input */
-            height: 45px; /* Đồng bộ chiều cao */
+            width: 60px;
+            height: 45px;
             text-align: center;
-            border: none; /* Xóa viền của input */
+            border: none;
             font-weight: 600;
             color: #343a40;
-            -moz-appearance: textfield; /* Loại bỏ mũi tên trên Firefox */
+            -moz-appearance: textfield;
         }
-        /* Loại bỏ mũi tên trên Chrome, Safari, Edge */
         .quantity-control input::-webkit-outer-spin-button,
         .quantity-control input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
 
-
-        /* ==================== TAB CONTENT & COMMENTS ==================== */
         .nav-tabs .nav-link {
             color: #34495e !important;
             font-weight: 600;
@@ -218,20 +211,19 @@
 
         .detail-box {
             background: #fff;
-            padding: 30px; /* Padding lớn hơn */
+            padding: 30px;
             border-radius: 0 10px 10px 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08); /* Bóng đổ đẹp hơn */
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
             border-top: none;
         }
         .detail-box h5 {
-            color: #764ba2; /* Màu tím */
+            color: #764ba2;
             font-weight: bold;
             border-bottom: 2px solid #f0f0f0;
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
 
-        /* Comment/Review Styles */
         .comment-item {
             border: none;
             border-radius: 10px;
@@ -248,7 +240,7 @@
             border-radius: 0 8px 8px 0;
         }
         .rating-stars {
-            color: #f39c12; /* Màu vàng cam */
+            color: #f39c12;
             font-size: 1.2rem;
         }
 
@@ -262,6 +254,66 @@
             padding: 40px 0 20px 0;
             margin-top: 60px;
         }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+
+        #cartModal .modal-body .cart-item-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        #cartModal .modal-body .cart-item-detail:last-child {
+            border-bottom: none;
+        }
+        #cartModal .item-title-link {
+            cursor: pointer;
+            color: #343a40;
+            text-decoration: none;
+        }
+        #cartModal .item-title-link:hover {
+            color: #667eea;
+            text-decoration: underline;
+        }
+
+        #cartItems img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-right: 15px;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        #checkoutBtnModal {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
 
         @media (max-width: 992px) {
             .product-details {
@@ -333,10 +385,10 @@
                     </div>
                 </div>
 
-                <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
+                <div class="cart-icon ms-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#cartModal">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-badge" id="cartCount">0</span>
-                </a>
+                </div>
             </div>
         </div>
     </div>
@@ -503,9 +555,10 @@
                                     <strong th:text="${comment.userName}"></strong>
                                     | Đánh giá:
                                     <span class="rating-stars">
-                                        <i th:each="i : ${#numbers.sequence(1, comment.rate)}" class="fas fa-star"></i>
-                                        <i th:each="i : ${#numbers.sequence(comment.rate + 1, 5)}" class="far fa-star"></i>
-                                    </span>
+                        <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                            <i th:classappend="${i <= comment.rate ? 'fas fa-star' : 'far fa-star'}"></i>
+                        </th:block>
+                    </span>
                                 </div>
                                 <small class="text-muted" th:text="${#temporals.format(comment.date, 'dd-MM-yyyy')}"></small>
                             </div>
@@ -571,24 +624,22 @@
 </div>
 
 <div class="modal fade" id="cartModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-shopping-cart"></i> Giỏ hàng của bạn</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title"><i class="fas fa-shopping-cart"></i> Giỏ hàng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div id="cartItems">
                     <p class="text-center text-muted">Giỏ hàng trống</p>
                 </div>
-            </div>
-            <div class="modal-footer d-flex justify-content-between">
-                <div>
-                    <strong>Tổng cộng:</strong> <span id="totalPrice">0đ</span>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <h5>Tổng cộng: <span id="totalPrice">0đ</span></h5>
+                    <a th:href="@{/user/cart}" href="/user/cart" id="checkoutBtnModal" class="btn btn-primary-custom disabled">
+                        <i class="fas fa-credit-card"></i> Thanh toán (Đi đến giỏ hàng)
+                    </a>
                 </div>
-                <a th:href="@{/user/cart}" class="btn btn-primary-custom">
-                    Thanh toán
-                </a>
             </div>
         </div>
     </div>
@@ -609,7 +660,6 @@
         updateCartUI();
     });
 
-    // ======================== GALLERY & QUANTITY ========================
     function changeMainImage(thumbnail) {
         const mainImage = document.getElementById('mainProductImage');
         const newSrc = thumbnail.getAttribute('data-src');
@@ -628,7 +678,7 @@
 
         let newValue = currentValue + change;
 
-        if (isNaN(newValue) || newValue < 1) { // Xử lý NaN hoặc giá trị nhỏ hơn 1
+        if (isNaN(newValue) || newValue < 1) {
             newValue = 1;
         }
         if (newValue > maxValue) {
@@ -638,7 +688,6 @@
     }
 
     function validateQuantity(input) {
-        // Hàm này sẽ ít được dùng hơn nếu input là readonly, nhưng vẫn giữ để phòng hờ
         let value = parseInt(input.value);
         const maxValue = parseInt(input.getAttribute('max'));
 
@@ -649,8 +698,6 @@
         }
     }
 
-
-    // ======================== CART LOGIC ========================
     function formatPrice(price) {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -675,8 +722,9 @@
         const discountedPrice = product.price - (product.price * product.discount / 100);
 
         if (product) {
+            let imageLink = product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null;
+
             if (existingItem) {
-                // Kiểm tra lại tổng số lượng không vượt quá kho
                 if (existingItem.quantity + quantity > product.stockQuantity) {
                     showNotification(`Tổng số lượng trong giỏ hàng không được vượt quá số lượng trong kho (${product.stockQuantity})!`, 'warning');
                     return;
@@ -687,7 +735,7 @@
                     idProducts: productId,
                     title: product.title,
                     price: discountedPrice,
-                    imageLink: product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null,
+                    imageLink: imageLink,
                     quantity: quantity
                 });
             }
@@ -714,34 +762,41 @@
     function updateCartModal() {
         const cartItems = document.getElementById('cartItems');
         const totalPriceElement = document.getElementById('totalPrice');
+        const checkoutBtn = document.getElementById('checkoutBtnModal');
+
+        let total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
         if (cart.length === 0) {
             cartItems.innerHTML = '<p class="text-center text-muted">Giỏ hàng trống</p>';
             totalPriceElement.textContent = '0đ';
+            checkoutBtn.classList.add('disabled');
             return;
         }
 
+        checkoutBtn.classList.remove('disabled');
+
         let cartHTML = '';
-        let total = 0;
 
         cart.forEach(item => {
-            const itemTotal = item.price * item.quantity;
-            total += itemTotal;
+            const itemId = item.idProducts;
+            const imgSource = item.imageLink || 'https://via.placeholder.com/60x60/DEDEDE?text=Book';
 
             cartHTML += `
-                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div class="cart-item-detail">
                             <div class="d-flex align-items-center">
-                                <img src="${item.imageLink}" alt="${item.title}" style="width: 50px; height: 50px; object-fit: contain; margin-right: 10px;">
+                                <img src="${imgSource}" alt="${item.title}">
                                 <div>
-                                    <h6 class="mb-0">${item.title}</h6>
-                                    <small class="text-muted">${formatPrice(item.price)} x ${item.quantity}</small>
+                                    <a href="/products/${itemId}" class="item-title-link">
+                                        <h6 class="mb-0">${item.title}</h6>
+                                    </a>
+                                    <small class="text-muted">${formatPrice(item.price)}</small>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center">
-                                <button class="btn btn-sm btn-outline-secondary me-1" onclick="updateQuantityModal(${item.idProducts}, -1)">-</button>
-                                <span class="mx-2">${item.quantity}</span>
-                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantityModal(${item.idProducts}, 1)">+</button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.idProducts})">
+                                <button class="btn btn-sm btn-outline-secondary me-1" onclick="updateQuantityModal(${itemId}, -1)">-</button>
+                                <span class="mx-2 fw-bold">${item.quantity}</span>
+                                <button class="btn btn-sm btn-outline-secondary me-3" onclick="updateQuantityModal(${itemId}, 1)">+</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${itemId})">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -756,16 +811,22 @@
     function updateQuantityModal(productId, change) {
         const item = cart.find(item => item.idProducts === productId);
         if (item) {
-            const product = productData; // Lấy thông tin sản phẩm từ productData
+            let maxStock = 999;
+
+            if (productData.idProducts === productId) {
+                maxStock = productData.stockQuantity;
+            }
+
             let newQuantity = item.quantity + change;
 
             if (newQuantity <= 0) {
-                removeFromCart(productId); // Xóa nếu số lượng về 0
+                removeFromCart(productId);
                 return;
             }
-            if (newQuantity > product.stockQuantity) {
-                showNotification(`Tổng số lượng trong giỏ hàng không được vượt quá số lượng trong kho (${product.stockQuantity})!`, 'warning');
-                return; // Ngăn không cho vượt quá số lượng trong kho
+
+            if (newQuantity > maxStock) {
+                showNotification(`Tổng số lượng không được vượt quá số lượng trong kho (${maxStock})!`, 'warning');
+                return;
             }
 
             item.quantity = newQuantity;
@@ -778,11 +839,16 @@
         cart = cart.filter(item => item.idProducts !== productId);
         localStorage.setItem('bookstoreCart', JSON.stringify(cart));
         updateCartUI();
+        showNotification('Đã xóa khỏi giỏ hàng!', 'info');
     }
 
     function showNotification(message, type) {
         const notification = document.createElement('div');
-        notification.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} position-fixed`;
+        const alertClass = type === 'success' ? 'alert-success' :
+            type === 'warning' ? 'alert-warning' :
+                type === 'error' ? 'alert-danger' : 'alert-info';
+
+        notification.className = `alert ${alertClass} position-fixed`;
         notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
         notification.innerHTML = `
                     ${message}

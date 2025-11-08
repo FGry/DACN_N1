@@ -8,6 +8,6 @@ public class OrderDetailDTO {
     private String productAuthor;
     private String productImageUrl;
     private Integer quantity;
-    private Long priceAtDate; // price_date
+    private Long priceAtDate;
     private String priceAtDateFormatted;
 }

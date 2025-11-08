@@ -1,6 +1,12 @@
 package com.bookhub.order;
 
+import com.bookhub.product.Product;
 import com.bookhub.product.ProductRepository;
+import com.bookhub.user.User;
+import com.bookhub.user.UserRepository;
+import com.bookhub.voucher.Voucher;
+import com.bookhub.voucher.VoucherRepository;
+import com.bookhub.order.OrderCreationRequest.OrderItemRequest;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
@@ -8,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import org.apache.poi.ss.usermodel.*;
@@ -18,25 +24,27 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
+// *****************************************************************
+// LƯU Ý: CÁC Entity, DTO (Order, OrderDTO, OrderCreationRequest, OrderDetail, etc.)
+// phải được định nghĩa đúng trong project của bạn.
+// *****************************************************************
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class OrderService {
 
+    // --- REPOSITORIES ---
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final UserRepository userRepository;
+    private final VoucherRepository voucherRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // ===============================================
-    // === INNER STATIC CLASSES (DTOs MỚI TẠO) ===
-    // ===============================================
-
     /** DTO cho dữ liệu sản phẩm bán chạy. */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class ProductSaleStats {
         private String title;
         private Long quantitySold;
@@ -44,11 +52,7 @@ public class OrderService {
     }
 
     /** DTO tổng hợp dữ liệu cho Dashboard/Báo cáo. */
-    @Getter
-    @Setter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class RevenueStatsDTO {
         Long totalRevenue;
@@ -56,8 +60,7 @@ public class OrderService {
         List<ProductSaleStats> topSellingProducts;
         List<DataPoint> monthlyRevenue;
 
-        @Getter
-        @Setter
+        @Getter @Setter
         public static class DataPoint {
             String label;
             Double value;
@@ -65,9 +68,81 @@ public class OrderService {
     }
 
 
-    // ===============================================
-    // === CHỨC NĂNG THỐNG KÊ ===
-    // ===============================================
+    @Transactional
+    public OrderDTO createOrder(OrderCreationRequest request, User authenticatedUser) {
+
+        // 1. XỬ LÝ VOUCHER
+        Voucher voucher = null;
+        if (request.getVoucherId() != null) {
+            voucher = voucherRepository.findById(request.getVoucherId())
+                    .orElseThrow(() -> new RuntimeException("Voucher không hợp lệ."));
+            // TODO: Cần thêm logic kiểm tra và áp dụng voucher
+        }
+
+        // 2. TẠO ORDER CHÍNH
+        Order newOrder = Order.builder()
+                .address(request.getAddress())
+                .phone(request.getPhone())
+                .payment_method(request.getPaymentMethod())
+                .note(request.getNote())
+                .total(request.getTotalAmount())
+                .date(LocalDate.now())
+                .status_order("PENDING")
+                .user(authenticatedUser) // ⬅️ Dùng User đã được xác thực (Khắc phục lỗi ID=1)
+                .voucher(voucher)
+                .build();
+
+        // 3. LƯU ORDER để có ID
+        Order savedOrder = orderRepository.save(newOrder);
+
+        // 4. TẠO VÀ LƯU ORDER DETAILS
+        List<OrderDetail> details = request.getItems().stream().map(itemRequest -> {
+            Product product = productRepository.findById(itemRequest.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Product với ID: " + itemRequest.getProductId()));
+
+            // TODO: Thêm logic kiểm tra tồn kho và trừ tồn kho
+
+            Long detailTotal = itemRequest.getPriceAtDate() * itemRequest.getQuantity();
+
+            return OrderDetail.builder()
+                    .discount(0)
+                    .price_date(itemRequest.getPriceAtDate())
+                    .quantity(itemRequest.getQuantity())
+                    .total(detailTotal)
+                    .order(savedOrder)
+                    .product(product)
+                    .build();
+        }).collect(Collectors.toList());
+
+        // 5. LƯU ORDER DETAILS
+        List<OrderDetail> savedDetails = orderDetailRepository.saveAll(details);
+
+        // 6. CẬP NHẬT danh sách chi tiết vào Order
+        savedOrder.setOrderDetails(savedDetails);
+
+        // 7. TRẢ VỀ DTO
+        return mapToDetailDTO(savedOrder);
+    }
+
+
+    public boolean hasDeliveredProduct(Integer userId, Integer productId) {
+        if (userId == null || productId == null) {
+            return false;
+        }
+
+        // Giả định OrderRepository có phương thức countDeliveredPurchases(userId, productId)
+        // để truy vấn CSDL xem có đơn hàng nào DELIVERED chứa sản phẩm này không.
+        Long count = orderRepository.countDeliveredPurchases(userId, productId);
+
+        return count != null && count > 0;
+    }
+
+    public List<OrderDTO> findOrdersByUserId(Integer userId) {
+        return orderRepository.findByUser_IdUser(userId).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
 
     public long getTotalRevenue(Integer year) {
         return orderRepository.sumTotalDeliveredOrders(year)
@@ -103,10 +178,8 @@ public class OrderService {
         stats.setTotalRevenue(getTotalRevenue(year));
         stats.setTotalDeliveredOrders(getTotalDeliveredOrders(year));
 
-        // Lấy dữ liệu thô (Object[]) từ Repository
         List<Object[]> rawTopProducts = orderRepository.findAllSellingProductsByYear(year);
 
-        // MAPPING thủ công từ Object[] sang DTO
         List<ProductSaleStats> allTopProducts = rawTopProducts.stream().map(row ->
                 new ProductSaleStats(
                         (String) row[0],         // title
@@ -114,7 +187,6 @@ public class OrderService {
                         (Long) row[2]            // totalRevenue
                 )
         ).collect(Collectors.toList());
-
 
         List<ProductSaleStats> top5Products = allTopProducts.stream()
                 .limit(5)
@@ -126,10 +198,6 @@ public class OrderService {
         return stats;
     }
 
-
-    // ===============================================
-    // === NEW: EXPORT TO EXCEL FUNCTIONALITY ===
-    // ===============================================
 
     public ByteArrayInputStream exportRevenueData(RevenueStatsDTO stats, Integer year) throws IOException {
 
@@ -164,7 +232,6 @@ public class OrderService {
             row2.createCell(1).setCellValue(numberFormatter.format(stats.getTotalDeliveredOrders()));
 
 
-            // --- SHEET 2: TOP SẢN PHẨM BÁN CHẠY (Đã đảm bảo logic ghi dữ liệu) ---
             Sheet topProductsSheet = workbook.createSheet("TOP SẢN PHẨM BÁN CHẠY");
 
             Row headerRow = topProductsSheet.createRow(0);
@@ -181,14 +248,11 @@ public class OrderService {
             topProductsSheet.setColumnWidth(3, 5000);
             topProductsSheet.setColumnWidth(4, 3000);
 
-            // Cell Style cho giá trị tiền tệ
             CellStyle currencyStyle = workbook.createCellStyle();
             currencyStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0\"₫\""));
 
-            // Cell Style cho phần trăm (định dạng trong Excel)
             CellStyle percentStyle = workbook.createCellStyle();
             percentStyle.setDataFormat(workbook.createDataFormat().getFormat("0.00%"));
-
 
             int rowNum = 1;
 
@@ -223,9 +287,6 @@ public class OrderService {
         }
     }
 
-    // ===============================================
-    // === CÁC HÀM CRUD & MAPPING CŨ (Giữ nguyên) ===
-    // ===============================================
 
     public List<OrderDTO> findAllOrders() {
         List<Order> orders = orderRepository.findAllWithUserAndDetails();
@@ -255,7 +316,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-
     @Transactional
     public void updateOrderStatus(Integer id, String newStatus) {
         Order order = orderRepository.findById(id)
@@ -275,8 +335,6 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    // --- MAPPING HELPERS ---
-
     private OrderDTO mapToDTO(Order entity) {
         OrderDTO dto = new OrderDTO();
         dto.setIdOrder(entity.getId_order());
@@ -290,10 +348,14 @@ public class OrderService {
         dto.setDateFormatted(entity.getDate().format(DATE_FORMATTER));
 
         if (entity.getOrderDetails() != null) {
+            List<OrderDetailDTO> detailDTOs = entity.getOrderDetails().stream().map(this::mapDetailToDTO).collect(Collectors.toList());
+            dto.setProductDetails(detailDTOs);
+
             long count = entity.getOrderDetails().stream().mapToLong(OrderDetail::getQuantity).sum();
             dto.setTotalProducts((int) count);
         } else {
             dto.setTotalProducts(0);
+            dto.setProductDetails(List.of());
         }
         return dto;
     }

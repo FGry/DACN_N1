@@ -1,8 +1,13 @@
 package com.bookhub.comments;
 
+import com.bookhub.user.User;
+import com.bookhub.user.UserService;
+import com.bookhub.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,16 +16,41 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
 public class CommentsController {
 
     private final CommentsService commentsService;
+    private final UserService userService;
+    private final OrderService orderService;
 
-    // ===================================
-    // === PHẦN ENDPOINT DÀNH CHO ADMIN (Giữ nguyên) ===
-    // ===================================
+
+    /** Lấy User Entity đầy đủ từ DB dựa trên Principal (Email) của Spring Security */
+    private Optional<User> getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated() &&
+                !authentication.getPrincipal().equals("anonymousUser")) {
+
+            String email = authentication.getName();
+            return userService.findUserByEmail(email);
+        }
+        return Optional.empty();
+    }
+
+    private Integer getCurrentAuthenticatedUserId() {
+        Optional<User> userOpt = getAuthenticatedUser();
+        return userOpt.map(User::getIdUser).orElse(null);
+    }
+
+    private boolean hasUserPurchasedProduct(Integer userId, Integer productId) {
+        if (userId == null || productId == null) {
+            return false;
+        }
+        return orderService.hasDeliveredProduct(userId, productId);
+    }
 
     // 1. Xem danh sách tất cả bình luận/đánh giá
     @GetMapping("/admin/comments")
@@ -37,7 +67,6 @@ public class CommentsController {
         model.addAttribute("totalPages", pageComments.getTotalPages());
         model.addAttribute("totalElements", pageComments.getTotalElements());
 
-        // Truyền các tham số filter rỗng
         model.addAttribute("typeFilter", "");
         model.addAttribute("statusFilter", "");
         model.addAttribute("rateFilter", "");
@@ -130,10 +159,6 @@ public class CommentsController {
         }
     }
 
-    // =====================================
-    // === PHẦN ENDPOINT DÀNH CHO USER/PUBLIC ===
-    // =====================================
-
     // 8. Xem danh sách tất cả bình luận công khai
     @GetMapping("/comments/public")
     public String listAllComments(Model model) {
@@ -158,7 +183,7 @@ public class CommentsController {
         return "comments/new";
     }
 
-    /** 11a. Lưu ĐÁNH GIÁ (Phải có rate > 0) - Dành cho khách hàng ĐÃ MUA HÀNG */
+    /** 11a. Lưu ĐÁNH GIÁ (Phải có rate > 0) - Dùng ID thực tế & Kiểm tra đã mua hàng */
     @PostMapping("/comments/review/save")
     public String saveReview(@ModelAttribute("newComment") CommentsDTO comment, RedirectAttributes ra) {
         Integer currentUserId = getCurrentAuthenticatedUserId();
@@ -174,18 +199,15 @@ public class CommentsController {
             return "redirect:/products/" + comment.getProductId() + "#review";
         }
 
-        // --- LOGIC KIỂM TRA ĐÃ MUA HÀNG ---
+        // --- LOGIC KIỂM TRA ĐÃ MUA HÀNG (SỬ DỤNG SERVICE) ---
         boolean hasPurchased = hasUserPurchasedProduct(currentUserId, comment.getProductId());
 
         if (!hasPurchased) {
-            ra.addFlashAttribute("errorMessage", "Bạn chỉ có thể đánh giá sản phẩm sau khi đã mua hàng.");
+            ra.addFlashAttribute("errorMessage", "Bạn chỉ có thể đánh giá sản phẩm sau khi đơn hàng đã được giao.");
             return "redirect:/products/" + comment.getProductId() + "#review";
         }
-        // ------------------------------------
 
-        // Gán giá trị bắt buộc trước khi lưu
         comment.setUserId(currentUserId);
-        // FIX: Đảm bảo gán giá trị cho purchase_verified để tránh lỗi NOT NULL
         comment.setPurchaseVerified(hasPurchased);
 
         commentsService.createComment(comment);
@@ -193,7 +215,7 @@ public class CommentsController {
         return "redirect:/products/" + comment.getProductId() + "#review";
     }
 
-    /** 11b. Lưu BÌNH LUẬN (Bắt buộc không có rate, chỉ có messages) - Dành cho khách hàng ĐÃ ĐĂNG NHẬP */
+    /** 11b. Lưu BÌNH LUẬN (Bắt buộc không có rate, chỉ có messages) - Dùng ID thực tế */
     @PostMapping("/comments/comment-only/save")
     public String saveCommentOnly(@ModelAttribute("newComment") CommentsDTO comment, RedirectAttributes ra) {
         Integer currentUserId = getCurrentAuthenticatedUserId();
@@ -204,41 +226,18 @@ public class CommentsController {
         }
 
         // --- LOGIC BẮT BUỘC KHÔNG CÓ SAO (RATE) & CÓ TIN NHẮN ---
-        comment.setRate(null); // Đảm bảo rate là null/0 cho bình luận
+        comment.setRate(null);
 
         if (comment.getMessages() == null || comment.getMessages().trim().isEmpty()) {
             ra.addFlashAttribute("errorMessage", "Nội dung bình luận không được để trống.");
             return "redirect:/products/" + comment.getProductId() + "#comment";
         }
-        // ------------------------------------
 
-        // Gán giá trị bắt buộc trước khi lưu
         comment.setUserId(currentUserId);
-        // FIX: Đảm bảo gán giá trị cho purchase_verified để tránh lỗi NOT NULL
         comment.setPurchaseVerified(false);
 
         commentsService.createComment(comment);
         ra.addFlashAttribute("successMessage", "Bình luận của bạn đã được gửi thành công và đang chờ duyệt.");
         return "redirect:/products/" + comment.getProductId() + "#comment";
-    }
-
-    // =====================================
-    // === HÀM GIẢ ĐỊNH (Cần thay thế bằng logic thực tế) ===
-    // =====================================
-
-    /** * Hàm giả định lấy ID người dùng đã đăng nhập.
-     * Trong thực tế: Lấy từ Spring SecurityContextHolder.
-     */
-    private Integer getCurrentAuthenticatedUserId() {
-        // GIẢ LẬP: Trả về ID 1 nếu đăng nhập, trả về null nếu chưa đăng nhập
-        return 1; // Ví dụ: Giả sử người dùng ID 1 đã đăng nhập
-    }
-
-    /** * Hàm giả định kiểm tra người dùng đã mua sản phẩm chưa.
-     * Trong thực tế: Cần truy vấn bảng Đơn hàng (Orders) và Chi tiết đơn hàng (OrderDetails)
-     */
-    private boolean hasUserPurchasedProduct(Integer userId, Integer productId) {
-        // GIẢ LẬP: Người dùng ID 1 đã mua hàng
-        return userId != null && userId.equals(1);
     }
 }

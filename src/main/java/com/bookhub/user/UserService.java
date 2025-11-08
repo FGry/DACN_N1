@@ -1,9 +1,6 @@
 package com.bookhub.user;
 
-import com.bookhub.address.Address;
-import com.bookhub.address.AddressRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,9 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// Đảm bảo import UserDTO
-// import com.bookhub.user.UserDTO;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -22,25 +16,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private AddressRepository addressRepository;
-
-    // ===============================================
-    // === CHỨC NĂNG CỐT LÕI CHO SPRING SECURITY ===
-    // ===============================================
-
-    /**
-     * Hỗ trợ CustomUserDetailsService tìm kiếm người dùng bằng email.
-     */
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    // ===============================================
-    // === CÁC HÀM CRUD & LOGIC KHÁC ===
-    // ===============================================
-
     public List<UserDTO> getAllUsers() {
+        // Giả định UserDTO.fromEntity(User) tồn tại
         return userRepository.findAll().stream()
                 .map(UserDTO::fromEntity)
                 .collect(Collectors.toList());
@@ -50,6 +31,7 @@ public class UserService {
         User user = userRepository.findByIdWithAddresses(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + id));
 
+        // Giả định UserDTO.fromEntity(User) tồn tại
         return UserDTO.fromEntity(user);
     }
 
@@ -112,39 +94,10 @@ public class UserService {
     }
 
     public Optional<User> findUserById(Integer userId) {
+        // Giả định UserRepository có phương thức findByIdUser(Integer)
         return userRepository.findByIdUser(userId);
     }
 
-    // ... (Giữ nguyên các hàm saveUserAddress và updateUser)
-    @Transactional
-    public void saveUserAddress(Integer idUser, String city, String district, String street, String notes) {
-        Optional<User> userOpt = userRepository.findByIdUser(idUser);
-        if (userOpt.isEmpty()) {
-            throw new RuntimeException("Người dùng không tồn tại");
-        }
-
-        User user = userOpt.get();
-        String notesText = (notes != null && !notes.isEmpty()) ? notes : "không có";
-        String fullAddress = String.format("%s, %s, %s (Ghi chú: %s)", street, district, city, notesText);
-
-        List<Address> userAddresses = user.getAddresses();
-        Address addressToSave;
-
-        if (userAddresses != null && !userAddresses.isEmpty()) {
-            addressToSave = userAddresses.get(0);
-        } else {
-            addressToSave = new Address();
-            addressToSave.setUser(user);
-        }
-
-        addressToSave.setFullAddressDetail(fullAddress);
-        addressToSave.setPhone(user.getPhone());
-
-        addressRepository.save(addressToSave);
-
-        user.setUpdateDate(LocalDate.now());
-        userRepository.save(user);
-    }
 
     @Transactional
     public User updateUser(Integer idUser, String username, String email, String phone, String gender) {

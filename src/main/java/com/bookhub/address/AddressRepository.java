@@ -1,9 +1,10 @@
+
 package com.bookhub.address;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.List;
 
-@Repository
 public interface AddressRepository extends JpaRepository<Address, Integer> {
-    // Các phương thức tìm kiếm bổ sung nếu cần
+
+    List<Address> findByUser_IdUser(Integer userId);
 }

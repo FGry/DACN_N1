@@ -43,14 +43,12 @@ public class User {
     @Column(name = "is_locked", nullable = false)
     private Boolean isLocked = false;
 
-    // FIX LỖI: Thay đổi FetchType.LAZY thành FetchType.EAGER
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<Address> addresses;
 
-    // ===== Constructors (Không thay đổi) =====
+
     public User() {}
 
-    // THÊM: Phương thức tiện ích để lấy địa chỉ đầu tiên
     public String getFirstAddress() {
         if (addresses != null && !addresses.isEmpty()) {
             return addresses.get(0).getFullAddressDetail();

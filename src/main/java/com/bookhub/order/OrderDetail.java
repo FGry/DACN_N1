@@ -1,6 +1,7 @@
 package com.bookhub.order;
 
 import com.bookhub.product.Product;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -26,6 +27,7 @@ public class OrderDetail {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Orders_id_order")
+    @JsonIgnore
     Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)

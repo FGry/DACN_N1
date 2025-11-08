@@ -25,14 +25,12 @@ public class CommentsService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
-    /** Lấy chi tiết comment/review theo ID */
     public CommentsDTO getCommentById(Integer id) {
         return commentsRepository.findById(id)
                 .map(this::convertToDTO)
                 .orElseThrow(() -> new NoSuchElementException("Review not found with id: " + id));
     }
 
-    /** Cập nhật trạng thái (Duyệt/Từ chối) */
     @Transactional
     public void updateCommentStatus(Integer id, String newStatus) {
         Comments comment = commentsRepository.findById(id)
@@ -42,7 +40,6 @@ public class CommentsService {
         commentsRepository.save(comment);
     }
 
-    /** Phản hồi bình luận/đánh giá */
     @Transactional
     public void replyToComment(Integer id, String replyText) {
         Comments comment = commentsRepository.findById(id)
@@ -54,18 +51,15 @@ public class CommentsService {
         }
 
         comment.setReply(replyText);
-        comment.setReplyDate(LocalDateTime.now()); // Đặt thời gian phản hồi
+        comment.setReplyDate(LocalDateTime.now());
         commentsRepository.save(comment);
     }
 
-    /** Duyệt tất cả bình luận đang chờ (PENDING) hàng loạt */
     @Transactional
     public int bulkApprovePendingComments() {
         return commentsRepository.bulkApprovePendingComments();
     }
 
-
-    /** Lấy tất cả comment cho trang Admin (có phân trang và sắp xếp) */
     public Page<CommentsDTO> getAllCommentsForAdmin(int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         Page<Comments> pageComments = commentsRepository.findAllWithCustomSort(pageable);
@@ -73,14 +67,12 @@ public class CommentsService {
         return pageComments.map(this::convertToDTO);
     }
 
-    /** Lấy tất cả comment (không phân trang) - Thường dùng cho mục đích nội bộ hoặc API đơn giản */
     public List<CommentsDTO> getAllComments() {
         return commentsRepository.findAllWithDetails().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    /** Lấy comment/review đã duyệt của một sản phẩm để hiển thị công khai */
     public List<CommentsDTO> getCommentsByProduct(Integer productId) {
         return commentsRepository.findByProduct_IdProducts(productId).stream()
                 .filter(c -> "PUBLISHED".equals(c.getStatus())) // Chỉ lấy những comment đã duyệt
@@ -88,9 +80,9 @@ public class CommentsService {
                 .collect(Collectors.toList());
     }
 
-    /** Tạo mới comment/review */
     @Transactional
     public CommentsDTO createComment(CommentsDTO dto) {
+
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + dto.getUserId()));
 
@@ -100,16 +92,12 @@ public class CommentsService {
         String status;
         String type;
 
-
         if (dto.getRate() == null || dto.getRate() == 0) {
-            // Bình luận (Comment)
-            status = "PUBLISHED";
             type = "COMMENT";
         } else {
-            // Đánh giá (Review)
-            status = "PENDING";
             type = "REVIEW";
         }
+        status = "PUBLISHED";
 
         Comments comment = Comments.builder()
                 .messages(dto.getMessages())
@@ -120,19 +108,16 @@ public class CommentsService {
                 .status(status)
                 .type(type)
                 .replyDate(null)
-                // FIX: Lấy giá trị purchaseVerified đã được gán từ Controller
                 .purchaseVerified(dto.getPurchaseVerified())
                 .build();
 
         return convertToDTO(commentsRepository.save(comment));
     }
 
-    /** Xóa comment/review theo ID */
     public void deleteComment(Integer id) {
         commentsRepository.deleteById(id);
     }
 
-    /** Chuyển đổi Entity Comments sang DTO CommentsDTO */
     private CommentsDTO convertToDTO(Comments comment) {
         String productTitle = "Sản phẩm không rõ";
         String productCode = "N/A";
@@ -170,7 +155,7 @@ public class CommentsService {
                 .reply(reply)
                 .replyDate(comment.getReplyDate())
                 .productImageUrl(productImageUrl)
-                .purchaseVerified(comment.getPurchaseVerified()) // Đảm bảo DTO cũng có trường này
+                .purchaseVerified(comment.getPurchaseVerified())
                 .build();
     }
 }
