@@ -66,7 +66,7 @@ public class PublicProductController {
 
             CommentsDTO newComment = new CommentsDTO();
             newComment.setProductId(id);
-            newComment.setUserId(1);
+            newComment.setUserId(1); // Giả định
             model.addAttribute("newComment", newComment);
 
             return "user/product_detail";

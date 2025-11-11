@@ -37,6 +37,21 @@
             transform: translateY(-2px);
         }
 
+        /* Bổ sung CSS cho dropdown trong navbar */
+        .dropdown-menu {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: none;
+        }
+        .dropdown-item {
+            transition: all 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background-color: #f0f2f5;
+            color: #667eea;
+        }
+
+
         .btn-auth {
             background: rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.3);
@@ -97,32 +112,6 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
-        .category-section {
-            margin: 40px 0;
-        }
-
-        .category-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
-        }
-
-        .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
-
-        .category-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: #667eea;
-        }
-
         .product-card {
             background: white;
             border-radius: 15px;
@@ -130,6 +119,8 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             margin-bottom: 30px;
+            /* THAY ĐỔI: Thẻ product-card có thể được click */
+            cursor: pointer;
         }
 
         .product-card:hover {
@@ -162,19 +153,65 @@
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 10px;
-            cursor: pointer;
         }
 
         .product-title:hover {
             color: #667eea;
         }
 
+        /* BỔ SUNG: Container chứa mô tả và số đã bán */
+        .desc-sold-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            min-height: 20px; /* Đảm bảo đủ chỗ cho 1 dòng text */
+        }
+
+        /* BỔ SUNG: Cắt ngắn mô tả thành 1 dòng */
+        .product-description {
+            flex-grow: 1;
+            margin-bottom: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            padding-right: 5px; /* Khoảng cách với số đã bán */
+        }
+
+        /* CẬP NHẬT: Giá đã giảm và giá gốc gạch ngang */
+        .price-rating-row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 15px;
+            flex-wrap: wrap; /* Cho phép xuống dòng nếu màn hình quá nhỏ */
+        }
+
         .product-price {
             color: #e74c3c;
             font-size: 1.2rem;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-right: 10px;
         }
+
+        /* BỔ SUNG CSS cho giá gốc gạch ngang */
+        .old-price {
+            text-decoration: line-through;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            margin-right: 15px;
+            font-weight: normal;
+        }
+
+        /* BỔ SUNG CSS cho Rating Stars */
+        .rating-stars {
+            color: #ffc107;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            /* ========== DÒNG DUY NHẤT ĐƯỢC THÊM VÀO ========== */
+            margin-left: auto;
+        }
+
 
         .btn-add-cart {
             background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
@@ -254,7 +291,6 @@
             border-radius: 15px 15px 0 0;
         }
 
-        /* Thêm style cho Product-Page Banner */
         .product-banner {
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             padding: 60px 0;
@@ -267,23 +303,6 @@
             font-weight: bold;
         }
 
-        /* BỔ SUNG: CSS cho các thẻ danh mục để chúng có chiều rộng cố định và khoảng cách */
-        .category-item {
-            /* Đặt chiều rộng tối đa cho thẻ */
-            width: 270px;
-            /* Thêm khoảng cách giữa các thẻ */
-            margin: 0 15px 30px 15px;
-            /* Đảm bảo nó không bị dãn */
-            flex-shrink: 0;
-        }
-
-        /* BỔ SUNG: CSS để căn giữa nút nếu nó là khối (như div) */
-        .center-block {
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            width: fit-content; /* Đảm bảo khối chỉ rộng bằng nội dung */
-        }
     </style>
 </head>
 <body>
@@ -302,6 +321,20 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" th:href="@{/products}">Sản phẩm</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCategories" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Danh mục
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownCategories">
+                        <li th:each="category : ${allCategories}">
+                            <a class="dropdown-item"
+                               th:href="@{/products(categoryId=${category.id_categories},_fragment='products')}"
+                               th:text="${category.name}">
+                                Tên Danh Mục
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Giới thiệu</a>
@@ -360,27 +393,6 @@
         </div>
     </div>
 </div>
-
-<div class="container category-section text-center">
-    <h2 class="mb-5">Danh mục sách</h2>
-
-    <div class="d-flex flex-wrap justify-content-center">
-        <div th:each="category : ${allCategories}" class="category-item">
-            <div class="category-card" th:onclick="|filterByCategory(${category.id_categories})|">
-                <div class="category-icon"><i class="fas fa-bookmark"></i></div>
-                <h5 th:text="${category.name}">Tên Danh Mục</h5>
-                <p class="text-muted">Xem sách thuộc danh mục này</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="mt-4 center-block">
-        <a th:href="@{/products#products}" class="btn btn-primary-custom">
-            <i class="fas fa-undo"></i> Xem tất cả
-        </a>
-    </div>
-</div>
-
 
 <div class="container" id="products">
     <h2 class="text-center mb-5">Danh sách sản phẩm</h2>
@@ -442,8 +454,8 @@
             </div>
         </div>
     </div>
-</div
-><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script th:inline="javascript">
     const products = /*[[${products}]]*/ [];
 
@@ -454,7 +466,7 @@
         displayProducts(products);
         updateCartUI();
 
-        // CƠ CHẾ SCROLL BỔ SUNG
+        // CƠ CHẾ SCROLL BỔ SUNG (Chạy khi có keyword hoặc categoryId)
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('keyword') || urlParams.has('categoryId') || window.location.hash === '#products') {
             document.getElementById('products').scrollIntoView({
@@ -464,13 +476,6 @@
         }
     });
 
-    // CẬP NHẬT HÀM FILTER THEO CATEGORY ĐỂ GỌI SERVER VÀ CUỘN (Hàm này giữ nguyên và đã đúng)
-    function filterByCategory(categoryId) {
-        // Chuyển hướng về URL mới để Spring Boot Controller xử lý lọc
-        window.location.href = `/products?categoryId=${categoryId}#products`;
-    }
-
-    // Display products (Giữ nguyên)
     function displayProducts(productsToShow) {
         const productList = document.getElementById('productList');
         productList.innerHTML = '';
@@ -478,13 +483,50 @@
         const defaultIcon = '📚';
 
         productsToShow.forEach(product => {
-            // Thay đổi id thành idProducts
             const detailUrl = `/product_detail/${product.idProducts}`;
             const firstImageLink = product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null;
 
-            const shortDescription = product.description
-                ? (product.description.length > 100 ? product.description.substring(0, 100) + '...' : product.description)
-                : 'Chưa có mô tả.';
+            // Lấy giá trị Discounted Price từ DTO (đã được tính trong Service)
+            const discountedPrice = product.discountedPrice || product.price;
+            const originalPrice = product.price;
+            const discount = product.discount || 0;
+            const hasDiscount = discount > 0;
+
+            // Xử lý Rating
+            const rating = product.averageRating || 0;
+            const fullStars = Math.floor(rating);
+            const halfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+            let ratingStarsHtml = '';
+            for (let i = 0; i < fullStars; i++) {
+                ratingStarsHtml += '<i class="fas fa-star"></i>';
+            }
+            if (halfStar) {
+                ratingStarsHtml += '<i class="fas fa-star-half-alt"></i>';
+            }
+            for (let i = 0; i < emptyStars; i++) {
+                ratingStarsHtml += '<i class="far fa-star"></i>';
+            }
+
+            // LƯU Ý: THAY ĐỔI LOGIC CẮT CHUỖI MÔ TẢ
+            let productDescription = product.description || 'Chưa có mô tả.';
+            const MAX_LENGTH = 30; // Giả định độ dài tối đa cho 1 dòng (khoảng 30 ký tự)
+
+            let shortDescription = '';
+            if (productDescription.length > MAX_LENGTH) {
+                // Cố gắng tìm từ cuối cùng trước MAX_LENGTH để cắt gọn
+                shortDescription = productDescription.substring(0, MAX_LENGTH);
+                // Tìm vị trí khoảng trắng cuối cùng
+                let lastSpace = shortDescription.lastIndexOf(' ');
+                if (lastSpace !== -1) {
+                    shortDescription = shortDescription.substring(0, lastSpace);
+                }
+                shortDescription += '...';
+            } else {
+                shortDescription = productDescription;
+            }
+
 
             const imageContent = firstImageLink
                 ? `<img src="${firstImageLink}" alt="${product.title}">`
@@ -492,15 +534,28 @@
 
             const productCard = `
                     <div class="col-lg-4 col-md-6">
-                        <div class="product-card">
+                        <div class="product-card" onclick="window.location.href='${detailUrl}'">
                             <div class="product-image">
                                 ${imageContent}
                             </div>
                             <div class="product-info">
-                                <h5 class="product-title" onclick="window.location.href='${detailUrl}'">${product.title}</h5>
-                                <p class="text-muted">${shortDescription}</p>
-                                <div class="product-price">${formatPrice(product.price)}</div>
-                                <div class="d-flex">
+                                <h5 class="product-title">${product.title}</h5>
+
+                                <div class="desc-sold-row">
+                                    <p class="text-muted product-description">${shortDescription}</p>
+                                    <small class="text-muted text-nowrap">Đã bán: ${product.soldCount || 0}</small>
+                                </div>
+
+                                <div class="price-rating-row">
+                                    <div class="product-price">${formatPrice(discountedPrice)}</div>
+                                    ${hasDiscount ? `<div class="old-price">${formatPrice(originalPrice)}</div>` : ''}
+                                    <div class="rating-stars">
+                                        ${ratingStarsHtml}
+                                        <span style="color: #2c3e50; font-size: 0.9rem; margin-left: 5px;">(${rating.toFixed(1)})</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex" onclick="event.stopPropagation()">
                                     <button class="btn btn-add-cart" onclick="addToCart(${product.idProducts})">
                                         <i class="fas fa-cart-plus"></i> Thêm vào giỏ
                                     </button>
@@ -516,7 +571,6 @@
         });
     }
 
-    // Format price (Giữ nguyên)
     function formatPrice(price) {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -524,7 +578,6 @@
         }).format(price);
     }
 
-    // Các hàm liên quan đến giỏ hàng (Giữ nguyên)
     function addToCart(productId) {
         const product = products.find(p => p.idProducts === productId);
         const existingItem = cart.find(item => item.idProducts === productId);
@@ -533,7 +586,6 @@
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
-                // SỬ DỤNG product.idProducts để đồng bộ
                 cart.push({ ...product, idProducts: productId, quantity: 1 });
             }
         }
@@ -545,7 +597,6 @@
     function orderNow(productId) {
         addToCart(productId);
         const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
-        // Cập nhật modal trước khi hiển thị
         updateCartModal();
         cartModal.show();
     }
@@ -554,7 +605,6 @@
         const cartCount = document.getElementById('cartCount');
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
         cartCount.textContent = totalItems;
-        // Cần gọi updateCartModal để dữ liệu trong modal luôn mới
         updateCartModal();
     }
 
@@ -581,7 +631,7 @@
                             <h6 class="mb-0">${item.title}</h6>
                             <small class="text-muted">${formatPrice(item.price)} x ${item.quantity}</small>
                         </div>
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items: center">
                             <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.idProducts}, -1)">-</button>
                             <span class="mx-2">${item.quantity}</span>
                             <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.idProducts}, 1)">+</button>
@@ -598,7 +648,6 @@
     }
 
     function updateQuantity(productId, change) {
-        // SỬ DỤNG idProducts
         const item = cart.find(item => item.idProducts === productId);
         if (item) {
             item.quantity += change;
@@ -607,17 +656,16 @@
             } else {
                 localStorage.setItem('bookstoreCart', JSON.stringify(cart));
                 updateCartUI();
-                updateCartModal(); // Cập nhật Modal
+                updateCartModal();
             }
         }
     }
 
     function removeFromCart(productId) {
-        // SỬ DỤNG idProducts
         cart = cart.filter(item => item.idProducts !== productId);
         localStorage.setItem('bookstoreCart', JSON.stringify(cart));
         updateCartUI();
-        updateCartModal(); // Cập nhật Modal
+        updateCartModal();
         showNotification('Đã xóa khỏi giỏ hàng!', 'info');
     }
 
@@ -626,7 +674,6 @@
             showNotification('Giỏ hàng trống!', 'warning');
             return;
         }
-        // Chuyển hướng đến trang giỏ hàng/thanh toán thực tế
         window.location.href = '/user/cart';
     }
 

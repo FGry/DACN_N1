@@ -37,6 +37,11 @@ public class ProductDTO {
     private List<MultipartFile> imageFiles;
     private List<String> imageLinks;
 
-    // THÊM TRƯỜNG NÀY
     private String description;
+
+    // ================== THÊM TRƯỜNG MỚI ==================
+    private Double averageRating; // Số sao trung bình
+    private Integer soldCount;     // Số lượng đã bán
+    private Long discountedPrice;  // Giá sau khi giảm
+    // ======================================================
 }

@@ -191,7 +191,7 @@
         </div>
 
         <div th:if="${product != null}" class="row">
-            <div class="col-lg-5">
+            <div class="col-lg-6">
                 <div class="product-gallery">
                     <img th:src="${product.imageLinks != null and !product.imageLinks.isEmpty() ? product.imageLinks[0] : '/path/to/default/image.jpg'}"
                          th:alt="${product.title}"
@@ -211,7 +211,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-7 product-details">
+            <div class="col-lg-6 product-details">
                 <h1 th:text="${product.title}" class="mb-3"></h1>
                 <p class="text-muted">Tác giả: <span th:text="${product.author}"></span> | NXB: <span th:text="${product.publisher}"></span></p>
 

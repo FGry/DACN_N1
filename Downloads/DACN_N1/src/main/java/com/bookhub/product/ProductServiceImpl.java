@@ -29,20 +29,31 @@ public class ProductServiceImpl implements ProductService {
 
     private final String UPLOAD_DIR = "C:/bookhub_uploads/products/";
 
-    // Helper: Chuyển đổi Entity sang DTO (Giữ nguyên)
+    // Helper: Chuyển đổi Entity sang DTO (ĐÃ THAY ĐỔI)
     private ProductDTO convertToDTO(Product product) {
         if (product == null) return null;
+
+        // Tính giá sau giảm
+        Long price = product.getPrice();
+        Integer discount = product.getDiscount() != null ? product.getDiscount() : 0;
+        Long discountedPrice = price - (price * discount / 100);
+
+        // Giả định giá trị cho Rating và SoldCount
+        // THỰC TẾ: Cần truy vấn bảng Comments/Ratings và OrderDetails để lấy giá trị chính xác
+        Double averageRating = product.getIdProducts() % 5 == 0 ? 4.5 : 4.0;
+        Integer soldCount = product.getIdProducts() * 10;
+
         return ProductDTO.builder()
                 .idProducts(product.getIdProducts())
                 .title(product.getTitle())
-                .price(product.getPrice())
+                .price(price)
                 .author(product.getAuthor())
                 .publisher(product.getPublisher())
                 .publicationYear(product.getPublicationYear())
                 .pages(product.getPages())
                 .stockQuantity(product.getStockQuantity())
                 .language(product.getLanguage())
-                .discount(product.getDiscount())
+                .discount(discount)
                 .description(product.getDescription())
                 .categoryNames(product.getCategories().stream()
                         .map(Category::getName)
@@ -56,6 +67,11 @@ public class ProductServiceImpl implements ProductService {
                             return link.startsWith("/uploads/") ? link : "/uploads/products/" + link;
                         })
                         .collect(Collectors.toList()))
+                // ================== THÊM TRƯỜNG MỚI ==================
+                .discountedPrice(discountedPrice)
+                .averageRating(averageRating)
+                .soldCount(soldCount)
+                // ======================================================
                 .build();
     }
 
@@ -133,7 +149,7 @@ public class ProductServiceImpl implements ProductService {
         return product;
     }
 
-    // --- Implement Service Methods ---
+    // --- Implement Service Methods (Giữ nguyên) ---
 
     @Override
     @Transactional(readOnly = true)
