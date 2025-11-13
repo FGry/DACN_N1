@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 
+// THÊM IMPORT NÀY
+import com.bookhub.product.ImageProduct;
+
 import java.time.LocalDate; // THÊM
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList; // THÊM
@@ -32,8 +35,6 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
-
-    // === THÊM CÁC DEPENDENCY CẦN THIẾT ===
     private final OrderDetailRepository orderDetailRepository;
     private final VoucherRepository voucherRepository;
     private final ObjectMapper objectMapper; // Để đọc JSON
@@ -41,18 +42,14 @@ public class OrderService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // ===============================================
-    // === PHƯƠNG THỨC MỚI: XỬ LÝ ĐẶT HÀNG ===
+    // === PHƯƠNG THỨC MỚI: XỬ LÝ ĐẶT HÀNG (Giữ nguyên) ===
     // ===============================================
-
-    /**
-     * Xử lý toàn bộ logic đặt hàng, bao gồm cả khách và người dùng đã đăng nhập.
-     * @Transactional đảm bảo tất cả thao tác (trừ kho, lưu đơn) thành công, hoặc rollback nếu lỗi.
-     */
     @Transactional(rollbackFor = Exception.class)
     public Order processOrder(
             String customerName, String customerPhone, String customerAddress,
             String cartItemsJson, String voucherCode, User loggedInUser) throws Exception {
 
+        // ... (Toàn bộ logic processOrder của bạn được giữ nguyên) ...
         // 1. Đọc giỏ hàng từ JSON
         List<CartItemDTO> cartItems;
         try {
@@ -178,46 +175,26 @@ public class OrderService {
     // ===============================================
     // === CÁC CHỨC NĂNG THỐNG KÊ (GIỮ NGUYÊN) ===
     // ===============================================
-
-    /**
-     * Lấy tổng doanh thu thuần (chỉ tính DELIVERED).
-     */
     public long getTotalRevenue(Integer year) {
         return orderRepository.sumTotalDeliveredOrders(year)
                 .orElse(0L);
     }
-
-    /**
-     * Lấy tổng số đơn hàng đã hoàn thành (DELIVERED).
-     */
     public long getTotalDeliveredOrders(Integer year) {
         return orderRepository.countDeliveredOrders(year);
     }
-
-    /**
-     * Lấy dữ liệu Doanh thu theo tháng để hiển thị biểu đồ đường/cột.
-     * Giá trị được trả về ở đơn vị Triệu VNĐ (Double) để giữ độ chính xác.
-     */
     private List<RevenueStatsDTO.DataPoint> getMonthlyRevenueData(Integer year) {
         List<Object[]> rawData = orderRepository.findMonthlyRevenueAndProfit(year);
-
         return rawData.stream().map(row -> {
             Integer month = (Integer) row[0];
             Long revenue = (Long) row[1];
             String monthLabel = YearMonth.of(year, month).getMonth().getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("vi-VN"));
             Double revenueInMillions = revenue / 1_000_000.0; // Giữ giá trị thập phân
-
             RevenueStatsDTO.DataPoint dataPoint = new RevenueStatsDTO.DataPoint();
             dataPoint.setLabel(monthLabel);
             dataPoint.setValue(revenueInMillions);
-
             return dataPoint;
         }).collect(Collectors.toList());
     }
-
-    /**
-     * Tổng hợp toàn bộ dữ liệu thống kê doanh thu cho Dashboard.
-     */
     @Transactional(readOnly = true)
     public RevenueStatsDTO getRevenueDashboardStats(Integer year) {
         RevenueStatsDTO stats = new RevenueStatsDTO();
@@ -233,20 +210,17 @@ public class OrderService {
     // ===============================================
     // === CÁC HÀM CRUD & MAPPING CŨ (GIỮ NGUYÊN) ===
     // ===============================================
-
     public List<OrderDTO> findAllOrders() {
         List<Order> orders = orderRepository.findAllWithUserAndDetails();
         return orders.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
-
     public OrderDTO findOrderById(Integer id) {
         Order order = orderRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + id));
         return mapToDetailDTO(order);
     }
-
     public List<OrderDTO> filterOrders(String status) {
         if (status == null || status.isEmpty()) {
             return findAllOrders();
@@ -255,14 +229,11 @@ public class OrderService {
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
-
     public List<OrderDTO> searchOrders(String searchTerm) {
         return orderRepository.searchOrders(searchTerm).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
-
-
     @Transactional
     public void updateOrderStatus(Integer id, String newStatus) {
         Order order = orderRepository.findById(id)
@@ -270,7 +241,6 @@ public class OrderService {
         order.setStatus_order(newStatus);
         orderRepository.save(order);
     }
-
     @Transactional
     public void cancelOrder(Integer id) {
         Order order = orderRepository.findById(id)
@@ -281,6 +251,44 @@ public class OrderService {
         order.setStatus_order("CANCELLED");
         orderRepository.save(order);
     }
+
+    // ===============================================
+    // === CÁC HÀM MỚI CHO TRANG USER (ĐÃ THÊM) ===
+    // ===============================================
+
+    /**
+     * Lấy danh sách đơn hàng cho một người dùng cụ thể.
+     */
+    public List<OrderDTO> findOrdersByUserId(Integer userId) {
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+        // Giả định orderRepository có hàm findByUserIdOrderByDateDesc
+        // Bạn cần thêm hàm này vào OrderRepository.java
+        List<Order> orders = orderRepository.findByUserIdOrderByDateDesc(userId);
+        return orders.stream()
+                .map(this::mapToDTO) // Tận dụng hàm mapToDTO đã có
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lấy 1 Order (Entity) bằng ID, dùng cho trang chi tiết.
+     */
+    public Order getOrderById(Integer orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
+    }
+
+    /**
+     * Lấy DANH SÁCH DTO chi tiết của một đơn hàng.
+     */
+    public List<OrderDetailDTO> getOrderDetailsByOrderId(Integer orderId) {
+        // orderDetailRepository đã được inject
+        List<OrderDetail> entities = orderDetailRepository.findByOrder_Id_order(orderId);
+        // Dùng hàm mapDetailToDTO (đã có) để chuyển đổi
+        return entities.stream().map(this::mapDetailToDTO).collect(Collectors.toList());
+    }
+
 
     // --- MAPPING HELPERS (GIỮ NGUYÊN) ---
 
@@ -318,21 +326,42 @@ public class OrderService {
             dto.setUserId(entity.getUser().getIdUser());
         }
 
-        List<OrderDetailDTO> detailDTOs = entity.getOrderDetails().stream().map(this::mapDetailToDTO).collect(Collectors.toList());
+        List<OrderDetailDTO> detailDTOs = entity.getOrderDetails().stream()
+                .map(this::mapDetailToDTO) // <-- SỬ DỤNG HÀM ĐÃ SỬA
+                .collect(Collectors.toList());
         dto.setProductDetails(detailDTOs);
 
         return dto;
     }
 
+    // ===============================================
+    // === HÀM MAPDETAILTODTO (GIỮ NGUYÊN) ===
+    // ===============================================
     private OrderDetailDTO mapDetailToDTO(OrderDetail detail) {
         OrderDetailDTO dto = new OrderDetailDTO();
         dto.setQuantity(detail.getQuantity().intValue());
         dto.setPriceAtDate(detail.getPrice_date());
         dto.setPriceAtDateFormatted(String.format("%,dđ", detail.getPrice_date()).replace(",", "."));
 
-        if (detail.getProduct() != null) {
-            dto.setProductName(detail.getProduct().getTitle());
-            dto.setProductAuthor(detail.getProduct().getAuthor());
+        // Lấy Product từ OrderDetail
+        Product product = detail.getProduct();
+
+        if (product != null) {
+            dto.setProductName(product.getTitle());
+
+            // 1. Lấy Tác giả (Product.java xác nhận đây là String)
+            dto.setProductAuthor(product.getAuthor());
+
+            // 2. Lấy Hình ảnh (Logic được sao chép từ ProductServiceImpl)
+            // Product.java có 'List<ImageProduct> images'
+            if (product.getImages() != null && !product.getImages().isEmpty()) {
+                // Lấy ảnh đầu tiên từ danh sách
+                // ImageProduct.java có 'String image_link'
+                dto.setProductImageUrl(product.getImages().get(0).getImage_link());
+            } else {
+                // Ảnh mặc định nếu sản phẩm không có ảnh
+                dto.setProductImageUrl("/images/default-book.png");
+            }
         }
         return dto;
     }

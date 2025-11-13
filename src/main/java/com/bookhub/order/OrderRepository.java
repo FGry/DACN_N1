@@ -23,9 +23,8 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.status_order = 'DELIVERED' AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year)")
     Long countDeliveredOrders(@Param("year") Integer year);
 
-    // 🔄 Cập nhật trong OrderRepository.java
     @Query("SELECT new com.bookhub.order.ProductSaleStats(" +
-            "od.product.title, SUM(od.quantity), SUM(od.price_date * od.quantity)) " + // 🌟 SỬA ĐỔI TẠI ĐÂY
+            "od.product.title, SUM(od.quantity), SUM(od.price_date * od.quantity)) " +
             "FROM OrderDetail od JOIN od.order o " +
             "WHERE o.status_order = 'DELIVERED' " +
             "AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year) " +
@@ -33,7 +32,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             "ORDER BY SUM(od.quantity) DESC")
     List<ProductSaleStats> findTopSellingProducts(@Param("year") Integer year, Pageable pageable);
 
-    // 🌟 TRUY VẤN MỚI: Lấy Doanh thu và Tháng cho biểu đồ
     @Query("SELECT FUNCTION('MONTH', o.date), SUM(o.total) " +
             "FROM Order o " +
             "WHERE o.status_order = 'DELIVERED' " +
@@ -54,4 +52,15 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             "u.username LIKE CONCAT('%', ?1, '%') OR " +
             "o.phone LIKE CONCAT('%', ?1, '%')")
     List<Order> searchOrders(String searchTerm);
+
+    // === PHƯƠNG THỨC MỚI ===
+    /**
+     * TÌM KIẾM MỚI: Lấy tất cả đơn hàng của một User ID cụ thể,
+     * sắp xếp theo ngày đặt hàng mới nhất.
+     * Chúng ta cũng 'LEFT JOIN FETCH' các chi tiết (orderDetails)
+     * để hàm mapToDTO có thể tính tổng sản phẩm.
+     */
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.orderDetails od " +
+            "WHERE o.user.idUser = :userId ORDER BY o.date DESC")
+    List<Order> findByUserIdOrderByDateDesc(@Param("userId") Integer userId);
 }

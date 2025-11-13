@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch sử Đơn hàng - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* CSS TỪ mainInterface.html (CHO NAVBAR) */
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-link:hover {
+            color: white !important;
+        }
+        .btn-auth {
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 15px;
+            margin: 0 5px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .btn-auth:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .cart-icon {
+            margin-left: 15px;
+            color: white;
+            font-size: 1.2rem;
+            position: relative;
+        }
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* CSS GỐC TỪ my_orders.html */
+        body { background-color: #f8f9fa; }
+        .order-history-container {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+        .order-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .order-header {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order-body {
+            padding: 20px;
+        }
+        .order-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            text-align: right;
+        }
+        .status-badge {
+            display: inline-block; padding: 6px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 600;
+        }
+        .status-PENDING { background: #fff8e1; color: #f57c00; }
+        .status-CONFIRMED { background: #e8f5e8; color: #2e7d32; }
+        .status-SHIPPING { background: #e3f2fd; color: #1976d2; }
+        .status-DELIVERED { background: #e8f5e8; color: #388e3c; }
+        .status-CANCELLED { background: #ffebee; color: #d32f2f; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}" href="#"><i class="fas fa-book-open"></i> BookStore</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/user/voucher}">Voucher</a>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center" id="authButtons">
+
+                <div id="loggedOutButtons" th:if="${!isLoggedIn}">
+                    <a th:href="@{/login}" href="login.html" class="btn btn-auth btn-sm">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </a>
+                    <a th:href="@{/register}" href="register.html" class="btn btn-auth btn-sm">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </a>
+                </div>
+
+                <div id="loggedInButtons" th:if="${isLoggedIn}">
+                    <div class="dropdown">
+                        <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="userNameDisplay" th:text="${currentUser.username}">Tài khoản</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                            <li><a class="dropdown-item" th:href="@{/user/profile}">
+                                <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                            </a></li>
+
+                            <li>
+                                <a class="dropdown-item" th:href="@{/my-orders}">
+                                    <i class="fas fa-receipt"></i> Đơn hàng của tôi
+                                </a>
+                            </li>
+                            <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
+                                <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
+                            </a></li>
+
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" th:href="@{/logout}">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cartCount">0</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="container order-history-container">
+    <h2 class="mb-4">Lịch sử Đơn hàng của bạn</h2>
+
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+    <div th:if="${orders == null or #lists.isEmpty(orders)}" class="text-center p-5 bg-white rounded shadow-sm">
+        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+        <h4>Bạn chưa có đơn hàng nào</h4>
+        <p class="text-muted">Hãy bắt đầu mua sắm ngay hôm nay!</p>
+        <a href="/products" class="btn btn-primary mt-2">Xem sản phẩm</a>
+    </div>
+
+    <div th:each="order : ${orders}" class="order-card">
+
+        <div class="order-header">
+            <div>
+                <strong>Mã đơn hàng:</strong>
+                <span class="text-primary" th:text="${order.orderCode}">#DH001</span>
+            </div>
+            <div>
+                <strong>Ngày đặt:</strong>
+                <span th:text="${order.dateFormatted}">20/11/2024</span>
+            </div>
+        </div>
+
+        <div class="order-body">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <div><strong>Trạng thái</strong></div>
+
+                    <span class="status-badge"
+                          th:classappend="'status-' + ${order.status}"
+                          th:text="${order.status == 'PENDING' ? 'Chờ xử lý' :
+                                        (order.status == 'CONFIRMED' ? 'Đã xác nhận' :
+                                        (order.status == 'SHIPPING' ? 'Đang giao' :
+                                        (order.status == 'DELIVERED' ? 'Đã giao' : 'Đã hủy')))}">
+                            Trạng thái
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <div><strong>Số sản phẩm</strong></div>
+                    <span th:text="${order.totalProducts} + ' sản phẩm'">3 sản phẩm</span>
+                </div>
+                <div class="col-md-3">
+                    <div><strong>Tổng tiền</strong></div>
+                    <h5 class="text-danger mb-0" th:text="${order.totalAmountFormatted}">450.000đ</h5>
+                </div>
+                <div class="col-md-3 text-end">
+                    <a th:href="@{'/order/success/' + ${order.idOrder}}" class="btn btn-outline-primary">
+                        Xem chi tiết <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div> </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartBadge();
+    });
+
+    function updateCartBadge() {
+        // Lấy giỏ hàng từ localStorage
+        const cart = JSON.parse(localStorage.getItem('bookstoreCart') || '[]');
+        const cartCount = document.getElementById('cartCount');
+        if (cartCount) {
+            // Tính tổng số lượng
+            const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            cartCount.textContent = totalItems;
+        }
+    }
+</script>
+
+</body>
+</html>

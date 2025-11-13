@@ -25,8 +25,6 @@ public class CheckoutController {
 
     private final VoucherService voucherService;
     private final UserService userService;
-
-    // === THÊM ORDER SERVICE ===
     private final OrderService orderService;
 
     /**
@@ -43,12 +41,7 @@ public class CheckoutController {
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 model.addAttribute("loggedInUser", user);
-
-                // Lấy voucher công khai
                 List<Voucher> publicVouchers = voucherService.getAvailablePublicVouchers();
-
-                // (Sau này bạn có thể thêm voucher riêng của user)
-
                 model.addAttribute("availableVouchers", publicVouchers);
             }
         }
@@ -57,7 +50,7 @@ public class CheckoutController {
 
     /**
      * Xử lý đơn hàng khi người dùng nhấn "Xác nhận Đặt hàng".
-     * (CẬP NHẬT LOGIC)
+     * (CẬP NHẬT LOGIC CHUYỂN HƯỚNG)
      */
     @PostMapping("/order/submit")
     public String submitOrder(
@@ -76,7 +69,7 @@ public class CheckoutController {
                 user = userService.findUserByEmail(principal.getName()).orElse(null);
             }
 
-            // 2. === GỌI ORDER SERVICE ĐỂ XỬ LÝ ===
+            // 2. Gọi Order Service để xử lý
             Order newOrder = orderService.processOrder(
                     customerName,
                     customerPhone,
@@ -85,15 +78,15 @@ public class CheckoutController {
                     voucherCode,
                     user // user có thể là null nếu là khách
             );
-            // === KẾT THÚC GỌI SERVICE ===
 
             // 3. Nếu thành công:
             redirectAttributes.addFlashAttribute("successMessage", "Đặt hàng thành công! Mã đơn hàng của bạn là: #DH" + newOrder.getId_order());
 
-            // TODO: Bạn nên tạo một trang "đặt hàng thành công" (order_success.html)
-            // Trang này sẽ chứa JavaScript để xóa sessionStorage('bookstoreCart')
-
-            return "redirect:/"; // Tạm thời chuyển về trang chủ
+            // === THAY ĐỔI CHÍNH ===
+            // Chuyển hướng đến trang "thành công"
+            // và mang theo ID của đơn hàng.
+            return "redirect:/order/success/" + newOrder.getId_order();
+            // === KẾT THÚC THAY ĐỔI ===
 
         } catch (Exception e) {
             // 4. Nếu thất bại:
