@@ -275,7 +275,7 @@
                                 <i class="fas fa-info-circle"></i> Thông tin cá nhân
                             </a></li>
 
-                            <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
+                            <li><a class="dropdown-item" th:href="@{/user/profile#address-settings}">
                                 <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
                             </a></li>
 
@@ -313,7 +313,7 @@
                     </div>
                     <div>
                         <label class="form-label fw-bold opacity-0">Action</label>
-                        <a href="/user/address_setup.html" class="btn btn-sm btn-outline-secondary d-block">
+                        <a href="/user/profile#address-settings" class="btn btn-sm btn-outline-secondary d-block">
                             <i class="fas fa-plus"></i> Thêm/Sửa
                         </a>
                     </div>
@@ -324,19 +324,6 @@
                         Ghi chú đơn hàng (Tùy chọn)
                     </label>
                     <textarea id="orderNotes" class="form-control" rows="2" placeholder="Ví dụ: Giao hàng vào buổi chiều, không gọi điện trước..."></textarea>
-                </div>
-
-
-                <div id="newAddressFields" class="form-section p-3 d-none">
-                    <h6><i class="fas fa-map-pin"></i> Nhập địa chỉ mới</h6>
-                    <div class="mb-3">
-                        <label for="newAddressDetail" class="form-label">Địa chỉ chi tiết</label>
-                        <textarea id="newAddressDetail" class="form-control" rows="2" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
-                    </div>
-                    <div class="mb-0">
-                        <label for="newAddressPhone" class="form-label">Số điện thoại</label>
-                        <input type="tel" id="newAddressPhone" class="form-control" placeholder="Số điện thoại nhận hàng (bắt buộc)">
-                    </div>
                 </div>
             </div>
 
@@ -444,6 +431,12 @@
     let currentVoucherId = null;
     let currentSubTotal = 0;
 
+    // 💡 THÊM: Định nghĩa mockProducts để tránh lỗi khi giỏ hàng trống ban đầu
+    const mockProducts = [
+        { idProducts: 101, title: 'Sách Lập Trình Java', price: 120000, imageLink: 'https://via.placeholder.com/60x60/88AAFF?text=Java' },
+        { idProducts: 102, title: 'Sách Thuật Toán Căn Bản', price: 80000, imageLink: 'https://via.placeholder.com/60x60/FF88AA?text=Algo' }
+    ];
+
     function formatPrice(price) {
         if (typeof price !== 'number' || price < 0) price = 0;
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -455,6 +448,7 @@
     }
 
 
+    // 💡 LƯU Ý: Hàm này chỉ trả về giá trị giả lập. Cần thay bằng giá trị User ID thật.
     function getUserId() {
         return 1;
     }
@@ -478,7 +472,6 @@
             cartItemsDiv.innerHTML = '';
             document.getElementById('checkoutForm').classList.add('d-none');
             emptyCart.classList.remove('d-none');
-            // Đảm bảo cập nhật summary khi giỏ hàng trống
             updateSummary(0);
             return;
         }
@@ -529,37 +522,45 @@
         const select = document.getElementById('deliveryAddress');
         select.innerHTML = '<option value="" disabled selected>-- Đang tải địa chỉ... --</option>';
 
-        fetch('/user/api/addresses')
+        // 💡 SỬA ĐƯỜNG DẪN API: Phải khớp với AddressController: /user/address/addresses
+        fetch('/user/address/addresses')
             .then(response => {
+                // Nếu chưa đăng nhập, backend có thể trả về 401 hoặc 403
                 if (!response.ok) {
                     console.error('Không thể tải địa chỉ. Lỗi HTTP:', response.status);
-                    return [];
+                    if (response.status === 401 || response.status === 403) {
+                        select.innerHTML = '<option value="" disabled selected>-- Vui lòng đăng nhập để xem địa chỉ --</option>';
+                    } else {
+                        select.innerHTML = '<option value="" disabled selected>-- Lỗi tải địa chỉ --</option>';
+                    }
+                    return null; // Trả về null để thoát khỏi chuỗi .then tiếp theo
                 }
                 return response.json();
             })
             .then(userAddresses => {
+                if (userAddresses === null) return; // Thoát nếu có lỗi HTTP
+
                 let optionsHtml = '<option value="" disabled selected>-- Chọn địa chỉ hoặc nhập mới --</option>';
 
                 if (userAddresses && userAddresses.length > 0) {
                     userAddresses.forEach(addr => {
+                        // Backend trả về AddressDTO: idAddress, fullAddressDetail, phone
                         optionsHtml += `<option value="${addr.idAddress}" data-phone="${addr.phone}">${addr.fullAddressDetail}</option>`;
                     });
                 }
-
-                optionsHtml += '<option value="new">Nhập địa chỉ mới</option>';
                 select.innerHTML = optionsHtml;
 
+                // Tự động chọn địa chỉ đầu tiên hoặc chuyển sang nhập mới
                 if (userAddresses && userAddresses.length > 0) {
                     select.value = userAddresses[0].idAddress;
                     updateDeliveryInfo(userAddresses[0].idAddress);
                 } else {
-                    select.value = 'new';
-                    updateDeliveryInfo('new');
+                    select.innerHTML = '<option value="" disabled selected>-- Vui lòng thêm địa chỉ nhận hàng --</option>';
                 }
             })
             .catch(error => {
-                console.error('Lỗi khi tải địa chỉ:', error);
-                select.innerHTML = '<option value="" disabled selected>-- Lỗi tải địa chỉ --</option>';
+                console.error('Lỗi kết nối khi tải địa chỉ:', error);
+                select.innerHTML = '<option value="" disabled selected>-- Lỗi tải địa chỉ (Kiểm tra Server) --</option>';
             });
     }
 
@@ -579,14 +580,7 @@
 
 
     function updateDeliveryInfo(selectedId) {
-        const newAddressFields = document.getElementById('newAddressFields');
-        const isNewAddressMode = selectedId === 'new';
-
-        if (isNewAddressMode) {
-            newAddressFields.classList.remove('d-none');
-        } else {
-            newAddressFields.classList.add('d-none');
-        }
+        console.log(`Địa chỉ đã chọn (ID): ${selectedId}`);
     }
 
     function selectPayment(method) {
@@ -745,11 +739,12 @@
                 currentVoucherDiscount = 0;
                 currentVoucherId = null;
                 saveCart();
-                window.location.href = '/user/orders';
+                window.location.href = '/user/profile#orders-settings';
 
             } else {
-                const errorData = await response.json();
-                const errorMessage = errorData.message || 'Có lỗi xảy ra trong quá trình xử lý đơn hàng.';
+                // Thử đọc chi tiết lỗi nếu có
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.message || `Lỗi không xác định (${response.status} ${response.statusText})`;
                 alert(`🔴 Lỗi đặt hàng: ${errorMessage}`);
             }
 

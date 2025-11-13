@@ -21,7 +21,6 @@ public class UserService {
     }
 
     public List<UserDTO> getAllUsers() {
-        // Giả định UserDTO.fromEntity(User) tồn tại
         return userRepository.findAll().stream()
                 .map(UserDTO::fromEntity)
                 .collect(Collectors.toList());
@@ -94,7 +93,6 @@ public class UserService {
     }
 
     public Optional<User> findUserById(Integer userId) {
-        // Giả định UserRepository có phương thức findByIdUser(Integer)
         return userRepository.findByIdUser(userId);
     }
 
