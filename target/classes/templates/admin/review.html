@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} + ' - Admin Panel'"></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* CSS CƠ SỞ (Được thiết kế lại từ cart.html) */
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .logo{
+            color: #f1f3f4;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar-logo {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .sidebar-title {
+            opacity: 0;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-right: 4px solid white;
+        }
+
+        .menu-item i {
+            width: 20px;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar.collapsed .menu-item {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+
+        .sidebar.collapsed .menu-item i {
+            margin-right: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            top: 25px;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            color: #667eea;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #6c757d;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .notification-btn:hover {
+            color: #667eea;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 25px;
+            transition: background 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: #f8f9fa;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-info h6 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .user-info small {
+            color: #6c757d;
+        }
+
+        .dashboard-content {
+            padding: 30px;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .action-left {
+            display: flex;
+            gap: 15px;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            color: #6c757d;
+            z-index: 1;
+        }
+
+        .search-box input {
+            padding: 10px 15px 10px 45px;
+            border: 1px solid #dee2e6;
+            border-radius: 25px;
+            width: 300px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .table thead th {
+            background: #f8f9fa;
+            border: none;
+            padding: 20px 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .table tbody td {
+            padding: 20px 15px;
+            border-top: 1px solid #f1f3f4;
+            vertical-align: middle;
+        }
+
+        /* === CSS CHO ẢNH SẢN PHẨM === */
+        .product-image {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #f0f2f5 0%, #e8ebf0 100%); /* Nền xám nhạt cho fallback */
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea; /* Màu icon fallback */
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            border: 1px solid #e9ecef; /* Thêm viền mỏng */
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info h6 {
+            margin: 0 0 5px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Status for Reviews */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-badge.status-pending {
+            background: #fff8e1;
+            color: #f57c00; /* Vàng/Cam */
+        }
+        .status-badge.status-published {
+            background: #e8f5e8;
+            color: #2e7d32; /* Xanh lá */
+        }
+        .status-badge.status-hidden {
+            background: #ffebee;
+            color: #d32f2f; /* Đỏ */
+        }
+
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-buttons .btn {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        /* Detail Modal */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .review-content-box {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            margin-top: 10px;
+        }
+
+        /* CẬP NHẬT CSS PHÂN TRANG */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        .pagination-info {
+            color: #6c757d;
+        }
+        .pagination .page-link {
+            color: #667eea;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-chevron-left" id="toggleIcon"></i>
+    </button>
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <a th:href="@{/}" class="logo"><i class="fas fa-book-open"></i></a>
+        </div>
+        <h2 class="sidebar-title">BookStore</h2>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a th:href="@{/admin/home}" class="menu-item " onclick="showSection('home')">
+            <i class="fas fa-box"></i>
+            <span>Trang chủ</span>
+        </a>
+        <a th:href="@{/admin/products}" class="menu-item" onclick="showSection('products')">
+            <i class="fas fa-box"></i>
+            <span>Quản lý sản phẩm</span>
+        </a>
+        <a th:href="@{/admin/carts}" class="menu-item" onclick="showSection('cart')">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Quản lý đơn hàng</span>
+        </a>
+        <a th:href="@{/admin/users}" class="menu-item" onclick="showSection('users')">
+            <i class="fas fa-users"></i>
+            <span>Quản lý tài khoản</span>
+        </a>
+        <a th:href="@{/admin/vouchers}" class="menu-item" onclick="showSection('vouchers')">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Quản lý voucher</span>
+        </a>
+        <a th:href="@{/admin/comments}" class="menu-item active"> <i class="fas fa-star"></i>
+            <span>Quản lý đánh giá</span>
+        </a>
+        <a th:href="@{/admin/revenue}" class="menu-item" onclick="showSection('revenue')">
+            <i class="fas fa-chart-line"></i>
+            <span>Thống kê doanh thu</span>
+        </a>
+        <a th:href="@{/admin/setting}" class="menu-item" onclick="showSection('setting')">
+            <i class="fas fa-cog"></i>
+            <span>Cài đặt</span>
+        </a>
+        <a href="#" class="menu-item" onclick="confirmLogout('/logout')">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Đăng xuất</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content" id="mainContent">
+    <header class="header">
+        <div class="header-left">
+            <button class="d-md-none btn btn-link" onclick="toggleMobileSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="header-title">Quản lý đánh giá/bình luận</h1>
+        </div>
+
+        <div class="header-actions">
+            <button class="notification-btn" onclick="showNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+
+            <a th:href="@{/admin/setting}" class="user-profile" style="text-decoration: none; color: inherit;">
+                <div class="user-avatar">A</div>
+                <div class="user-info d-none d-md-block">
+                    <h6>Admin User</h6>
+                    <small>Quản trị viên</small>
+                </div>
+                <i class="fas fa-chevron-down d-none d-md-block"></i>
+            </a>
+        </div>
+    </header>
+
+    <div class="dashboard-content fade-in" id="reviewsContent">
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert"> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert"> <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="action-bar">
+            <div class="action-left">
+                <button class="btn btn-success" onclick="approveAllPending()">
+                    <i class="fas fa-check-double"></i> Duyệt
+                </button>
+
+                <select class="form-select" id="typeFilter" onchange="filterReviews()">
+                    <option value="">Tất cả (Bình luận & Đánh giá)</option>
+                    <option value="REVIEW">Đánh giá (Có sao)</option>
+                    <option value="COMMENT">Bình luận (Không sao)</option>
+                </select>
+
+                <select class="form-select" id="statusFilter" onchange="filterReviews()"> <option value="">Tất cả trạng thái</option>
+                    <option value="PUBLISHED">Đã duyệt (Đã đăng)</option>
+                    <option value="PENDING">Chờ duyệt</option>
+                    <option value="HIDDEN">Đã ẩn</option>
+                </select>
+                <select class="form-select" id="ratingFilter" onchange="filterReviews()"> <option value="">Tất cả sao</option>
+                    <option value="5">5 sao</option>
+                    <option value="4">4 sao</option>
+                    <option value="3">3 sao</option>
+                    <option value="2">2 sao</option>
+                    <option value="1">1 sao</option>
+                </select>
+
+                <select class="form-select" id="replyFilter" onchange="filterReviews()">
+                    <option value="">Tất cả (Đã & Chưa Phản hồi)</option>
+                    <option value="UNREPLIED">Chưa phản hồi</option>
+                    <option value="REPLIED">Đã phản hồi</option>
+                </select>
+            </div>
+            <div class="action-right">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Tìm kiếm..." id="searchReviewInput" onkeyup="searchReviews()"> </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Mã ĐG</th>
+                    <th>Sản phẩm</th>
+                    <th>Khách hàng</th>
+                    <th>Số sao</th>
+                    <th>Nội dung (Tóm tắt)</th>
+                    <th>Ngày ĐG</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="reviewsTableBody">
+                <tr th:each="comment : ${comments}"
+                    th:data-status="${comment.status}"
+                    th:data-rating="${comment.rate}"
+                    th:data-type="${comment.rate != null and comment.rate > 0 ? 'REVIEW' : 'COMMENT'}"
+                    th:data-has-reply="${comment.reply != null and !#strings.isEmpty(comment.reply) ? 'REPLIED' : 'UNREPLIED'}"> <td><strong th:text="'#DG' + ${comment.id}">#DG001</strong></td>
+                    <td>
+                        <div class="user-info">
+
+                            <div class="product-image">
+                                <img th:if="${comment.productImageUrl != null AND !#strings.isEmpty(comment.productImageUrl)}"
+                                     th:src="@{${comment.productImageUrl}}"
+                                     alt="Ảnh SP"
+                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+
+                                <i th:unless="${comment.productImageUrl != null AND !#strings.isEmpty(comment.productImageUrl)}"
+                                   class="fas fa-book"></i>
+                            </div>
+                            <div>
+                                <h6 th:text="${comment.productTitle}">Tư duy phản biện</h6> <small class="text-muted" th:text="'Mã SP: ' + ${comment.productCode}"></small> </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <h6 th:text="${comment.userName}">Nguyễn Văn An</h6> </div>
+                    </td>
+
+                    <td>
+                        <th:block th:if="${comment.rate != null and comment.rate > 0}">
+                            <span class="text-warning">
+                                <th:block th:each="i : ${#numbers.sequence(1, comment.rate)}">
+                                    <i class="fas fa-star"></i>
+                                </th:block>
+                                <th:block th:if="${comment.rate < 5}"
+                                          th:each="i : ${#numbers.sequence(comment.rate + 1, 5)}">
+                                    <i class="far fa-star"></i>
+                                </th:block>
+                            </span>
+                            (<span th:text="${comment.rate}">5</span>)
+                        </th:block>
+                        <th:block th:unless="${comment.rate != null and comment.rate > 0}">
+                            <span class="text-muted">Bình luận</span>
+                        </th:block>
+                    </td>
+
+                    <td><span th:text="${#strings.substring(comment.messages, 0, #strings.length(comment.messages) > 50 ? 50 : #strings.length(comment.messages))} + (${#strings.length(comment.messages) > 50 ? '...' : ''})">Nội dung tóm tắt...</span></td> <td th:text="${comment.date != null ? #temporals.format(comment.date, 'dd/MM/yyyy') : 'N/A'}">Ngày</td> <td>
+                        <span class="status-badge"
+                              th:classappend="${comment.status == 'PUBLISHED' ? 'status-published' : (comment.status == 'PENDING' ? 'status-pending' : 'status-hidden')}"
+                              th:text="${comment.status == 'PUBLISHED' ? 'Đã duyệt' : (comment.status == 'PENDING' ? 'Chờ duyệt' : 'Đã ẩn')}"> Trạng thái
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#reviewDetailModal" th:data-id="${comment.id}" onclick="viewReviewDetail(this.getAttribute('data-id'))" title="Xem chi tiết"> <i class="fas fa-eye"></i>
+                            </button>
+
+                            <th:block th:if="${comment.status == 'PENDING' or comment.status == 'HIDDEN'}">
+                                <a th:href="@{/admin/comments/publish/{id}(id=${comment.id})}" class="btn btn-sm btn-success" title="Duyệt/Đăng đánh giá"> <i class="fas fa-check"></i>
+                                </a>
+                            </th:block>
+                            <th:block th:if="${comment.status == 'PUBLISHED'}">
+                                <a th:href="@{/admin/comments/hide/{id}(id=${comment.id})}" class="btn btn-sm btn-warning" title="Ẩn/Gỡ đánh giá"> <i class="fas fa-eye-slash"></i>
+                                </a>
+                            </th:block>
+
+                            <a th:href="@{/admin/comments/delete/{id}(id=${comment.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn XÓA đánh giá này không?');" title="Xóa"> <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(comments)}"> <td colspan="8" class="text-center">Không tìm thấy đánh giá nào.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container" th:if="${totalPages > 1}">
+            <div class="pagination-info">
+                Hiển thị <span th:text="${#lists.size(comments)}">0</span> / <span th:text="${totalElements}">0</span> đánh giá </div>
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                        <a class="page-link" th:href="@{/admin/comments(page=${currentPage - 1}, size=20, type=${typeFilter}, status=${statusFilter}, rate=${rateFilter})}">Trước</a>
+                    </li>
+
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/comments(page=${i}, size=20, type=${typeFilter}, status=${statusFilter}, rate=${rateFilter})}" th:text="${i + 1}">1</a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage + 1 >= totalPages ? 'disabled' : ''}">
+                        <a class="page-link" th:href="@{/admin/comments(page=${currentPage + 1}, size=20, type=${typeFilter}, status=${statusFilter}, rate=${rateFilter})}">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reviewDetailModal" tabindex="-1" aria-labelledby="reviewDetailModalLabel" aria-hidden="true"> <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewDetailModalLabel">Chi tiết đánh giá #<span id="detailReviewId"></span></h5> <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-row">
+                            <span class="detail-label">Sản phẩm:</span>
+                            <span class="detail-value" id="detailProductTitle"></span> </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Khách hàng:</span>
+                            <span class="detail-value" id="detailCustomerName"></span> </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Mã KH:</span>
+                            <span class="detail-value" id="detailCustomerId"></span> </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-row">
+                            <span class="detail-label">Số sao:</span>
+                            <span class="detail-value text-warning" id="detailRatingHtml"></span> </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Ngày đánh giá:</span>
+                            <span class="detail-value" id="detailReviewDate"></span> </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Trạng thái:</span>
+                            <span class="detail-value">
+                                        <span class="status-badge" id="detailReviewStatus"></span> </span>
+                        </div>
+                    </div>
+                </div>
+                <h6 class="mt-4 mb-2">Nội dung chi tiết:</h6>
+                <div class="review-content-box" id="detailReviewContent"></div> <div class="mt-4">
+                <h6 class="mb-2">Phản hồi của quản trị viên:</h6>
+
+                <div id="adminReplyBox" class="review-content-box text-secondary"
+                     style="display: none; background: #f1f3f4;"></div> <textarea id="adminReplyInput" class="form-control mt-2" rows="3"
+                                                                                  placeholder="Nhập phản hồi của bạn..."></textarea> <button id="sendReplyBtn" class="btn btn-primary btn-sm mt-2">Gửi phản hồi</button> </div>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <a href="#" id="modalDeleteButton" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn XÓA vĩnh viễn đánh giá này không?');">Xóa vĩnh viễn</a> </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:inline="javascript">
+
+    function confirmLogout(logoutUrl) {
+        // Sử dụng hàm confirm() gốc của trình duyệt
+        if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống quản trị không?")) {
+            // Nếu người dùng nhấn OK, chuyển hướng đến URL đăng xuất
+            window.location.href = logoutUrl;
+        }
+        // Nếu người dùng nhấn Cancel, không làm gì cả
+    }
+    /*<![CDATA[*/
+    // Lấy Context Path Thymeleaf
+    const CONTEXT_PATH = /*[[@{/admin/comments}]]*/ '';
+
+    // Hàm tạo HTML sao dựa trên số sao
+    function generateRatingHtml(rating) {
+        if (rating == null || rating == 0) {
+            return '<span class="text-muted">Không đánh giá (Bình luận)</span>';
+        }
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                html += '<i class="fas fa-star"></i>';
+            } else {
+                html += '<i class="far fa-star"></i>';
+            }
+        }
+        html += ` (${rating} sao)`;
+        return html;
+    }
+
+    /**
+     * Xử lý Xem chi tiết đánh giá (sử dụng AJAX để gọi Controller)
+     * Endpoint: /admin/comments/detail/{id}
+     */
+    function viewReviewDetail(reviewId) {
+        $.ajax({
+            url: CONTEXT_PATH + '/detail/' + reviewId,
+            type: 'GET',
+            success: function(comment) {
+                // Cập nhật thông tin cơ bản
+                $('#detailReviewId').text(comment.id);
+                $('#detailProductTitle').text(comment.productTitle);
+                $('#detailCustomerName').text(comment.userName);
+                $('#detailCustomerId').text(comment.userId || 'N/A');
+
+                // Định dạng ngày
+                const date = comment.date ? new Date(comment.date) : null;
+                $('#detailReviewDate').text(date ? date.toLocaleDateString('vi-VN') : 'N/A');
+
+                // Cập nhật nội dung
+                $('#detailReviewContent').text(comment.messages || 'Không có nội dung.');
+
+                // Cập nhật số sao (Sử dụng hàm đã sửa)
+                $('#detailRatingHtml').html(generateRatingHtml(comment.rate));
+
+                // Cập nhật trạng thái
+                const statusBadge = $('#detailReviewStatus');
+                statusBadge.removeClass('status-published status-pending status-hidden');
+                let statusText = '';
+                if (comment.status === 'PUBLISHED') {
+                    statusBadge.addClass('status-published');
+                    statusText = 'Đã duyệt';
+                } else if (comment.status === 'PENDING') {
+                    statusBadge.addClass('status-pending');
+                    statusText = 'Chờ duyệt';
+                } else {
+                    statusBadge.addClass('status-hidden');
+                    statusText = 'Đã ẩn';
+                }
+                statusBadge.text(statusText);
+
+                // Cập nhật nút xóa
+                $('#modalDeleteButton').attr('href', CONTEXT_PATH + '/delete/' + comment.id);
+
+                // Hiển thị phản hồi (nếu có)
+                if (comment.reply && comment.reply.trim() !== "") {
+                    $('#adminReplyBox').text(comment.reply).show();
+                } else {
+                    $('#adminReplyBox').hide();
+                }
+
+                // Reset nội dung ô nhập phản hồi mỗi khi mở modal mới
+                $('#adminReplyInput').val('');
+                $('#sendReplyBtn').off('click').on('click', function() {
+                    const replyText = $('#adminReplyInput').val().trim();
+
+                    if (replyText === '') {
+                        alert('Vui lòng nhập nội dung phản hồi!');
+                        return;
+                    }
+
+                    // 1. Gửi phản hồi
+                    $.ajax({
+                        url: CONTEXT_PATH + '/reply/' + reviewId,
+                        type: 'POST',
+                        data: JSON.stringify({ reply: replyText }),
+                        contentType: 'application/json',
+                        success: function() {
+                            showNotification("Phản hồi đã được gửi thành công.", "success");
+                            $('#adminReplyBox').text(replyText).show();
+                            $('#adminReplyInput').val('');
+
+                            // **********************************************
+                            // 2. Tự động DUYỆT (PUBLISH) bình luận sau khi phản hồi
+                            // GỌI API DUYỆT
+                            $.ajax({
+                                url: CONTEXT_PATH + '/publish/' + reviewId,
+                                type: 'GET', // Sử dụng GET vì Controller mapping là GET
+                                success: function() {
+                                    showNotification("Trạng thái đánh giá #" + reviewId + " đã được DUYỆT.", "info");
+
+                                    // Tải lại trang sau một thời gian ngắn để cập nhật bảng
+                                    setTimeout(function() {
+                                        window.location.reload();
+                                    }, 1000);
+                                },
+                                error: function(xhr) {
+                                    // Thông báo nếu duyệt lỗi, nhưng vẫn thông báo phản hồi thành công
+                                    console.error("Lỗi khi TỰ ĐỘNG DUYỆT sau khi phản hồi:", xhr.responseText);
+                                }
+                            });
+                            // **********************************************
+                        },
+                        error: function(xhr, status, error) {
+                            let errorMessage = "Không thể gửi phản hồi. Vui lòng kiểm tra bình luận đã được duyệt (PUBLISHED) chưa.";
+                            if (xhr.responseText) {
+                                try {
+                                    // Thử parse JSON response
+                                    const responseJson = JSON.parse(xhr.responseText);
+                                    errorMessage = "Lỗi: " + (responseJson.message || xhr.responseText);
+                                } catch (e) {
+                                    errorMessage = "Lỗi: " + xhr.responseText;
+                                }
+                            }
+                            showNotification(errorMessage, "error");
+                            console.error("Reply AJAX Error:", error);
+                        }
+                    });
+                });
+            },
+            error: function(xhr, status, error) {
+                showNotification("Lỗi khi tải chi tiết đánh giá. Vui lòng kiểm tra console hoặc Services/Controller.", "error");
+                console.error("AJAX Error:", error);
+            }
+        });
+    }
+
+    function approveAllPending() {
+        if (confirm("Bạn có chắc chắn muốn duyệt tất cả các đánh giá đang chờ (PENDING) không? Hành động này không thể hoàn tác.")) {
+            // CONTEXT_PATH = /admin/comments
+            $.ajax({
+                url: CONTEXT_PATH + '/approve-all',
+                type: 'POST', // RẤT QUAN TRỌNG: PHẢI LÀ POST
+                success: function(response) {
+                    showNotification(response, "success");
+
+                    // Tải lại trang để thấy kết quả
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1000);
+                },
+                error: function(xhr, status, error) {
+                    let errorMessage = "Lỗi khi thực hiện duyệt tất cả. Vui lòng kiểm tra Server Log.";
+                    if (xhr.responseText) {
+                        // Trích xuất lỗi từ Controller nếu có
+                        errorMessage = "Lỗi: " + xhr.responseText;
+                    }
+                    showNotification(errorMessage, "error");
+                    console.error("Bulk Approve Error:", xhr.responseText);
+                }
+            });
+        }
+    }
+
+    // Hàm hiển thị thông báo
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        let alertClass = type === 'success' ? 'alert-success' :
+            type === 'error' ? 'alert-danger' :
+                type === 'info' ? 'alert-info' : 'alert-warning';
+
+        notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+        notification.setAttribute('role', 'alert');
+        notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            // Tự động đóng sau 4 giây
+            const bsAlert = new bootstrap.Alert(notification);
+            bsAlert.close();
+        }, 4000);
+    }
+    // Hết Hàm hiển thị thông báo
+
+
+    // Hàm lọc đánh giá (Client-side filtering)
+    function filterReviews() {
+        const typeFilter = document.getElementById('typeFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const rateFilter = document.getElementById('ratingFilter').value;
+        const replyFilter = document.getElementById('replyFilter').value; // BỘ LỌC MỚI
+
+        document.querySelectorAll('#reviewsTableBody tr').forEach(row => {
+            const rowType = row.getAttribute('data-type');
+            const rowStatus = row.getAttribute('data-status');
+            const rowRate = row.getAttribute('data-rating');
+            const rowHasReply = row.getAttribute('data-has-reply'); // THUỘC TÍNH MỚI
+
+            const statusMatch = statusFilter === '' || rowStatus === statusFilter;
+            const typeMatch = typeFilter === '' || rowType === typeFilter;
+            const replyMatch = replyFilter === '' || rowHasReply === replyFilter; // LOGIC LỌC MỚI
+
+            let rateMatch = true;
+            // Nếu người dùng chọn lọc theo số sao VÀ đây là một bình luận (COMMENT)
+            if (rateFilter !== '' && rowType === 'COMMENT') {
+                rateMatch = false;
+            } else if (rateFilter !== '') {
+                // Lọc theo sao (chỉ áp dụng cho REVIEW)
+                rateMatch = rowRate === rateFilter;
+            }
+
+            if (statusMatch && typeMatch && rateMatch && replyMatch) { // CẬP NHẬT ĐIỀU KIỆN
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Hàm tìm kiếm (Client-side searching)
+    function searchReviews() {
+        const query = document.getElementById('searchReviewInput').value.toLowerCase();
+        document.querySelectorAll('#reviewsTableBody tr').forEach(row => {
+            const textContent = row.innerText.toLowerCase();
+            if (textContent.includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // --- Logic Sidebar ---
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+
+        if (sidebar.classList.contains('collapsed')) {
+            toggleIcon.classList.remove('fa-chevron-left');
+            toggleIcon.classList.add('fa-chevron-right');
+        } else {
+            toggleIcon.classList.remove('fa-chevron-right');
+            toggleIcon.classList.add('fa-chevron-left');
+        }
+    }
+
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isToggleButton = event.target.closest('.btn');
+
+        if (!isClickInsideSidebar && !isToggleButton && window.innerWidth <= 768) {
+            sidebar.classList.remove('show');
+        }
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

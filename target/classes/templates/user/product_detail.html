@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|BookStore - ${product.title}|">BookStore - Chi tiết Sản phẩm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* ==================== BASE STYLES ==================== */
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f4f7 0%, #dbe2e9 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .btn-auth {
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 15px;
+            margin: 0 5px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .cart-icon {
+            margin-left: 15px;
+            color: white;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ==================== PRODUCT GALLERY ==================== */
+        .product-gallery {
+            position: sticky;
+            top: 20px;
+        }
+
+        .main-image {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Bóng đổ mạnh hơn */
+            height: 480px; /* Tăng chiều cao */
+            object-fit: contain;
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fff;
+        }
+
+        .thumbnail-container {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .thumbnail {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            cursor: pointer;
+            border: 3px solid transparent; /* Viền dày hơn */
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            padding: 5px;
+            background: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .thumbnail.active, .thumbnail:hover {
+            border-color: #764ba2; /* Màu tím đậm hơn */
+            transform: scale(1.05);
+        }
+
+        /* ==================== PRODUCT DETAILS ==================== */
+        .product-details {
+            padding-left: 30px;
+        }
+
+        .product-price-detail {
+            font-size: 2.8rem; /* Kích thước lớn hơn */
+            font-weight: 700;
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+
+        .old-price {
+            text-decoration: line-through;
+            color: #95a5a6;
+            font-size: 1.4rem;
+            margin-left: 20px;
+        }
+
+        /* CTA Buttons */
+        .btn-add-cart-detail {
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%); /* Màu xanh Teal */
+            border: none;
+            color: white;
+            padding: 15px 40px; /* Lớn hơn */
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(26, 188, 156, 0.4);
+        }
+        .btn-add-cart-detail:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(26, 188, 156, 0.5);
+        }
+
+        .btn-order-detail {
+            background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%); /* Màu đỏ tươi */
+            border: none;
+            color: white;
+            padding: 15px 40px; /* Lớn hơn */
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        .btn-order-detail:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+        }
+
+        /* Quantity Control - CẬP NHẬT Ở ĐÂY */
+        .quantity-control {
+            display: flex; /* Sử dụng flexbox để các phần tử nằm ngang */
+            align-items: center; /* Căn giữa theo chiều dọc */
+            border: 1px solid #ced4da; /* Thêm viền chung */
+            border-radius: 8px; /* Bo tròn góc */
+            overflow: hidden; /* Đảm bảo các button không bị tràn viền */
+        }
+        .quantity-control button {
+            width: 45px; /* Chiều rộng cố định cho nút */
+            height: 45px; /* Chiều cao cố định */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none; /* Xóa viền riêng của button */
+            background-color: #f8f9fa; /* Màu nền nhạt */
+            color: #495057;
+            font-size: 1.2rem;
+            transition: background-color 0.2s;
+        }
+        .quantity-control button:hover {
+            background-color: #e2e6ea;
+        }
+        .quantity-control input {
+            width: 60px; /* Điều chỉnh chiều rộng input */
+            height: 45px; /* Đồng bộ chiều cao */
+            text-align: center;
+            border: none; /* Xóa viền của input */
+            font-weight: 600;
+            color: #343a40;
+            -moz-appearance: textfield; /* Loại bỏ mũi tên trên Firefox */
+        }
+        /* Loại bỏ mũi tên trên Chrome, Safari, Edge */
+        .quantity-control input::-webkit-outer-spin-button,
+        .quantity-control input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+
+        /* ==================== TAB CONTENT & COMMENTS ==================== */
+        .nav-tabs .nav-link {
+            color: #34495e !important;
+            font-weight: 600;
+            border: none;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .nav-tabs .nav-link.active {
+            color: #667eea !important;
+            border-color: #667eea;
+            background-color: transparent !important;
+        }
+
+        .detail-box {
+            background: #fff;
+            padding: 30px; /* Padding lớn hơn */
+            border-radius: 0 10px 10px 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08); /* Bóng đổ đẹp hơn */
+            border-top: none;
+        }
+        .detail-box h5 {
+            color: #764ba2; /* Màu tím */
+            font-weight: bold;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Comment/Review Styles */
+        .comment-item {
+            border: none;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .comment-reply {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin-top: 15px;
+            background-color: #e9effd;
+            border-radius: 0 8px 8px 0;
+        }
+        .rating-stars {
+            color: #f39c12; /* Màu vàng cam */
+            font-size: 1.2rem;
+        }
+
+        .form-label span {
+            color: #e74c3c;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px 0 20px 0;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 992px) {
+            .product-details {
+                padding-left: 0;
+                margin-top: 30px;
+            }
+            .main-image {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/products}">Sản phẩm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/user/voucher}">Voucher</a>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center" id="authButtons">
+                <div id="loggedOutButtons" th:if="${!isLoggedIn}">
+                    <a th:href="@{/login}" href="login.html" class="btn btn-auth btn-sm">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </a>
+                    <a th:href="@{/register}" href="register.html" class="btn btn-auth btn-sm">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </a>
+                </div>
+
+                <div id="loggedInButtons" th:if="${isLoggedIn}">
+                    <div class="dropdown">
+                        <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="userNameDisplay" th:text="${currentUser.username}">Tài khoản</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                            <li><a class="dropdown-item" th:href="@{/user/profile}">
+                                <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                            </a></li>
+                            <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
+                                <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" th:href="@{/logout}">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cartCount">0</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <div class="row">
+        <div th:if="${product == null}" class="col-12 text-center">
+            <div class="alert alert-danger p-4 shadow">
+                <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Lỗi!</h4>
+                <p th:text="${errorMessage}">Không tìm thấy sản phẩm này. Vui lòng quay lại trang danh sách.</p>
+                <a th:href="@{/products}" class="btn btn-primary-custom">Quay lại</a>
+            </div>
+        </div>
+
+        <div th:if="${product != null}" class="row">
+            <div class="col-lg-5">
+                <div class="product-gallery">
+                    <img th:src="${product.imageLinks != null and !product.imageLinks.isEmpty() ? product.imageLinks[0] : 'https://via.placeholder.com/600x480?text=No+Image'}"
+                         th:alt="${product.title}"
+                         id="mainProductImage"
+                         class="main-image">
+
+                    <div class="thumbnail-container">
+                        <th:block th:each="imageLink, iterStat : ${product.imageLinks}">
+                            <img th:src="${imageLink}"
+                                 th:alt="${product.title}"
+                                 class="thumbnail"
+                                 th:classappend="${iterStat.index == 0 ? 'active' : ''}"
+                                 th:data-src="${imageLink}"
+                                 onclick="changeMainImage(this)">
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7 product-details">
+                <h1 th:text="${product.title}" class="mb-3 fw-bold text-dark"></h1>
+                <p class="text-secondary fs-6">Tác giả: <span th:text="${product.author}"></span> | NXB: <span th:text="${product.publisher}"></span></p>
+
+                <div class="p-3 mb-4 bg-light rounded shadow-sm d-flex align-items-center justify-content-start">
+                    <div class="product-price-detail"
+                         th:with="discountedPrice=${product.price - (product.price * product.discount / 100)}">
+                        <span th:text="${#numbers.formatDecimal(discountedPrice, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span>
+                    </div>
+                    <div th:if="${product.discount > 0}" class="old-price" th:text="${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'COMMA')} + 'đ'"></div>
+                    <span th:if="${product.discount > 0}" class="badge bg-danger ms-3 fs-6" th:text="'-' + ${product.discount} + '%'"></span>
+                </div>
+
+                <div class="mb-4">
+                    <p class="mb-1 fw-bold text-dark">Tình trạng:
+                        <span th:if="${product.stockQuantity > 0}" class="text-success fw-bold"><i class="fas fa-check-circle"></i> Còn hàng</span>
+                        <span th:unless="${product.stockQuantity > 0}" class="text-danger fw-bold"><i class="fas fa-times-circle"></i> Hết hàng</span>
+                    </p>
+                    <p class="text-secondary">Kho: <span th:text="${product.stockQuantity}"></span> sản phẩm</p>
+                </div>
+
+                <div class="d-flex align-items-center mb-5">
+                    <label for="quantity" class="me-3 fw-bold text-dark">Số lượng:</label>
+                    <div class="quantity-control">
+                        <button class="btn btn-outline-secondary" type="button" onclick="updateQuantityValue(-1)"><i class="fas fa-minus"></i></button>
+                        <input type="number" id="quantity" value="1" min="1"
+                               th:max="${product.stockQuantity > 0 ? product.stockQuantity : 1}"
+                               onchange="validateQuantity(this)" class="form-control" readonly> <button class="btn btn-outline-secondary" type="button" onclick="updateQuantityValue(1)"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-5">
+                    <button class="btn btn-add-cart-detail me-4" th:onclick="|addToCart(${product.idProducts})|"
+                            th:disabled="${product.stockQuantity <= 0}">
+                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                    <button class="btn btn-order-detail" th:onclick="|orderNow(${product.idProducts})|"
+                            th:disabled="${product.stockQuantity <= 0}">
+                        <i class="fas fa-shopping-bag"></i> Mua ngay
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${product != null}" class="col-12 mt-5">
+            <ul class="nav nav-tabs border-0" id="productTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab"><i class="fas fa-book-reader me-2"></i>Mô tả sản phẩm</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab"><i class="fas fa-info-circle me-2"></i>Thông tin chi tiết</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button" role="tab">
+                        <i class="fas fa-star text-warning me-2"></i> Đánh giá
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="comment-tab" data-bs-toggle="tab" data-bs-target="#comment" type="button" role="tab">
+                        <i class="fas fa-comment-dots text-primary me-2"></i> Bình luận
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content detail-box" id="productTabContent">
+                <div class="tab-pane fade show active" id="description" role="tabpanel">
+                    <h5 class="mb-3">Nội dung sách</h5>
+                    <div th:utext="${product.description}" class="text-justify text-secondary">
+                        Sản phẩm này hiện chưa có mô tả chi tiết.
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="info" role="tabpanel">
+                    <h5 class="mb-3">Thông số kỹ thuật</h5>
+                    <table class="table table-bordered table-hover">
+                        <tbody>
+                        <tr><th>Tiêu đề</th><td th:text="${product.title}"></td></tr>
+                        <tr><th>Tác giả</th><td th:text="${product.author}"></td></tr>
+                        <tr><th>Nhà xuất bản</th><td th:text="${product.publisher}"></td></tr>
+                        <tr><th>Năm xuất bản</th><td th:text="${product.publicationYear != null ? #temporals.format(product.publicationYear, 'dd-MM-yyyy') : 'N/A'}"></td></tr>
+                        <tr><th>Số trang</th><td th:text="${product.pages}"></td></tr>
+                        <tr><th>Ngôn ngữ</th><td th:text="${product.language}"></td></tr>
+                        <tr><th>Thể loại</th><td th:text="${product.categoryNames != null ? #strings.listJoin(product.categoryNames, ', ') : 'N/A'}"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="review" role="tabpanel">
+                    <h5 class="mb-4">Gửi **Đánh giá** của bạn</h5>
+                    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+                    <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+
+                    <div class="mb-5 p-4 border rounded bg-light">
+                        <form th:action="@{/comments/review/save}" method="post" th:object="${newComment}">
+                            <input type="hidden" th:field="*{productId}" th:value="${product.idProducts}">
+                            <input type="hidden" th:field="*{userId}">
+
+                            <div class="mb-3">
+                                <label for="rate" class="form-label fw-bold">Đánh giá sao <span class="text-danger">(*)</span>:</label>
+                                <select id="rate" th:field="*{rate}" class="form-select" required>
+                                    <option value="">-- Chọn đánh giá --</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Tuyệt vời</option>
+                                    <option value="4">⭐⭐⭐⭐ Khá tốt</option>
+                                    <option value="3">⭐⭐⭐ Bình thường</option>
+                                    <option value="2">⭐⭐ Kém</option>
+                                    <option value="1">⭐ Rất tệ</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="messages_review" class="form-label fw-bold">Nội dung đánh giá:</label>
+                                <textarea id="messages_review" th:field="*{messages}" class="form-control" rows="3" required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-add-cart-detail"><i class="fas fa-paper-plane"></i> Gửi Đánh giá</button>
+                        </form>
+                    </div>
+
+                    <h5 class="mb-3 mt-5">Các đánh giá của khách hàng</h5>
+
+                    <div th:with="reviewsWithRate=${publishedComments.?[rate != null and rate > 0]}">
+                        <div th:if="${#lists.isEmpty(reviewsWithRate)}">
+                            <p class="text-muted">Hiện tại chưa có đánh giá nào có sao được hiển thị.</p>
+                        </div>
+
+                        <div th:each="comment : ${reviewsWithRate}" class="comment-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong th:text="${comment.userName}"></strong>
+                                    | Đánh giá:
+                                    <span class="rating-stars">
+                                        <i th:each="i : ${#numbers.sequence(1, comment.rate)}" class="fas fa-star"></i>
+                                        <i th:each="i : ${#numbers.sequence(comment.rate + 1, 5)}" class="far fa-star"></i>
+                                    </span>
+                                </div>
+                                <small class="text-muted" th:text="${#temporals.format(comment.date, 'dd-MM-yyyy')}"></small>
+                            </div>
+                            <p class="mb-2 text-dark" th:text="${comment.messages}"></p>
+                            <div th:if="${comment.reply != null and !comment.reply.isEmpty()}" class="comment-reply">
+                                <strong class="text-primary"><i class="fas fa-reply me-1"></i> Phản hồi từ Quản trị viên:</strong>
+                                <p class="mb-0" th:text="${comment.reply}"></p>
+                                <small class="text-muted" th:text="${comment.replyDate != null ? #temporals.format(comment.replyDate, 'dd-MM-yyyy HH:mm') : ''}"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="comment" role="tabpanel">
+                    <h5 class="mb-4">Gửi **Bình luận** của bạn</h5>
+
+                    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+                    <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+
+                    <div class="mb-5 p-4 border rounded bg-light">
+                        <form th:action="@{/comments/comment-only/save}" method="post" th:object="${newComment}">
+                            <input type="hidden" th:field="*{productId}" th:value="${product.idProducts}">
+                            <input type="hidden" th:field="*{userId}">
+                            <input type="hidden" th:field="*{rate}" value="">
+
+                            <div class="mb-3">
+                                <label for="messages_comment" class="form-label fw-bold">Nội dung bình luận <span class="text-danger">(*)</span>:</label>
+                                <textarea id="messages_comment" th:field="*{messages}" class="form-control" rows="3" required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-order-detail"><i class="fas fa-paper-plane"></i> Gửi Bình luận</button>
+                        </form>
+                    </div>
+
+                    <h5 class="mb-3 mt-5">Các bình luận của khách hàng</h5>
+
+                    <div th:with="commentsOnly=${publishedComments.?[rate == null or rate == 0]}">
+                        <div th:if="${#lists.isEmpty(commentsOnly)}">
+                            <p class="text-muted">Hiện tại chưa có bình luận nào được hiển thị.</p>
+                        </div>
+
+                        <div th:each="comment : ${commentsOnly}" class="comment-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong th:text="${comment.userName}"></strong>
+                                    <span class="ms-2 text-muted">| Bình luận</span>
+                                </div>
+                                <small class="text-muted" th:text="${#temporals.format(comment.date, 'dd-MM-yyyy')}"></small>
+                            </div>
+                            <p class="mb-2 text-dark" th:text="${comment.messages}"></p>
+                            <div th:if="${comment.reply != null and !comment.reply.isEmpty()}" class="comment-reply">
+                                <strong class="text-primary"><i class="fas fa-reply me-1"></i> Phản hồi từ Quản trị viên:</strong>
+                                <p class="mb-0" th:text="${comment.reply}"></p>
+                                <small class="text-muted" th:text="${comment.replyDate != null ? #temporals.format(comment.replyDate, 'dd-MM-yyyy HH:mm') : ''}"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-shopping-cart"></i> Giỏ hàng của bạn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cartItems">
+                    <p class="text-center text-muted">Giỏ hàng trống</p>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <div>
+                    <strong>Tổng cộng:</strong> <span id="totalPrice">0đ</span>
+                </div>
+                <a th:href="@{/user/cart}" class="btn btn-primary-custom">
+                    Thanh toán
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer mt-5 py-3 text-center text-white">
+    <div class="container">
+        <p class="mb-0">© 2024 BookStore. Tất cả quyền được bảo lưu.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    const productData = /*[[${product}]]*/ {};
+    let cart = JSON.parse(localStorage.getItem('bookstoreCart') || '[]');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartUI();
+    });
+
+    // ======================== GALLERY & QUANTITY ========================
+    function changeMainImage(thumbnail) {
+        const mainImage = document.getElementById('mainProductImage');
+        const newSrc = thumbnail.getAttribute('data-src');
+        mainImage.src = newSrc;
+
+        document.querySelectorAll('.thumbnail').forEach(img => {
+            img.classList.remove('active');
+        });
+        thumbnail.classList.add('active');
+    }
+
+    function updateQuantityValue(change) {
+        const quantityInput = document.getElementById('quantity');
+        let currentValue = parseInt(quantityInput.value);
+        const maxValue = parseInt(quantityInput.getAttribute('max'));
+
+        let newValue = currentValue + change;
+
+        if (isNaN(newValue) || newValue < 1) { // Xử lý NaN hoặc giá trị nhỏ hơn 1
+            newValue = 1;
+        }
+        if (newValue > maxValue) {
+            newValue = maxValue;
+        }
+        quantityInput.value = newValue;
+    }
+
+    function validateQuantity(input) {
+        // Hàm này sẽ ít được dùng hơn nếu input là readonly, nhưng vẫn giữ để phòng hờ
+        let value = parseInt(input.value);
+        const maxValue = parseInt(input.getAttribute('max'));
+
+        if (isNaN(value) || value < 1) {
+            input.value = 1;
+        } else if (value > maxValue) {
+            input.value = maxValue;
+        }
+    }
+
+
+    // ======================== CART LOGIC ========================
+    function formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    }
+
+    function addToCart(productId) {
+        const product = productData;
+        const quantity = parseInt(document.getElementById('quantity').value);
+
+        if (quantity <= 0) {
+            showNotification('Số lượng phải lớn hơn 0!', 'warning');
+            return;
+        }
+        if (quantity > product.stockQuantity) {
+            showNotification(`Số lượng không được vượt quá số lượng trong kho (${product.stockQuantity})!`, 'warning');
+            return;
+        }
+
+        const existingItem = cart.find(item => item.idProducts === productId);
+        const discountedPrice = product.price - (product.price * product.discount / 100);
+
+        if (product) {
+            if (existingItem) {
+                // Kiểm tra lại tổng số lượng không vượt quá kho
+                if (existingItem.quantity + quantity > product.stockQuantity) {
+                    showNotification(`Tổng số lượng trong giỏ hàng không được vượt quá số lượng trong kho (${product.stockQuantity})!`, 'warning');
+                    return;
+                }
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    idProducts: productId,
+                    title: product.title,
+                    price: discountedPrice,
+                    imageLink: product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null,
+                    quantity: quantity
+                });
+            }
+        }
+
+        localStorage.setItem('bookstoreCart', JSON.stringify(cart));
+        updateCartUI();
+        showNotification(`Đã thêm ${quantity} sản phẩm vào giỏ hàng!`, 'success');
+    }
+
+    function orderNow(productId) {
+        addToCart(productId);
+        const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+        cartModal.show();
+    }
+
+    function updateCartUI() {
+        const cartCount = document.getElementById('cartCount');
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCount.textContent = totalItems;
+        updateCartModal();
+    }
+
+    function updateCartModal() {
+        const cartItems = document.getElementById('cartItems');
+        const totalPriceElement = document.getElementById('totalPrice');
+
+        if (cart.length === 0) {
+            cartItems.innerHTML = '<p class="text-center text-muted">Giỏ hàng trống</p>';
+            totalPriceElement.textContent = '0đ';
+            return;
+        }
+
+        let cartHTML = '';
+        let total = 0;
+
+        cart.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+
+            cartHTML += `
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div class="d-flex align-items-center">
+                                <img src="${item.imageLink}" alt="${item.title}" style="width: 50px; height: 50px; object-fit: contain; margin-right: 10px;">
+                                <div>
+                                    <h6 class="mb-0">${item.title}</h6>
+                                    <small class="text-muted">${formatPrice(item.price)} x ${item.quantity}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-outline-secondary me-1" onclick="updateQuantityModal(${item.idProducts}, -1)">-</button>
+                                <span class="mx-2">${item.quantity}</span>
+                                <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantityModal(${item.idProducts}, 1)">+</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.idProducts})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+        });
+
+        cartItems.innerHTML = cartHTML;
+        totalPriceElement.textContent = formatPrice(total);
+    }
+
+    function updateQuantityModal(productId, change) {
+        const item = cart.find(item => item.idProducts === productId);
+        if (item) {
+            const product = productData; // Lấy thông tin sản phẩm từ productData
+            let newQuantity = item.quantity + change;
+
+            if (newQuantity <= 0) {
+                removeFromCart(productId); // Xóa nếu số lượng về 0
+                return;
+            }
+            if (newQuantity > product.stockQuantity) {
+                showNotification(`Tổng số lượng trong giỏ hàng không được vượt quá số lượng trong kho (${product.stockQuantity})!`, 'warning');
+                return; // Ngăn không cho vượt quá số lượng trong kho
+            }
+
+            item.quantity = newQuantity;
+            localStorage.setItem('bookstoreCart', JSON.stringify(cart));
+            updateCartUI();
+        }
+    }
+
+    function removeFromCart(productId) {
+        cart = cart.filter(item => item.idProducts !== productId);
+        localStorage.setItem('bookstoreCart', JSON.stringify(cart));
+        updateCartUI();
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+                `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+</script>
+</body>
+</html>
