@@ -18,6 +18,8 @@
         .navbar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            /* Z-index cao hơn để đảm bảo nó đè lên mọi thứ khi cuộn */
+            z-index: 1030;
         }
 
         .navbar-brand {
@@ -119,7 +121,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             margin-bottom: 30px;
-            /* THAY ĐỔI: Thẻ product-card có thể được click */
             cursor: pointer;
         }
 
@@ -159,31 +160,28 @@
             color: #667eea;
         }
 
-        /* BỔ SUNG: Container chứa mô tả và số đã bán */
         .desc-sold-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
-            min-height: 20px; /* Đảm bảo đủ chỗ cho 1 dòng text */
+            min-height: 20px;
         }
 
-        /* BỔ SUNG: Cắt ngắn mô tả thành 1 dòng */
         .product-description {
             flex-grow: 1;
             margin-bottom: 0;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
-            padding-right: 5px; /* Khoảng cách với số đã bán */
+            padding-right: 5px;
         }
 
-        /* CẬP NHẬT: Giá đã giảm và giá gốc gạch ngang */
         .price-rating-row {
             display: flex;
             align-items: baseline;
             margin-bottom: 15px;
-            flex-wrap: wrap; /* Cho phép xuống dòng nếu màn hình quá nhỏ */
+            flex-wrap: wrap;
         }
 
         .product-price {
@@ -193,7 +191,6 @@
             margin-right: 10px;
         }
 
-        /* BỔ SUNG CSS cho giá gốc gạch ngang */
         .old-price {
             text-decoration: line-through;
             color: #95a5a6;
@@ -202,13 +199,11 @@
             font-weight: normal;
         }
 
-        /* BỔ SUNG CSS cho Rating Stars */
         .rating-stars {
             color: #ffc107;
             font-size: 0.9rem;
             display: flex;
             align-items: center;
-            /* ========== DÒNG DUY NHẤT ĐƯỢC THÊM VÀO ========== */
             margin-left: auto;
         }
 
@@ -280,6 +275,18 @@
             margin-top: 60px;
         }
 
+        /* ⭐ THÊM CSS NÀY VÀO ⭐ */
+        .footer-brand-link {
+            text-decoration: none;
+            color: white;
+            transition: opacity 0.3s ease;
+        }
+        .footer-brand-link:hover {
+            color: white;
+            opacity: 0.8;
+        }
+        /* ⭐ KẾT THÚC CSS MỚI ⭐ */
+
         .modal-content {
             border-radius: 15px;
             border: none;
@@ -305,10 +312,10 @@
 
     </style>
 </head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark">
+<body id="page-top">
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="/"><i class="fas fa-book-open"></i> BookStore</a>
+        <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -317,7 +324,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Trang chủ</a>
+                    <a class="nav-link" th:href="@{/}">Trang chủ</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" th:href="@{/products}">Sản phẩm</a>
@@ -337,13 +344,13 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Giới thiệu</a>
+                    <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Liên hệ</a>
+                    <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Voucher</a>
+                    <a class="nav-link" th:href="@{/voucher}">Voucher</a>
                 </li>
             </ul>
 
@@ -409,21 +416,23 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4">
-                <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                <a href="#page-top" class="footer-brand-link">
+                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                </a>
                 <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
             </div>
             <div class="col-md-4">
                 <h5>Liên hệ</h5>
                 <p><i class="fas fa-phone"></i> 0123 456 789</p>
                 <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
-                <p><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, TP.HCM</p>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Đường Quốc lộ 32, TP Hà Nội</p>
             </div>
             <div class="col-md-4">
                 <h5>Theo dõi chúng tôi</h5>
                 <div class="d-flex">
-                    <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
-                    <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
+                    <a href="https://www.facebook.com" target="_blank" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                    <a href="https://www.instagram.com" target="_blank" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                    <a href="https://www.youtube.com" target="_blank" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
                 </div>
             </div>
         </div>
@@ -474,6 +483,20 @@
                 block: 'start'
             });
         }
+
+        // ⭐ THÊM MỚI: JavaScript cho link cuộn mượt #page-top ⭐
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                // Chỉ xử lý nếu link là #page-top
+                if (this.getAttribute('href') === '#page-top') {
+                    e.preventDefault();
+                    document.body.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
     });
 
     function displayProducts(productsToShow) {
@@ -486,13 +509,11 @@
             const detailUrl = `/product_detail/${product.idProducts}`;
             const firstImageLink = product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null;
 
-            // Lấy giá trị Discounted Price từ DTO (đã được tính trong Service)
             const discountedPrice = product.discountedPrice || product.price;
             const originalPrice = product.price;
             const discount = product.discount || 0;
             const hasDiscount = discount > 0;
 
-            // Xử lý Rating
             const rating = product.averageRating || 0;
             const fullStars = Math.floor(rating);
             const halfStar = rating % 1 >= 0.5;
@@ -509,24 +530,7 @@
                 ratingStarsHtml += '<i class="far fa-star"></i>';
             }
 
-            // LƯU Ý: THAY ĐỔI LOGIC CẮT CHUỖI MÔ TẢ
-            let productDescription = product.description || 'Chưa có mô tả.';
-            const MAX_LENGTH = 30; // Giả định độ dài tối đa cho 1 dòng (khoảng 30 ký tự)
-
-            let shortDescription = '';
-            if (productDescription.length > MAX_LENGTH) {
-                // Cố gắng tìm từ cuối cùng trước MAX_LENGTH để cắt gọn
-                shortDescription = productDescription.substring(0, MAX_LENGTH);
-                // Tìm vị trí khoảng trắng cuối cùng
-                let lastSpace = shortDescription.lastIndexOf(' ');
-                if (lastSpace !== -1) {
-                    shortDescription = shortDescription.substring(0, lastSpace);
-                }
-                shortDescription += '...';
-            } else {
-                shortDescription = productDescription;
-            }
-
+            const authorName = product.author || 'Đang cập nhật...';
 
             const imageContent = firstImageLink
                 ? `<img src="${firstImageLink}" alt="${product.title}">`
@@ -542,7 +546,7 @@
                                 <h5 class="product-title">${product.title}</h5>
 
                                 <div class="desc-sold-row">
-                                    <p class="text-muted product-description">${shortDescription}</p>
+                                    <p class="text-muted product-description">Tác giả: ${authorName}</p>
                                     <small class="text-muted text-nowrap">Đã bán: ${product.soldCount || 0}</small>
                                 </div>
 
@@ -622,16 +626,16 @@
         let total = 0;
 
         cart.forEach(item => {
-            const itemTotal = item.price * item.quantity;
+            const itemTotal = (item.discountedPrice || item.price) * item.quantity;
             total += itemTotal;
 
             cartHTML += `
                     <div class="d-flex justify-content-between align-items-center border-bottom py-2">
                         <div>
                             <h6 class="mb-0">${item.title}</h6>
-                            <small class="text-muted">${formatPrice(item.price)} x ${item.quantity}</small>
+                            <small class="text-muted">${formatPrice(item.discountedPrice || item.price)} x ${item.quantity}</small>
                         </div>
-                        <div class="d-flex align-items: center">
+                        <div class="d-flex align-items-center">
                             <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.idProducts}, -1)">-</button>
                             <span class="mx-2">${item.quantity}</span>
                             <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.idProducts}, 1)">+</button>

@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,6 +17,7 @@
         .navbar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1030;
         }
 
         .navbar-brand {
@@ -35,6 +35,19 @@
         .nav-link:hover {
             color: white !important;
             transform: translateY(-2px);
+        }
+
+        .dropdown-menu {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: none;
+        }
+        .dropdown-item {
+            transition: all 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background-color: #f0f2f5;
+            color: #667eea;
         }
 
         .btn-auth {
@@ -71,22 +84,60 @@
             justify-content: center;
         }
 
-        .hero-banner {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            padding: 60px 0;
+        /* ===== CSS CHO BANNER ĐỘNG ===== */
+
+        #voucherCarousel {
+            position: relative;
+            height: 350px;
+            overflow: hidden;
+            background-color: #f0f2f5;
             margin-bottom: 40px;
         }
 
+        #voucherCarousel .carousel-inner,
+        #voucherCarousel .carousel-item,
+        #voucherCarousel .carousel-item img {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .hero-overlay-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            background: linear-gradient(to right, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0) 70%);
+            color: white;
+            pointer-events: none;
+        }
+
+        .hero-overlay-content .container {
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 500px;
+            pointer-events: auto;
+        }
+
         .hero-content h1 {
-            color: #2c3e50;
+            color: white;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: 2.5rem;
         }
 
         .hero-content p {
-            color: #34495e;
+            color: rgba(255,255,255,0.9);
             font-size: 1.1rem;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .btn-primary-custom {
@@ -96,6 +147,7 @@
             border-radius: 25px;
             font-weight: 600;
             transition: all 0.3s ease;
+            color: white;
         }
 
         .btn-primary-custom:hover {
@@ -103,31 +155,25 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
-        .category-section {
-            margin: 40px 0;
+        #voucherCarousel .carousel-control-prev,
+        #voucherCarousel .carousel-control-next {
+            z-index: 11;
+            top: 50%;
+            transform: translateY(-50%);
+            width: auto;
+            height: auto;
+            padding: 1rem;
         }
 
-        .category-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
+        #voucherCarousel .carousel-control-prev {
+            left: 1rem;
         }
 
-        .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        #voucherCarousel .carousel-control-next {
+            right: 1rem;
         }
+        /* ===== KẾT THÚC CSS BANNER ===== */
 
-        .category-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: #667eea;
-        }
 
         .product-card {
             background: white;
@@ -136,6 +182,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             margin-bottom: 30px;
+            cursor: pointer;
         }
 
         .product-card:hover {
@@ -153,6 +200,13 @@
             color: #e67e22;
         }
 
+        .product-image img {
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+            padding: 10px;
+        }
+
         .product-info {
             padding: 20px;
         }
@@ -161,18 +215,52 @@
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 10px;
-            cursor: pointer;
         }
 
         .product-title:hover {
             color: #667eea;
         }
 
+        .desc-sold-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            min-height: 20px;
+        }
+        .product-description {
+            flex-grow: 1;
+            margin-bottom: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            padding-right: 5px;
+        }
+        .price-rating-row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
         .product-price {
             color: #e74c3c;
             font-size: 1.2rem;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-right: 10px;
+        }
+        .old-price {
+            text-decoration: line-through;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            margin-right: 15px;
+            font-weight: normal;
+        }
+        .rating-stars {
+            color: #ffc107;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            margin-left: auto;
         }
 
         .btn-add-cart {
@@ -242,14 +330,47 @@
             margin-top: 60px;
         }
 
+        .footer-brand-link {
+            text-decoration: none;
+            color: white;
+            transition: opacity 0.3s ease;
+        }
+        .footer-brand-link:hover {
+            color: white;
+            opacity: 0.8;
+        }
+
+        /* ===== CSS CHO BANNER ƯU ĐÃI ===== */
         .voucher-banner {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            position: relative;
             border-radius: 15px;
             padding: 20px;
             margin: 30px 0;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            color: white;
+            overflow: hidden;
+
+            background-image: url('/images/banners/voucher_bg.jpg');
+            background-size: cover;
+            background-position: center;
         }
+
+        .voucher-banner::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            z-index: 1;
+        }
+
+        .voucher-banner > * {
+            position: relative;
+            z-index: 2;
+        }
+        /* ===== KẾT THÚC CSS BANNER ƯU ĐÃI ===== */
+
 
         .modal-content {
             border-radius: 15px;
@@ -263,543 +384,499 @@
         }
 
         @media (max-width: 768px) {
-            .hero-banner {
-                padding: 40px 0;
+            #voucherCarousel {
+                height: 300px;
             }
-            
+            .hero-overlay-content {
+                justify-content: center;
+                text-align: center;
+                background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%);
+            }
             .hero-content h1 {
                 font-size: 2rem;
             }
-            
+            .hero-content p {
+                font-size: 0.9rem;
+            }
             .product-image {
                 height: 200px;
                 font-size: 3rem;
-            }
-            
-            .category-card {
-                margin-bottom: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-book-open"></i> BookStore</a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#home">Trang chủ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/voucher}">Voucher</a>
-                    </li>
-                </ul>
-                
-                <div class="d-flex align-items-center">
-					<a th:href="@{/login}" class="btn btn-auth btn-sm">
-					    <i class="fas fa-sign-in-alt"></i> Đăng nhập
-					</a>
-					<a th:href="@{/user/register}" class="btn btn-auth btn-sm">
-					    <i class="fas fa-user-plus"></i> Đăng ký
-					</a>
-
-                    <div class="cart-icon ms-3" style="cursor: pointer;">
-                        <a th:href="@{/user/cart}"><i class="fas fa-shopping-cart"></i></a>
-                        <span class="cart-badge" id="cartCount">0</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Banner -->
-    <section class="hero-banner" id="home">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <div class="hero-content">
-                        <h1>Khám phá thế giới tri thức</h1>
-                        <p>Cửa hàng sách học tập hàng đầu dành cho học sinh, sinh viên. Chúng tôi cung cấp đầy đủ sách giáo khoa, sách tham khảo và tài liệu học tập chất lượng cao.</p>
-                        <button class="btn btn-primary-custom">
-                            <i class="fas fa-book"></i> Khám phá ngay
-                        </button>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="text-center">
-                        <i class="fas fa-graduation-cap" style="font-size: 8rem; color: #667eea; opacity: 0.8;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Voucher Banner -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
-        <div class="voucher-banner" id="voucher">
-            <h3><i class="fas fa-gift"></i> Ưu đãi đặc biệt!</h3>
-            <p class="mb-2">Giảm 20% cho đơn hàng đầu tiên - Mã: <strong>HOCSINH20</strong></p>
-            <small>Áp dụng cho tất cả sách giáo khoa và tham khảo</small>
+        <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#home">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCategories" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Danh mục
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownCategories">
+                        <li th:each="category : ${allCategories}">
+                            <a class="dropdown-item"
+                               th:href="@{/products(categoryId=${category.id_categories},_fragment='products')}"
+                               th:text="${category.name}">
+                                Tên Danh Mục
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/voucher}">Voucher</a>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center">
+                <a th:href="@{/login}" class="btn btn-auth btn-sm">
+                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                </a>
+                <a th:href="@{/user/register}" class="btn btn-auth btn-sm">
+                    <i class="fas fa-user-plus"></i> Đăng ký
+                </a>
+
+                <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cartCount">0</span>
+                </a>
+            </div>
         </div>
     </div>
+</nav>
 
-    <!-- Search Section -->
-    <div class="container">
-        <div class="search-section">
-            <h4 class="text-center mb-4"><i class="fas fa-search"></i> Tìm kiếm sách</h4>
-            <div class="row">
-                <div class="col-lg-8 mx-auto">
+<div class="hero-banner-wrapper" id="home">
+    <div id="voucherCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+
+        <div class="hero-overlay-content">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Khám phá thế giới tri thức</h1>
+                    <p>Cửa hàng sách học tập hàng đầu dành cho học sinh, sinh viên. Chúng tôi cung cấp đầy đủ sách giáo khoa, sách tham khảo và tài liệu học tập chất lượng cao.</p>
+                    <a th:href="@{/products}" class="btn btn-primary-custom">
+                        <i class="fas fa-book"></i> Khám phá ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <a th:href="@{/voucher}" style="display: block; height: 100%; width: 100%;">
+                    <img th:src="@{/images/banners/banner_home1.webp}" class="d-block w-100" alt="Voucher 1">
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a th:href="@{/voucher}" style="display: block; height: 100%; width: 100%;">
+                    <img th:src="@{/images/banners/banner_home2.webp}" class="d-block w-100" alt="Voucher 2">
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a th:href="@{/voucher}" style="display: block; height: 100%; width: 100%;">
+                    <img th:src="@{/images/banners/banner_home3.jpg}" class="d-block w-100" alt="Voucher 3">
+                </a>
+            </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#voucherCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#voucherCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+<div class="container">
+    <div class="voucher-banner" id="voucher">
+        <h3><i class="fas fa-gift"></i> Ưu đãi đặc biệt!</h3>
+        <p class="mb-2">Giảm 20% cho đơn hàng đầu tiên - Mã: <strong>HOCSINH20</strong></p>
+        <small>Áp dụng cho tất cả sách giáo khoa và tham khảo</small>
+    </div>
+</div>
+
+<div class="container">
+    <div class="search-section">
+        <h4 class="text-center mb-4"><i class="fas fa-search"></i> Tìm kiếm sách</h4>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <form th:action="@{/products#products}" method="GET">
                     <div class="input-group">
-                        <input type="text" class="form-control search-input" id="searchInput" placeholder="Nhập tên sách cần tìm...">
-                        <button class="btn btn-search" onclick="searchBooks()">
+                        <input type="text" class="form-control search-input"
+                               id="searchInput" name="keyword"
+                               placeholder="Nhập tên sách, tác giả...">
+                        <button class="btn btn-search" type="submit">
                             <i class="fas fa-search"></i> Tìm kiếm
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
-
-    <!-- Categories -->
-    <div class="container category-section text-center">
-  <h2 class="mb-5">Danh mục sách</h2>
-  <div class="row justify-content-center">
-    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-      <div class="category-card" onclick="filterByCategory('giaokho')">
-        <div class="category-icon"><i class="fas fa-book"></i></div>
-        <h5>Sách giáo khoa</h5>
-        <p class="text-muted">Toán, Lý, Hóa, Sinh, Văn...</p>
-      </div>
-    </div>
-    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-      <div class="category-card" onclick="filterByCategory('thamkhao')">
-        <div class="category-icon"><i class="fas fa-bookmark"></i></div>
-        <h5>Sách tham khảo</h5>
-        <p class="text-muted">Bài tập nâng cao, luyện thi</p>
-      </div>
-    </div>
-    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-      <div class="category-card" onclick="filterByCategory('tienganh')">
-        <div class="category-icon"><i class="fas fa-globe"></i></div>
-        <h5>Tiếng Anh</h5>
-        <p class="text-muted">Grammar, Vocabulary, IELTS</p>
-      </div>
-    </div>
-    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-      <div class="category-card" onclick="filterByCategory('kynang')">
-        <div class="category-icon"><i class="fas fa-lightbulb"></i></div>
-        <h5>Kỹ năng sống</h5>
-        <p class="text-muted">Tư duy, học tập hiệu quả</p>
-      </div>
-    </div>
-  </div>
 </div>
 
+<div class="container" id="products">
+    <h2 class="text-center mb-5">Sản phẩm nổi bật</h2>
+    <div class="row" id="productList">
+    </div>
+</div>
 
-    <!-- Products Section -->
-    <div class="container" id="products">
-        <h2 class="text-center mb-5">Sản phẩm nổi bật</h2>
-        <div class="row" id="productList">
-            <!-- Products will be loaded here -->
+<div class="container" id="about" style="margin-top: 60px;">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center">
+            <h2 class="mb-4">Về chúng tôi</h2>
+            <p class="lead">BookStore là cửa hàng sách trực tuyến chuyên cung cấp sách học tập chất lượng cao dành cho học sinh, sinh viên. Chúng tôi cam kết mang đến những cuốn sách hay nhất, giá cả hợp lý và dịch vụ tận tâm.</p>
         </div>
     </div>
+</div>
 
-    <!-- About Section -->
-    <div class="container" id="about" style="margin-top: 60px;">
+<footer class="footer" id="contact">
+    <div class="container">
         <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <h2 class="mb-4">Về chúng tôi</h2>
-                <p class="lead">BookStore là cửa hàng sách trực tuyến chuyên cung cấp sách học tập chất lượng cao dành cho học sinh, sinh viên. Chúng tôi cam kết mang đến những cuốn sách hay nhất, giá cả hợp lý và dịch vụ tận tâm.</p>
+            <div class="col-md-4">
+                <a href="#home" class="footer-brand-link">
+                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                </a>
+                <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Liên hệ</h5>
+                <p><i class="fas fa-phone"></i> 0123 456 789</p>
+                <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Đường Quốc lộ 32, TP Hà Nội</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Theo dõi chúng tôi</h5>
+                <div class="d-flex">
+                    <a href="https://www.facebook.com" target="_blank" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                    <a href="https://www.instagram.com" target="_blank" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                    <a href="https://www.youtube.com" target="_blank" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4">
+        <div class="text-center">
+            <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</footer>
+
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-shopping-cart"></i> Giỏ hàng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cartItems">
+                    <p class="text-center text-muted">Giỏ hàng trống</p>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <h5>Tổng cộng: <span id="totalPrice">0đ</span></h5>
+                    <a th:href="@{/user/cart}" class="btn btn-primary-custom">
+                        <i class="fas fa-credit-card"></i> Thanh toán
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Footer -->
-    <footer class="footer" id="contact">
-        <div class="container">
+<div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalTitle">Chi tiết sản phẩm</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="productModalBody">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:inline="javascript">
+    const products = /*[[${products}]]*/ [];
+    let cart = JSON.parse(localStorage.getItem('bookstoreCart') || '[]');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        displayProducts(products);
+        updateCartUI();
+    });
+
+    function displayProducts(productsToShow) {
+        const productList = document.getElementById('productList');
+        productList.innerHTML = '';
+
+        if (!productsToShow || productsToShow.length === 0) {
+             productList.innerHTML = `
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        <strong>Thông báo:</strong> Không có sản phẩm nào để hiển thị.
+                    </div>
+                </div>`;
+            return;
+        }
+
+        const defaultIcon = '📚';
+
+        productsToShow.forEach(product => {
+            const detailUrl = `/product_detail/${product.idProducts}`;
+            const firstImageLink = product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null;
+
+            const discountedPrice = product.discountedPrice || product.price;
+            const originalPrice = product.price;
+            const discount = product.discount || 0;
+            const hasDiscount = discount > 0;
+
+            const rating = product.averageRating || 0;
+            const fullStars = Math.floor(rating);
+            const halfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+            let ratingStarsHtml = '';
+            for (let i = 0; i < fullStars; i++) ratingStarsHtml += '<i class="fas fa-star"></i>';
+            if (halfStar) ratingStarsHtml += '<i class="fas fa-star-half-alt"></i>';
+            for (let i = 0; i < emptyStars; i++) ratingStarsHtml += '<i class="far fa-star"></i>';
+
+            const authorName = product.author || 'Đang cập nhật...';
+
+            const imageContent = firstImageLink
+                ? `<img src="${firstImageLink}" alt="${product.title}">`
+                : `<div class="text-center" style="font-size: 4rem;">${defaultIcon}</div>`;
+
+            const productCard = `
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card" onclick="window.location.href='${detailUrl}'">
+                        <div class="product-image">
+                            ${imageContent}
+                        </div>
+                        <div class="product-info">
+                            <h5 class="product-title">${product.title}</h5>
+
+                            <div class="desc-sold-row">
+                                <p class="text-muted product-description">Tác giả: ${authorName}</p>
+                                <small class="text-muted text-nowrap">Đã bán: ${product.soldCount || 0}</small>
+                            </div>
+
+                            <div class="price-rating-row">
+                                <div class="product-price">${formatPrice(discountedPrice)}</div>
+                                ${hasDiscount ? `<div class="old-price">${formatPrice(originalPrice)}</div>` : ''}
+                                <div class="rating-stars">
+                                    ${ratingStarsHtml}
+                                    <span style="color: #2c3e50; font-size: 0.9rem; margin-left: 5px;">(${rating.toFixed(1)})</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex" onclick="event.stopPropagation()">
+                                <button class="btn btn-add-cart" onclick="addToCart(${product.idProducts})">
+                                    <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                                </button>
+                                <button class="btn btn-order" onclick="orderNow(${product.idProducts})">
+                                    <i class="fas fa-shopping-bag"></i> Đặt hàng
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            productList.innerHTML += productCard;
+        });
+    }
+
+    function formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    }
+
+    function addToCart(productId) {
+        const product = products.find(p => p.idProducts === productId);
+        const existingItem = cart.find(item => item.idProducts === productId);
+
+        if (product) {
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ ...product, idProducts: productId, quantity: 1 });
+            }
+        }
+
+        localStorage.setItem('bookstoreCart', JSON.stringify(cart));
+        updateCartUI();
+        showNotification('Đã thêm vào giỏ hàng!', 'success');
+    }
+
+    function orderNow(productId) {
+        addToCart(productId);
+        const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+        cartModal.show();
+    }
+
+    function updateCartUI() {
+        const cartCount = document.getElementById('cartCount');
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCount.textContent = totalItems;
+
+        updateCartModal();
+    }
+
+    function updateCartModal() {
+        const cartItems = document.getElementById('cartItems');
+        const totalPrice = document.getElementById('totalPrice');
+
+        if (cart.length === 0) {
+            cartItems.innerHTML = '<p class="text-center text-muted">Giỏ hàng trống</p>';
+            totalPrice.textContent = '0đ';
+            return;
+        }
+
+        let cartHTML = '';
+        let total = 0;
+
+        cart.forEach(item => {
+            const itemPrice = item.discountedPrice || item.price;
+            const itemTotal = itemPrice * item.quantity;
+            total += itemTotal;
+
+            cartHTML += `
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>
+                        <h6 class="mb-0">${item.title}</h6>
+                        <small class="text-muted">${formatPrice(itemPrice)} x ${item.quantity}</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.idProducts}, -1)">-</button>
+                        <span class="mx-2">${item.quantity}</span>
+                        <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.idProducts}, 1)">+</button>
+
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.idProducts})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        cartItems.innerHTML = cartHTML;
+        totalPrice.textContent = formatPrice(total);
+    }
+
+    function updateQuantity(productId, change) {
+        const item = cart.find(item => item.idProducts === productId);
+        if (item) {
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                removeFromCart(productId);
+            } else {
+                localStorage.setItem('bookstoreCart', JSON.stringify(cart));
+                updateCartUI();
+                updateCartModal();
+            }
+        }
+    }
+
+    function removeFromCart(productId) {
+        cart = cart.filter(item => item.idProducts !== productId);
+        localStorage.setItem('bookstoreCart', JSON.stringify(cart));
+        updateCartUI();
+        updateCartModal();
+    }
+
+    function showProductDetail(productId) {
+        const product = products.find(p => p.idProducts === productId);
+        const modalTitle = document.getElementById('productModalTitle');
+        const modalBody = document.getElementById('productModalBody');
+
+        const firstImageLink = product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null;
+        const imageContent = firstImageLink
+                ? `<img src="${firstImageLink}" alt="${product.title}" style="width: 100%; object-fit: contain;">`
+                : `<div class="text-center" style="font-size: 8rem;">📚</div>`;
+
+        const discountedPrice = product.discountedPrice || product.price;
+
+        modalTitle.textContent = product.title;
+        modalBody.innerHTML = `
             <div class="row">
                 <div class="col-md-4">
-                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
-                    <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
+                    ${imageContent}
                 </div>
-                <div class="col-md-4">
-                    <h5>Liên hệ</h5>
-                    <p><i class="fas fa-phone"></i> 0123 456 789</p>
-                    <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
-                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, TP.HCM</p>
-                </div>
-                <div class="col-md-4">
-                    <h5>Theo dõi chúng tôi</h5>
-                    <div class="d-flex">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
-                    </div>
-                </div>
-            </div>
-            <hr class="my-4">
-            <div class="text-center">
-                <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Cart Modal -->
-    <div class="modal fade" id="cartModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-shopping-cart"></i> Giỏ hàng</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="cartItems">
-                        <p class="text-center text-muted">Giỏ hàng trống</p>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <h5>Tổng cộng: <span id="totalPrice">0đ</span></h5>
-                        <button class="btn btn-primary-custom" onclick="checkout()">
-                            <i class="fas fa-credit-card"></i> Thanh toán
+                <div class="col-md-8">
+                    <h4>${product.title}</h4>
+                    <p class="text-muted">Tác giả: ${product.author || 'N/A'}</p>
+                    <p>${product.description || 'Chưa có mô tả.'}</p>
+                    <h5 class="text-danger">${formatPrice(discountedPrice)}</h5>
+                    <div class="mt-3">
+                        <button class="btn btn-add-cart me-2" onclick="addToCart(${product.idProducts})">
+                            <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                        </button>
+                        <button class="btn btn-order" onclick="orderNow(${product.idProducts})">
+                            <i class="fas fa-shopping-bag"></i> Đặt hàng ngay
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        `;
 
-    <!-- Product Detail Modal -->
-    <div class="modal fade" id="productModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="productModalTitle">Chi tiết sản phẩm</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="productModalBody">
-                    <!-- Product details will be loaded here -->
-                </div>
-            </div>
-        </div>
-    </div>
+        const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+        productModal.show();
+    }
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Sample product data
-        const products = [
-            {
-                id: 1,
-                name: "Toán học 12 - Sách giáo khoa",
-                price: 45000,
-                category: "giaokho",
-                description: "Sách giáo khoa Toán học lớp 12, chương trình mới",
-                icon: "📚"
-            },
-            {
-                id: 2,
-                name: "Vật lý 11 - Bài tập nâng cao",
-                price: 65000,
-                category: "thamkhao",
-                description: "Bộ sách bài tập Vật lý nâng cao với nhiều dạng bài hay",
-                icon: "⚡"
-            },
-            {
-                id: 3,
-                name: "English Grammar in Use",
-                price: 120000,
-                category: "tienganh",
-                description: "Sách ngữ pháp tiếng Anh cơ bản đến nâng cao",
-                icon: "🇬🇧"
-            },
-            {
-                id: 4,
-                name: "Hóa học 10 - Sách giáo khoa",
-                price: 42000,
-                category: "giaokho",
-                description: "Sách giáo khoa Hóa học lớp 10, chương trình chuẩn",
-                icon: "🧪"
-            },
-            {
-                id: 5,
-                name: "Kỹ năng học tập hiệu quả",
-                price: 85000,
-                category: "kynang",
-                description: "Hướng dẫn phương pháp học tập hiệu quả cho học sinh",
-                icon: "💡"
-            },
-            {
-                id: 6,
-                name: "Văn học 12 - Tuyển tập",
-                price: 55000,
-                category: "giaokho",
-                description: "Tuyển tập văn học Việt Nam và thế giới lớp 12",
-                icon: "📖"
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
             }
-        ];
+        }, 3000);
+    }
 
-        let cart = [];
-        let currentProducts = [...products];
-
-        // Load products on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            displayProducts(products);
-        });
-
-        // Display products
-        function displayProducts(productsToShow) {
-            const productList = document.getElementById('productList');
-            productList.innerHTML = '';
-
-            productsToShow.forEach(product => {
-                const productCard = `
-                    <div class="col-lg-4 col-md-6">
-                        <div class="product-card">
-                            <div class="product-image">
-                                ${product.icon}
-                            </div>
-                            <div class="product-info">
-                                <h5 class="product-title" onclick="showProductDetail(${product.id})">${product.name}</h5>
-                                <p class="text-muted">${product.description}</p>
-                                <div class="product-price">${formatPrice(product.price)}</div>
-                                <div class="d-flex">
-                                    <button class="btn btn-add-cart" onclick="addToCart(${product.id})">
-                                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ
-                                    </button>
-                                    <button class="btn btn-order" onclick="orderNow(${product.id})">
-                                        <i class="fas fa-shopping-bag"></i> Đặt hàng
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                productList.innerHTML += productCard;
-            });
-        }
-
-        // Format price
-        function formatPrice(price) {
-            return new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND'
-            }).format(price);
-        }
-
-        // Search books
-        function searchBooks() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredProducts = products.filter(product => 
-                product.name.toLowerCase().includes(searchTerm) ||
-                product.description.toLowerCase().includes(searchTerm)
-            );
-            displayProducts(filteredProducts);
-            
-            // Scroll to products section
-            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Filter by category
-        function filterByCategory(category) {
-            const filteredProducts = products.filter(product => product.category === category);
-            displayProducts(filteredProducts);
-            
-            // Scroll to products section
-            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Add to cart
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            const existingItem = cart.find(item => item.id === productId);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ ...product, quantity: 1 });
-            }
-            
-            updateCartUI();
-            showNotification('Đã thêm vào giỏ hàng!', 'success');
-        }
-
-        // Order now
-        function orderNow(productId) {
-            addToCart(productId);
-            // Show cart modal
-            const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
-            cartModal.show();
-        }
-
-        // Update cart UI
-        function updateCartUI() {
-            const cartCount = document.getElementById('cartCount');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
-            
-            updateCartModal();
-        }
-
-        // Update cart modal
-        function updateCartModal() {
-            const cartItems = document.getElementById('cartItems');
-            const totalPrice = document.getElementById('totalPrice');
-            
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p class="text-center text-muted">Giỏ hàng trống</p>';
-                totalPrice.textContent = '0đ';
-                return;
-            }
-            
-            let cartHTML = '';
-            let total = 0;
-            
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                
-                cartHTML += `
-                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                        <div>
-                            <h6 class="mb-0">${item.name}</h6>
-                            <small class="text-muted">${formatPrice(item.price)} x ${item.quantity}</small>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.id}, -1)">-</button>
-                            <span class="mx-2">${item.quantity}</span>
-                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateQuantity(${item.id}, 1)">+</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            cartItems.innerHTML = cartHTML;
-            totalPrice.textContent = formatPrice(total);
-        }
-
-        // Update quantity
-        function updateQuantity(productId, change) {
-            const item = cart.find(item => item.id === productId);
-            if (item) {
-                item.quantity += change;
-                if (item.quantity <= 0) {
-                    removeFromCart(productId);
-                } else {
-                    updateCartUI();
-                }
-            }
-        }
-
-        // Remove from cart
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            updateCartUI();
-        }
-
-        // Checkout
-        function checkout() {
-            if (cart.length === 0) {
-                showNotification('Giỏ hàng trống!', 'warning');
-                return;
-            }
-            
-            showNotification('Đặt hàng thành công! Chúng tôi sẽ liên hệ với bạn sớm.', 'success');
-            cart = [];
-            updateCartUI();
-            
-            // Close cart modal
-            const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
-            cartModal.hide();
-        }
-
-        // Show product detail
-        function showProductDetail(productId) {
-            const product = products.find(p => p.id === productId);
-            const modalTitle = document.getElementById('productModalTitle');
-            const modalBody = document.getElementById('productModalBody');
-            
-            modalTitle.textContent = product.name;
-            modalBody.innerHTML = `
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="text-center" style="font-size: 8rem;">${product.icon}</div>
-                    </div>
-                    <div class="col-md-8">
-                        <h4>${product.name}</h4>
-                        <p class="text-muted">${product.description}</p>
-                        <h5 class="text-danger">${formatPrice(product.price)}</h5>
-                        <div class="mt-3">
-                            <button class="btn btn-add-cart me-2" onclick="addToCart(${product.id})">
-                                <i class="fas fa-cart-plus"></i> Thêm vào giỏ
-                            </button>
-                            <button class="btn btn-order" onclick="orderNow(${product.id})">
-                                <i class="fas fa-shopping-bag"></i> Đặt hàng ngay
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            const productModal = new bootstrap.Modal(document.getElementById('productModal'));
-            productModal.show();
-        }
-
-        // Show notification
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} position-fixed`;
-            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            notification.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 3000);
-        }
-
-        // Search on Enter key
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchBooks();
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
             }
         });
-
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    </script>
+    });
+</script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa32f5740f08dd',t:'MTc1OTgwNjU1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
