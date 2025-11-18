@@ -292,6 +292,8 @@
     </style>
 </head>
 <body>
+<th:block th:replace="~{fragments/chat-popup :: chatbox}"></th:block>
+
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
         <a class="navbar-brand" th:href="@{/}" href="#"><i class="fas fa-book-open"></i> BookStore</a>
@@ -531,6 +533,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script th:inline="javascript">
     // Lấy dữ liệu sản phẩm từ Model (Controller trang chủ phải addAttribute "products")
     const products = /*[[${products}]]*/ []; // Dữ liệu tĩnh chỉ là dự phòng
@@ -783,5 +786,61 @@
         });
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const chatToggleBtn = document.getElementById("chat-toggle-btn");
+        const chatBoxContent = document.getElementById("chatbox-content");
+        const chatInput = document.getElementById("chat-input");
+        const chatMessages = document.getElementById("chat-messages");
+        const chatSend = document.getElementById("chat-send");
+        const CHAT_API_URL = "/chat";
+
+        chatToggleBtn.addEventListener("click", () => {
+            const isHidden = chatBoxContent.style.display === 'none';
+            chatBoxContent.style.display = isHidden ? 'block' : 'none';
+            chatToggleBtn.textContent = isHidden ? '❌' : '💬';
+        });
+
+        chatSend.addEventListener("click", sendMessage);
+        chatInput.addEventListener("keypress", e => { if(e.key === "Enter") sendMessage(); });
+
+        function sendMessage() {
+            const msg = chatInput.value.trim();
+            if(!msg) return;
+
+            appendMessage("You", msg, 'user');
+            chatInput.value = "";
+            const typingIndicator = appendMessage("Bot", "Đang trả lời...", 'typing');
+
+            fetch(CHAT_API_URL, {
+                method:"POST",
+                headers:{ "Content-Type":"application/json" },
+                body: JSON.stringify({ message: msg })
+            })
+            .then(res => res.json())
+            .then(data => {
+                chatMessages.removeChild(typingIndicator);
+                const replyText = data.reply || data.error;
+                appendMessage(data.error ? "Error":"Bot", replyText, data.error ? "error":"bot");
+            })
+            .catch(err => {
+                chatMessages.removeChild(typingIndicator);
+                appendMessage("Error","Lỗi kết nối server hoặc API.","error");
+            });
+        }
+
+        function appendMessage(sender, text, type){
+            const div = document.createElement("div");
+            div.classList.add("message", type);
+            if(sender === "You") div.innerHTML = `<strong>Bạn:</strong> ${text}`;
+            else if(sender === "Bot") div.innerHTML = `<strong>Bot:</strong> ${text}`;
+            else div.innerHTML = `<i>${text}</i>`;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return div;
+        }
+    });
+</script>
+
 </body>
 </html>

@@ -1,0 +1,16 @@
+<div id="chat-widget" th:fragment="chatbox"
+     style="position:fixed; bottom:20px; right:20px; z-index:1000;" xmlns:th="http://www.w3.org/1999/xhtml">
+    <button id="chat-toggle-btn"
+            style="width:60px; height:60px; border-radius:50%; background:#667eea; color:white; border:none; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+        💬
+    </button>
+
+    <div id="chatbox-content" style="display:none; position:absolute; bottom:70px; right:0; width:300px; border:1px solid #ccc; border-radius:8px; background:white; padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+        <div style="font-weight:bold; margin-bottom:5px;">🤖 BookHub Chatbot</div>
+        <div id="chat-messages" style="height:200px; overflow-y:auto; border:1px solid #eee; margin-bottom:5px; padding:5px;"></div>
+        <input type="text" id="chat-input" style="width: calc(80% - 5px); padding:5px; border:1px solid #ddd; border-radius:4px;">
+        <button id="chat-send" style="width: 20%; padding:5px; border:none; background:#667eea; color:white; border-radius:4px; cursor:pointer;">Gửi</button>
+    </div>
+</div>
+
+
