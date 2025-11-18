@@ -1,33 +1,37 @@
 package com.bookhub.order;
 
 import com.bookhub.cart.CartItemDTO;
-import com.bookhub.product.Product; // THÊM
+import com.bookhub.product.Product;
 import com.bookhub.product.ProductRepository;
-import com.bookhub.user.User; // THÊM
-import com.bookhub.voucher.Voucher; // THÊM
-import com.bookhub.voucher.VoucherRepository; // THÊM
-import com.fasterxml.jackson.core.type.TypeReference; // THÊM
-import com.fasterxml.jackson.databind.ObjectMapper; // THÊM
+import com.bookhub.user.User;
+import com.bookhub.voucher.Voucher;
+import com.bookhub.voucher.VoucherRepository;
+import com.bookhub.voucher.VoucherService; // Dùng để TÁI XÁC THỰC VOUCHER
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.util.StringUtils;
 
-// THÊM IMPORT NÀY
 import com.bookhub.product.ImageProduct;
 
-import java.time.LocalDate; // THÊM
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList; // THÊM
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map; // THÊM
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import java.util.Collections;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
+// Gửi file code hoàn chỉnh: OrderService.java
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -37,61 +41,34 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final VoucherRepository voucherRepository;
-    private final ObjectMapper objectMapper; // Để đọc JSON
+    private final VoucherService voucherService; // Dùng để TÁI XÁC THỰC VOUCHER
+    private final ObjectMapper objectMapper;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // ===============================================
-    // === PHƯƠNG THỨC MỚI: XỬ LÝ ĐẶT HÀNG (Giữ nguyên) ===
+    // === PHƯƠNG THỨC MỚI: XỬ LÝ ĐẶT HÀNG (ĐÃ SỬA VOUCHER LOGIC) ===
     // ===============================================
     @Transactional(rollbackFor = Exception.class)
     public Order processOrder(
             String customerName, String customerPhone, String customerAddress,
             String cartItemsJson, String voucherCode, User loggedInUser) throws Exception {
 
-        // ... (Toàn bộ logic processOrder của bạn được giữ nguyên) ...
         // 1. Đọc giỏ hàng từ JSON
-        List<CartItemDTO> cartItems;
-        try {
-            cartItems = objectMapper.readValue(cartItemsJson, new TypeReference<List<CartItemDTO>>() {});
-        } catch (Exception e) {
-            throw new RuntimeException("Lỗi đọc dữ liệu giỏ hàng.", e);
-        }
-
-        if (cartItems == null || cartItems.isEmpty()) {
+        List<CartItemDTO> cartItems = getCartItemsFromJson(cartItemsJson);
+        if (cartItems.isEmpty()) {
             throw new RuntimeException("Giỏ hàng của bạn đang rỗng.");
         }
 
-        // 2. Tạo đối tượng Order
-        Order newOrder = new Order();
-        newOrder.setDate(LocalDate.now());
-        newOrder.setStatus_order("PENDING"); // Trạng thái chờ xử lý
-        newOrder.setAddress(customerAddress);
-        newOrder.setPhone(customerPhone);
-        newOrder.setPayment_method("COD"); // Tạm thời hardcode, bạn có thể thêm lựa chọn
+        // 2. Tạo đối tượng Order (tạm thời)
+        Order newOrder = buildBaseOrder(customerName, customerPhone, customerAddress, loggedInUser);
 
-        // 3. Gán thông tin khách hàng
-        if (loggedInUser != null) {
-            newOrder.setUser(loggedInUser);
-            // Ghi chú nếu tên trên form khác tên tài khoản
-            if (!loggedInUser.getUsername().equals(customerName)) {
-                newOrder.setNote("Người nhận: " + customerName);
-            }
-        } else {
-            // Xử lý cho khách (guest)
-            newOrder.setUser(null);
-            newOrder.setNote("Khách vãng lai: " + customerName);
-        }
-
-        // 4. Lấy sản phẩm từ DB và kiểm tra kho
-        List<Integer> productIds = cartItems.stream().map(CartItemDTO::getIdProducts).toList();
-        List<Product> productsFromDB = productRepository.findAllById(productIds);
-        Map<Integer, Product> productMap = productsFromDB.stream()
-                .collect(Collectors.toMap(Product::getIdProducts, p -> p));
-
+        // 3. Lấy sản phẩm từ DB và kiểm tra kho, tính subTotal
+        Map<Integer, Product> productMap = getProductMap(cartItems);
         long subTotal = 0;
         List<OrderDetail> orderDetailsList = new ArrayList<>();
 
+        // Logic tính SubTotal và tạo OrderDetails
         for (CartItemDTO cartItem : cartItems) {
             Product product = productMap.get(cartItem.getIdProducts());
             if (product == null) {
@@ -101,83 +78,129 @@ public class OrderService {
                 throw new RuntimeException("Sản phẩm '" + product.getTitle() + "' không đủ hàng trong kho (Chỉ còn " + product.getStockQuantity() + ").");
             }
 
-            // 5. Tạo Chi tiết Đơn hàng (OrderDetail)
-            OrderDetail detail = new OrderDetail();
-            detail.setProduct(product);
-            detail.setQuantity((long) cartItem.getQuantity());
-            detail.setPrice_date(product.getPrice()); // Lấy giá hiện tại từ DB
-            detail.setDiscount(product.getDiscount()); // Lưu % giảm giá (nếu có)
-
-            // Tính tổng tiền cho dòng này
-            long lineTotal = product.getPrice() * cartItem.getQuantity();
-            if (product.getDiscount() != null && product.getDiscount() > 0) {
-                lineTotal = (long) (lineTotal * (1 - (product.getDiscount() / 100.0)));
-            }
-            detail.setTotal(lineTotal);
-
-            subTotal += lineTotal;
-            detail.setOrder(newOrder); // Liên kết ngược lại Order
+            // Tạo Chi tiết Đơn hàng (OrderDetail)
+            OrderDetail detail = buildOrderDetail(newOrder, product, cartItem.getQuantity());
+            subTotal += detail.getTotal(); // Cộng tổng dòng đã tính (đã trừ giảm giá sản phẩm)
             orderDetailsList.add(detail);
 
-            // 6. Cập nhật số lượng kho (trong bộ nhớ)
+            // Cập nhật số lượng kho (trong bộ nhớ)
             product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
         }
 
-        newOrder.setTotal(subTotal); // Gán tổng tiền tạm tính
+        newOrder.setTotal(subTotal); // Gán tổng tiền tạm tính (SubTotal)
 
-        // 7. Xử lý Voucher (Nếu đăng nhập và có mã)
+        // 4. XỬ LÝ VOUCHER (RE-VALIDATE VÀ TÍNH TOÁN AN TOÀN)
+        long discountAmount = 0L;
         Voucher appliedVoucher = null;
-        if (loggedInUser != null && voucherCode != null && !voucherCode.trim().isEmpty()) {
-            appliedVoucher = voucherRepository.findByCodeNameIgnoreCase(voucherCode)
-                    .orElseThrow(() -> new RuntimeException("Mã voucher '" + voucherCode + "' không hợp lệ."));
 
-            // Kiểm tra điều kiện voucher
-            if (appliedVoucher.getQuantity() <= 0) throw new RuntimeException("Voucher đã hết lượt sử dụng.");
-            if (LocalDate.now().isAfter(appliedVoucher.getEnd_date())) throw new RuntimeException("Voucher đã hết hạn.");
-            if (subTotal < appliedVoucher.getMin_order_value()) {
-                throw new RuntimeException("Đơn hàng chưa đủ " + String.format("%,dđ", appliedVoucher.getMin_order_value()) + " để dùng voucher này.");
+        if (StringUtils.hasText(voucherCode)) {
+            // RE-VALIDATE VOUCHER SỬ DỤNG LOGIC CHUẨN TỪ VOUCHERSERVICE
+            try {
+                // Chuyển Long subTotal sang BigDecimal để tính toán chính xác
+                BigDecimal subTotalBD = new BigDecimal(subTotal);
+
+                // GỌI LOGIC TÍNH TOÁN CHUẨN TỪ VOUCHERSERVICE
+                BigDecimal discountBD = voucherService.calculateDiscount(voucherCode, subTotalBD);
+                discountAmount = discountBD.longValue();
+
+                // Chỉ lấy entity nếu tính toán thành công để link
+                appliedVoucher = voucherRepository.findByCodeNameIgnoreCase(voucherCode).orElse(null);
+
+            } catch (RuntimeException e) {
+                // Nếu voucher không hợp lệ, không áp dụng và ghi log
+                System.err.println("Cảnh báo: Mã voucher " + voucherCode + " bị từ chối khi submit: " + e.getMessage());
+                voucherCode = null;
             }
-
-            // Tính toán giảm giá
-            long discountAmount = 0;
-            if ("FIXED".equals(appliedVoucher.getDiscountType())) {
-                discountAmount = appliedVoucher.getDiscountValue();
-            } else if ("PERCENT".equals(appliedVoucher.getDiscountType())) {
-                discountAmount = (long) (subTotal * (appliedVoucher.getDiscountPercent() / 100.0));
-                if (appliedVoucher.getMaxDiscount() != null && appliedVoucher.getMaxDiscount() > 0 && discountAmount > appliedVoucher.getMaxDiscount()) {
-                    discountAmount = appliedVoucher.getMaxDiscount();
-                }
-            }
-
-            // Áp dụng giảm giá
-            newOrder.setTotal(subTotal - discountAmount);
-            newOrder.setVoucher(appliedVoucher);
-
-            // Cập nhật số lượng voucher (trong bộ nhớ)
-            appliedVoucher.setQuantity(appliedVoucher.getQuantity() - 1);
         }
 
-        // 8. Lưu tất cả vào DB (Transaction)
-        newOrder.setOrderDetails(orderDetailsList); // Gán danh sách chi tiết vào đơn hàng
+        // 5. ÁP DỤNG GIẢM GIÁ CUỐI CÙNG VÀ GÁN VOUCHER CHO ORDER
+        newOrder.setDiscountAmount(discountAmount); // LƯU SỐ TIỀN GIẢM
+        newOrder.setVoucherCode(voucherCode); // LƯU MÃ CODE
+        newOrder.setVoucher(appliedVoucher); // LƯU ENTITY VOUCHER (nếu có)
+        newOrder.setTotal(subTotal - discountAmount); // LƯU TỔNG TIỀN CUỐI CÙNG
 
-        Order savedOrder = orderRepository.save(newOrder); // Lưu Order (và OrderDetail nhờ CascadeType.ALL)
+        // 6. Lưu tất cả vào DB (Transaction)
+        newOrder.setOrderDetails(orderDetailsList);
 
-        productRepository.saveAll(productsFromDB); // Cập nhật lại số lượng kho
+        Order savedOrder = orderRepository.save(newOrder);
+        productRepository.saveAll(productMap.values()); // Cập nhật lại số lượng kho
 
-        if (appliedVoucher != null) {
-            voucherRepository.save(appliedVoucher); // Cập nhật lại số lượng voucher
+        // 7. GIẢM SỐ LƯỢNG VOUCHER (CHỈ GỌI HÀM GIẢM SỐ LƯỢNG)
+        if (StringUtils.hasText(voucherCode)) {
+            voucherService.reduceVoucherQuantity(voucherCode);
         }
 
         return savedOrder;
     }
 
+    // ===============================================
+    // === HELPER METHODS (Được tạo từ logic cũ) ===
+    // ===============================================
+
+    private List<CartItemDTO> getCartItemsFromJson(String cartItemsJson) {
+        try {
+            return objectMapper.readValue(cartItemsJson, new TypeReference<List<CartItemDTO>>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi đọc dữ liệu giỏ hàng.", e);
+        }
+    }
+
+    private Order buildBaseOrder(String customerName, String customerPhone, String customerAddress, User loggedInUser) {
+        Order newOrder = new Order();
+        newOrder.setDate(LocalDate.now());
+        newOrder.setStatus_order("PENDING");
+        newOrder.setAddress(customerAddress);
+        newOrder.setPhone(customerPhone);
+        newOrder.setPayment_method("COD");
+        newOrder.setDiscountAmount(0L); // Mặc định là 0
+
+        if (loggedInUser != null) {
+            newOrder.setUser(loggedInUser);
+            if (!loggedInUser.getUsername().equals(customerName)) {
+                newOrder.setNote("Người nhận: " + customerName);
+            }
+        } else {
+            newOrder.setUser(null);
+            newOrder.setNote("Khách vãng lai: " + customerName);
+        }
+        return newOrder;
+    }
+
+    private Map<Integer, Product> getProductMap(List<CartItemDTO> cartItems) {
+        List<Integer> productIds = cartItems.stream().map(CartItemDTO::getIdProducts).toList();
+        List<Product> productsFromDB = productRepository.findAllById(productIds);
+        return productsFromDB.stream()
+                .collect(Collectors.toMap(Product::getIdProducts, p -> p));
+    }
+
+    private OrderDetail buildOrderDetail(Order order, Product product, Integer quantity) {
+        OrderDetail detail = new OrderDetail();
+        detail.setProduct(product);
+        detail.setQuantity((long) quantity);
+        detail.setPrice_date(product.getPrice());
+        detail.setDiscount(product.getDiscount());
+
+        // Tính tổng tiền cho dòng này (đã bao gồm giảm giá sản phẩm)
+        long lineTotal = product.getPrice() * quantity;
+        if (product.getDiscount() != null && product.getDiscount() > 0) {
+            // Tính toán giảm giá %
+            BigDecimal totalBD = new BigDecimal(lineTotal);
+            BigDecimal discountPercent = new BigDecimal(product.getDiscount()).divide(new BigDecimal(100), 4, RoundingMode.HALF_UP);
+            BigDecimal discountAmount = totalBD.multiply(discountPercent).setScale(0, RoundingMode.HALF_UP);
+            lineTotal = totalBD.subtract(discountAmount).longValue();
+        }
+        detail.setTotal(lineTotal);
+        detail.setOrder(order);
+        return detail;
+    }
 
     // ===============================================
-    // === CÁC CHỨC NĂNG THỐNG KÊ (GIỮ NGUYÊN) ===
+    // === CÁC CHỨC NĂNG THỐNG KÊ, CRUD & MAPPING CŨ (GIỮ NGUYÊN) ===
     // ===============================================
+    // NOTE: Các phương thức này nên giữ nguyên logic ban đầu của bạn.
+
     public long getTotalRevenue(Integer year) {
-        return orderRepository.sumTotalDeliveredOrders(year)
-                .orElse(0L);
+        return orderRepository.sumTotalDeliveredOrders(year).orElse(0L);
     }
     public long getTotalDeliveredOrders(Integer year) {
         return orderRepository.countDeliveredOrders(year);
@@ -188,7 +211,7 @@ public class OrderService {
             Integer month = (Integer) row[0];
             Long revenue = (Long) row[1];
             String monthLabel = YearMonth.of(year, month).getMonth().getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("vi-VN"));
-            Double revenueInMillions = revenue / 1_000_000.0; // Giữ giá trị thập phân
+            Double revenueInMillions = revenue / 1_000_000.0;
             RevenueStatsDTO.DataPoint dataPoint = new RevenueStatsDTO.DataPoint();
             dataPoint.setLabel(monthLabel);
             dataPoint.setValue(revenueInMillions);
@@ -206,10 +229,6 @@ public class OrderService {
         return stats;
     }
 
-
-    // ===============================================
-    // === CÁC HÀM CRUD & MAPPING CŨ (GIỮ NGUYÊN) ===
-    // ===============================================
     public List<OrderDTO> findAllOrders() {
         List<Order> orders = orderRepository.findAllWithUserAndDetails();
         return orders.stream()
@@ -252,40 +271,23 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    // ===============================================
-    // === CÁC HÀM MỚI CHO TRANG USER (ĐÃ THÊM) ===
-    // ===============================================
-
-    /**
-     * Lấy danh sách đơn hàng cho một người dùng cụ thể.
-     */
     public List<OrderDTO> findOrdersByUserId(Integer userId) {
         if (userId == null) {
             return Collections.emptyList();
         }
-        // Giả định orderRepository có hàm findByUserIdOrderByDateDesc
-        // Bạn cần thêm hàm này vào OrderRepository.java
         List<Order> orders = orderRepository.findByUserIdOrderByDateDesc(userId);
         return orders.stream()
-                .map(this::mapToDTO) // Tận dụng hàm mapToDTO đã có
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Lấy 1 Order (Entity) bằng ID, dùng cho trang chi tiết.
-     */
     public Order getOrderById(Integer orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
     }
 
-    /**
-     * Lấy DANH SÁCH DTO chi tiết của một đơn hàng.
-     */
     public List<OrderDetailDTO> getOrderDetailsByOrderId(Integer orderId) {
-        // orderDetailRepository đã được inject
         List<OrderDetail> entities = orderDetailRepository.findByOrder_Id_order(orderId);
-        // Dùng hàm mapDetailToDTO (đã có) để chuyển đổi
         return entities.stream().map(this::mapDetailToDTO).collect(Collectors.toList());
     }
 
@@ -299,11 +301,18 @@ public class OrderService {
         if (entity.getUser() != null) {
             dto.setCustomerUsername(entity.getUser().getUsername());
         } else {
-            dto.setCustomerUsername("Khách vãng lai"); // Xử lý khách
+            dto.setCustomerUsername("Khách vãng lai");
         }
         dto.setCustomerPhone(entity.getPhone());
+
+        // Cập nhật: TotalAmount nên lấy từ total đã trừ giảm giá
         dto.setTotalAmount(entity.getTotal());
         dto.setTotalAmountFormatted(String.format("%,dđ", entity.getTotal()).replace(",", "."));
+
+        // Thêm trường giảm giá
+        dto.setDiscountAmount(entity.getDiscountAmount() != null ? entity.getDiscountAmount() : 0L);
+        dto.setDiscountAmountFormatted(String.format("%,dđ", dto.getDiscountAmount()).replace(",", "."));
+
         dto.setStatus(entity.getStatus_order());
         dto.setDate(entity.getDate());
         dto.setDateFormatted(entity.getDate().format(DATE_FORMATTER));
@@ -327,39 +336,28 @@ public class OrderService {
         }
 
         List<OrderDetailDTO> detailDTOs = entity.getOrderDetails().stream()
-                .map(this::mapDetailToDTO) // <-- SỬ DỤNG HÀM ĐÃ SỬA
+                .map(this::mapDetailToDTO)
                 .collect(Collectors.toList());
         dto.setProductDetails(detailDTOs);
 
         return dto;
     }
 
-    // ===============================================
-    // === HÀM MAPDETAILTODTO (GIỮ NGUYÊN) ===
-    // ===============================================
     private OrderDetailDTO mapDetailToDTO(OrderDetail detail) {
         OrderDetailDTO dto = new OrderDetailDTO();
         dto.setQuantity(detail.getQuantity().intValue());
         dto.setPriceAtDate(detail.getPrice_date());
         dto.setPriceAtDateFormatted(String.format("%,dđ", detail.getPrice_date()).replace(",", "."));
 
-        // Lấy Product từ OrderDetail
         Product product = detail.getProduct();
 
         if (product != null) {
             dto.setProductName(product.getTitle());
-
-            // 1. Lấy Tác giả (Product.java xác nhận đây là String)
             dto.setProductAuthor(product.getAuthor());
 
-            // 2. Lấy Hình ảnh (Logic được sao chép từ ProductServiceImpl)
-            // Product.java có 'List<ImageProduct> images'
             if (product.getImages() != null && !product.getImages().isEmpty()) {
-                // Lấy ảnh đầu tiên từ danh sách
-                // ImageProduct.java có 'String image_link'
                 dto.setProductImageUrl(product.getImages().get(0).getImage_link());
             } else {
-                // Ảnh mặc định nếu sản phẩm không có ảnh
                 dto.setProductImageUrl("/images/default-book.png");
             }
         }

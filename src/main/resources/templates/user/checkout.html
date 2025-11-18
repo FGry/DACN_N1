@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thanh toán - BookStore</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -51,101 +51,102 @@
 <body>
 
 <div class="container">
-  <h2 class="mb-4 text-center"><i class="fas fa-receipt"></i> Thanh toán đơn hàng</h2>
+    <h2 class="mb-4 text-center"><i class="fas fa-receipt"></i> Thanh toán đơn hàng</h2>
 
-  <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
 
-  <form th:action="@{/order/submit}" method="POST" id="checkoutForm">
-    <div class="row">
-      <div class="col-lg-7">
-        <div class="checkout-card">
-          <h4><i class="fas fa-map-marker-alt"></i> 1. Thông tin giao hàng</h4>
-          <hr>
+    <form th:action="@{/order/submit}" method="POST" id="checkoutForm">
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="checkout-card">
+                    <h4><i class="fas fa-map-marker-alt"></i> 1. Thông tin giao hàng</h4>
+                    <hr>
 
-          <div class="mb-3">
-            <label for="customerName" class="form-label">Họ và tên</label>
-            <input type="text" class="form-control" id="customerName" name="customerName"
-                   th:value="${loggedInUser != null} ? ${loggedInUser.username} : ''" required>
-          </div>
-          <div class="mb-3">
-            <label for="customerPhone" class="form-label">Số điện thoại</label>
-            <input type="tel" class="form-control" id="customerPhone" name="customerPhone"
-                   th:value="${loggedInUser != null} ? ${loggedInUser.phone} : ''" required>
-          </div>
-          <div class="mb-3">
-            <label for="customerAddress" class="form-label">Địa chỉ</label>
-            <input type="text" class="form-control" id="customerAddress" name="customerAddress"
-                   th:value="${loggedInUser != null} ? ${loggedInUser.getFirstAddress()} : ''"
-                   placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" required>
-          </div>
+                    <div class="mb-3">
+                        <label for="customerName" class="form-label">Họ và tên</label>
+                        <input type="text" class="form-control" id="customerName" name="customerName"
+                               th:value="${loggedInUser != null} ? ${loggedInUser.username} : ''" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="customerPhone" class="form-label">Số điện thoại</label>
+                        <input type="tel" class="form-control" id="customerPhone" name="customerPhone"
+                               th:value="${loggedInUser != null} ? ${loggedInUser.phone} : ''" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="customerAddress" class="form-label">Địa chỉ</label>
+                        <input type="text" class="form-control" id="customerAddress" name="customerAddress"
+                               th:value="${loggedInUser != null} ? ${loggedInUser.getFirstAddress()} : ''"
+                               placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" required>
+                    </div>
 
-          <input type="hidden" name="cartItemsJson" id="cartItemsJson">
+                    <input type="hidden" name="cartItemsJson" id="cartItemsJson">
 
-          <div th:if="${isLoggedIn}">
-            <h4 class="mt-4"><i class="fas fa-ticket-alt"></i> 2. Mã giảm giá</h4>
-            <hr>
-            <div class="input-group mb-3">
-              <input type="text" class="form-control" placeholder="Nhập mã voucher" name="voucherCode" id="voucherCodeInput">
-              <button class="btn btn-outline-secondary" type="button" id="applyVoucherBtn">Áp dụng</button>
+                    <div th:if="${isLoggedIn}">
+                        <h4 class="mt-4"><i class="fas fa-ticket-alt"></i> 2. Mã giảm giá</h4>
+                        <hr>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Nhập mã voucher" name="voucherCode" id="voucherCodeInput">
+                            <button class="btn btn-outline-secondary" type="button" id="applyVoucherBtn">Áp dụng</button>
+                            <button class="btn btn-outline-danger" type="button" id="removeVoucherBtn" style="display:none;">Hủy</button>
+                        </div>
+                        <div id="voucherMessage" class="form-text"></div>
+
+                        <div th:if="${availableVouchers != null and not availableVouchers.isEmpty()}" class="mt-3">
+                            <label class="form-label">Hoặc chọn voucher có sẵn:</label>
+                            <select class="form-select" id="availableVoucherSelect">
+                                <option value="">-- Chọn voucher --</option>
+                                <option th:each="voucher : ${availableVouchers}"
+                                        th:value="${voucher.code}"
+                                        th:data-min-value="${voucher.minOrder}"
+                                        th:text="${voucher.code} + ' - ' + ${voucher.discountValue}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <input type="hidden" id="discountAmountHidden" name="discountAmountHidden" value="0">
+
+                </div>
             </div>
-            <div id="voucherMessage" class="form-text"></div>
 
-            <div th:if="${availableVouchers != null and not availableVouchers.isEmpty()}" class="mt-3">
-              <label class="form-label">Hoặc chọn voucher có sẵn:</label>
-              <select class="form-select" id="availableVoucherSelect">
-                <option value="">-- Chọn voucher --</option>
-                <option th:each="voucher : ${availableVouchers}"
-                        th:value="${voucher.codeName}"
-                        th:text="${voucher.codeName} + ' - ' + ${voucher.discountValueStr}">
-                </option>
-              </select>
+            <div class="col-lg-5">
+                <div class="summary-card">
+                    <h4><i class="fas fa-shopping-basket"></i> Tóm tắt đơn hàng</h4>
+                    <hr>
+                    <div id="cartSummaryList">
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Tạm tính:</strong>
+                        <strong id="subTotal">0đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-success">
+                        <strong>Giảm giá (Voucher):</strong>
+                        <strong id="discountAmount">0đ</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fs-4">
+                        <strong>Tổng cộng:</strong>
+                        <strong id="finalTotal" class="text-danger">0đ</strong>
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary-custom btn-lg">
+                            <i class="fas fa-check-circle"></i> Xác nhận Đặt hàng
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
-
         </div>
-      </div>
-
-      <div class="col-lg-5">
-        <div class="summary-card">
-          <h4><i class="fas fa-shopping-basket"></i> Tóm tắt đơn hàng</h4>
-          <hr>
-          <div id="cartSummaryList">
-          </div>
-          <hr>
-          <div class="d-flex justify-content-between">
-            <strong>Tạm tính:</strong>
-            <strong id="subTotal">0đ</strong>
-          </div>
-          <div class="d-flex justify-content-between text-success">
-            <strong>Giảm giá (Voucher):</strong>
-            <strong id="discountAmount">0đ</strong>
-          </div>
-          <hr>
-          <div class="d-flex justify-content-between fs-4">
-            <strong>Tổng cộng:</strong>
-            <strong id="finalTotal" class="text-danger">0đ</strong>
-          </div>
-          <div class="d-grid mt-4">
-            <button type="submit" class="btn btn-primary-custom btn-lg">
-              <i class="fas fa-check-circle"></i> Xác nhận Đặt hàng
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </form>
+    </form>
 </div>
 
 <script>
-    // === DỮ LIỆU TỪ SERVER (CHO VOUCHER) ===
-    // (Giả sử Controller gửi 'availableVouchers' dưới dạng JSON nếu cần,
-    // nhưng ở đây chúng ta dùng DOM)
-
-    // Biến toàn cục
+    // === DỮ LIỆU TOÀN CỤC ===
     let cart = [];
     let subTotal = 0;
     let discount = 0;
-    const VOUCHER_API_URL = "/api/vouchers/check"; // Giả sử bạn có API này
+    const VOUCHER_API_URL = "/api/vouchers/check";
+    let appliedVoucherCode = '';
 
     // === HÀM TIỆN ÍCH ===
     function formatPrice(price) {
@@ -155,17 +156,15 @@
 
     // === LOGIC GIỎ HÀNG ===
     function loadCartFromSession() {
-        // Lấy giỏ hàng từ sessionStorage (được lưu từ cart.html)
+        // Tên Storage PHẢI khớp với tên bạn dùng trong cart.html
         const cartData = sessionStorage.getItem('bookstoreCart');
         if (cartData) {
             cart = JSON.parse(cartData);
             renderCartSummary();
-            // Lưu giỏ hàng vào trường ẩn của form
             document.getElementById('cartItemsJson').value = JSON.stringify(cart);
         } else {
-            // Nếu không có giỏ hàng, quay về trang giỏ hàng
-            alert('Giỏ hàng trống hoặc đã hết hạn. Đang quay về giỏ hàng...');
-            window.location.href = '/user/cart';
+             // alert('Giỏ hàng trống hoặc đã hết hạn. Đang quay về giỏ hàng...');
+             // window.location.href = '/user/cart';
         }
     }
 
@@ -192,6 +191,12 @@
             `;
         });
         updateTotals();
+
+        // Sau khi tính toán lại tổng tiền, kiểm tra lại voucher đã áp dụng (nếu có)
+         const storedCode = document.getElementById('voucherCodeInput').value.trim();
+         if (storedCode) {
+             checkVoucher(storedCode);
+         }
     }
 
     function updateTotals() {
@@ -199,22 +204,29 @@
         document.getElementById('subTotal').textContent = formatPrice(subTotal);
         document.getElementById('discountAmount').textContent = formatPrice(discount);
         document.getElementById('finalTotal').textContent = formatPrice(finalTotal);
+        document.getElementById('discountAmountHidden').value = discount; // Cập nhật input ẩn
     }
 
     // === LOGIC VOUCHER (Chỉ chạy nếu đăng nhập) ===
     function setupVoucherLogic() {
         const applyBtn = document.getElementById('applyVoucherBtn');
+        const removeBtn = document.getElementById('removeVoucherBtn'); // NÚT HỦY
         const voucherSelect = document.getElementById('availableVoucherSelect');
         const voucherInput = document.getElementById('voucherCodeInput');
-        const voucherMsg = document.getElementById('voucherMessage');
 
         if (applyBtn) {
             applyBtn.addEventListener('click', () => {
                 const code = voucherInput.value.trim();
                 if (code) {
                     checkVoucher(code);
+                } else {
+                    displayVoucherMessage('Vui lòng nhập mã voucher.', false);
                 }
             });
+        }
+
+        if (removeBtn) {
+             removeBtn.addEventListener('click', removeVoucher);
         }
 
         if (voucherSelect) {
@@ -224,71 +236,100 @@
                     voucherInput.value = selectedCode;
                     checkVoucher(selectedCode);
                 } else {
-                    // Nếu chọn "-- Chọn voucher --"
-                    discount = 0;
-                    voucherMsg.textContent = '';
-                    voucherMsg.className = 'form-text';
-                    updateTotals();
+                    removeVoucher();
                 }
             });
         }
     }
 
-    // Hàm kiểm tra Voucher (CẦN API BACKEND)
-    function checkVoucher(code) {
+    function displayVoucherMessage(message, isSuccess) {
         const voucherMsg = document.getElementById('voucherMessage');
-        voucherMsg.textContent = 'Đang kiểm tra mã...';
-        voucherMsg.className = 'form-text text-muted';
+        const removeBtn = document.getElementById('removeVoucherBtn');
 
-        // ==========================================================
-        // *** QUAN TRỌNG: Bạn cần tạo một API (ví dụ: /api/vouchers/check)
-        // để xử lý logic này một cách an toàn ở backend.
-        // API này sẽ nhận (code, subTotal) và trả về (discountAmount, message)
-        // ==========================================================
+        voucherMsg.textContent = message;
 
-        // *** GIẢ LẬP LOGIC (Tạm thời) ***
-        // (Đây là logic KHÔNG AN TOÀN, chỉ để demo.
-        // Hãy thay thế bằng fetch() tới API thật)
-
-        // Giả sử lấy voucher từ DOM (chỉ để demo)
-        const select = document.getElementById('availableVoucherSelect');
-        let mockVoucher = null;
-        if (select) {
-            const opt = Array.from(select.options).find(o => o.value === code);
-            if (opt) {
-                // Giả lập DTO từ text, ví dụ: "CODE10K - 10.000K"
-                mockVoucher = { code: code, text: opt.text };
-            }
-        }
-
-        if (code === 'HOCSINH20') {
-            discount = subTotal * 0.2; // Giảm 20%
-            voucherMsg.textContent = 'Áp dụng thành công HOCSINH20 (Giảm 20%)';
-            voucherMsg.className = 'form-text text-success';
-        } else if (mockVoucher) {
-             // Logic giả lập đơn giản
-            if (mockVoucher.text.includes('100K')) discount = 100000;
-            else if (mockVoucher.text.includes('50%')) discount = subTotal * 0.5;
-            else discount = 50000; // Giả sử
-
-            voucherMsg.textContent = `Áp dụng thành công ${code}!`;
-            voucherMsg.className = 'form-text text-success';
-        }
-        else {
-            discount = 0;
-            voucherMsg.textContent = 'Mã voucher không hợp lệ hoặc không đủ điều kiện.';
+        if (isSuccess) {
+            voucherMsg.className = 'form-text text-success fw-bold';
+            removeBtn.style.display = 'block';
+        } else {
             voucherMsg.className = 'form-text text-danger';
+            removeBtn.style.display = 'none';
+        }
+    }
+
+    function removeVoucher() {
+        discount = 0;
+        appliedVoucherCode = '';
+        document.getElementById('voucherCodeInput').value = '';
+
+        const voucherSelect = document.getElementById('availableVoucherSelect');
+        if (voucherSelect) voucherSelect.value = '';
+
+        document.getElementById('removeVoucherBtn').style.display = 'none';
+
+        document.getElementById('voucherCodeInput').name = 'voucherCode';
+
+        updateTotals();
+        displayVoucherMessage('Mã voucher đã được hủy.', false);
+    }
+
+
+    // Hàm kiểm tra Voucher BẰNG CÁCH GỌI BACKEND API
+    async function checkVoucher(code) {
+        if (!code) return;
+
+        displayVoucherMessage('Đang kiểm tra mã...', false);
+        document.getElementById('removeVoucherBtn').style.display = 'none';
+
+        try {
+            const response = await fetch(VOUCHER_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    // SubTotal phải gửi dưới dạng chuỗi để BigDecimal ở BE xử lý
+                    cartTotal: subTotal.toString()
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // Áp dụng thành công
+                discount = result.discountAmount;
+                appliedVoucherCode = code;
+
+                document.getElementById('voucherCodeInput').name = 'voucherCode';
+
+                displayVoucherMessage(result.message + ' (Giảm ' + formatPrice(discount) + ')', true);
+            } else {
+                // Thất bại
+                discount = 0;
+                appliedVoucherCode = '';
+                document.getElementById('voucherCodeInput').value = code;
+
+                displayVoucherMessage(result.message || 'Lỗi không xác định khi áp dụng voucher.', false);
+            }
+
+        } catch (error) {
+            console.error('Lỗi khi gọi API Voucher:', error);
+            discount = 0;
+            appliedVoucherCode = '';
+            document.getElementById('voucherCodeInput').value = code;
+            displayVoucherMessage('Có lỗi xảy ra trong quá trình kết nối.', false);
         }
 
         updateTotals();
     }
+
 
     // === LOGIC SUBMIT FORM ===
     document.getElementById('checkoutForm').addEventListener('submit', function(e) {
         // Cập nhật lại JSON giỏ hàng lần cuối trước khi submit
         document.getElementById('cartItemsJson').value = JSON.stringify(cart);
 
-        // Kiểm tra cơ bản
         if (cart.length === 0) {
             alert('Giỏ hàng của bạn đang trống.');
             e.preventDefault();

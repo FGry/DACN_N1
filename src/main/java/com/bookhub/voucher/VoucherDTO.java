@@ -1,11 +1,18 @@
 package com.bookhub.voucher;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 // DTO này có các trường khớp 1:1 với mảng JS trong voucher.html
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+
 public class VoucherDTO {
     private Integer id;
     private String code;

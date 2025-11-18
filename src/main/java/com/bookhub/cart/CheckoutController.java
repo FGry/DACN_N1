@@ -1,24 +1,25 @@
-package com.bookhub.cart; // Đã sửa package
+package com.bookhub.cart;
 
-import com.bookhub.order.Order; // THÊM
-import com.bookhub.order.OrderService; // THÊM
+import com.bookhub.order.Order;
+import com.bookhub.order.OrderService;
 import com.bookhub.user.User;
 import com.bookhub.user.UserService;
-import com.bookhub.voucher.Voucher;
+import com.bookhub.voucher.VoucherDTO;
 import com.bookhub.voucher.VoucherService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+// Gửi file code hoàn chỉnh: CheckoutController.java
 @Controller
 @RequiredArgsConstructor
 public class CheckoutController {
@@ -29,10 +30,12 @@ public class CheckoutController {
 
     /**
      * Hiển thị trang Thanh toán.
-     * (Giữ nguyên)
      */
     @GetMapping("/checkout")
     public String checkoutPage(Model model, Principal principal) {
+
+        List<VoucherDTO> availableVouchers = voucherService.getAvailablePublicVoucherDTOs();
+        model.addAttribute("availableVouchers", availableVouchers);
 
         if (principal != null) {
             String email = principal.getName();
@@ -41,16 +44,54 @@ public class CheckoutController {
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 model.addAttribute("loggedInUser", user);
-                List<Voucher> publicVouchers = voucherService.getAvailablePublicVouchers();
-                model.addAttribute("availableVouchers", publicVouchers);
+                model.addAttribute("isLoggedIn", true);
             }
         }
         return "user/checkout";
     }
 
+    // ==========================================================
+    // === API KIỂM TRA VOUCHER BẰNG AJAX (FE) ===
+    // ==========================================================
+    @PostMapping("/api/vouchers/check")
+    @ResponseBody
+    public ResponseEntity<?> checkVoucherApi(@RequestBody Map<String, String> payload) {
+        String voucherCode = payload.get("code");
+        String totalStr = payload.get("cartTotal");
+
+        try {
+            BigDecimal cartTotal = new BigDecimal(totalStr);
+
+            // Gọi Service tính toán (sẽ ném RuntimeException nếu voucher không hợp lệ)
+            BigDecimal discountAmount = voucherService.calculateDiscount(voucherCode, cartTotal);
+
+            // Trả về JSON thành công
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "discountAmount", discountAmount.longValue(), // Trả về Long (số nguyên VNĐ)
+                    "message", "Áp dụng mã giảm giá thành công!"
+            ));
+
+        } catch (RuntimeException e) {
+            // Trả về JSON lỗi nếu calculateDiscount ném ngoại lệ
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "discountAmount", 0,
+                    "message", e.getMessage() // Thông báo lỗi từ Service
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "success", false,
+                    "discountAmount", 0,
+                    "message", "Có lỗi hệ thống: " + e.getMessage()
+            ));
+        }
+    }
+    // ==========================================================
+
+
     /**
      * Xử lý đơn hàng khi người dùng nhấn "Xác nhận Đặt hàng".
-     * (CẬP NHẬT LOGIC CHUYỂN HƯỚNG)
      */
     @PostMapping("/order/submit")
     public String submitOrder(
@@ -63,36 +104,27 @@ public class CheckoutController {
             RedirectAttributes redirectAttributes
     ) {
         try {
-            // 1. Lấy thông tin người dùng (nếu đã đăng nhập)
             User user = null;
             if (principal != null) {
                 user = userService.findUserByEmail(principal.getName()).orElse(null);
             }
 
-            // 2. Gọi Order Service để xử lý
+            // Gọi Order Service để xử lý. OrderService phải re-validate voucher và giảm số lượng.
             Order newOrder = orderService.processOrder(
                     customerName,
                     customerPhone,
                     customerAddress,
                     cartItemsJson,
                     voucherCode,
-                    user // user có thể là null nếu là khách
+                    user
             );
 
-            // 3. Nếu thành công:
             redirectAttributes.addFlashAttribute("successMessage", "Đặt hàng thành công! Mã đơn hàng của bạn là: #DH" + newOrder.getId_order());
-
-            // === THAY ĐỔI CHÍNH ===
-            // Chuyển hướng đến trang "thành công"
-            // và mang theo ID của đơn hàng.
             return "redirect:/order/success/" + newOrder.getId_order();
-            // === KẾT THÚC THAY ĐỔI ===
 
         } catch (Exception e) {
-            // 4. Nếu thất bại:
-            e.printStackTrace(); // In lỗi ra console server
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage", "Đặt hàng thất bại: " + e.getMessage());
-            // Quay lại trang thanh toán
             return "redirect:/checkout";
         }
     }

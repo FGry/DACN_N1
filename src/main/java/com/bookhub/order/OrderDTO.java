@@ -4,6 +4,7 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
 
+// Gửi file code hoàn chỉnh: OrderDTO.java
 @Data
 public class OrderDTO {
     private Integer idOrder;
@@ -15,8 +16,14 @@ public class OrderDTO {
     private String customerPhone;
 
     // Thông tin đơn hàng tổng hợp
-    private Long totalAmount; // Tổng tiền (trường total)
+    private Long totalAmount; // Tổng tiền (trường total sau khi trừ voucher)
     private String totalAmountFormatted;
+
+    // === THÊM THÔNG TIN GIẢM GIÁ ===
+    private Long discountAmount; // Số tiền giảm giá
+    private String discountAmountFormatted; // Số tiền giảm giá định dạng đẹp
+    // ===============================
+
     private Integer totalProducts; // Tổng số sản phẩm
     private String status;
     private LocalDate date;
