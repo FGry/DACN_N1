@@ -1,16 +1,197 @@
 <div id="chat-widget" th:fragment="chatbox"
-     style="position:fixed; bottom:20px; right:20px; z-index:1000;" xmlns:th="http://www.w3.org/1999/xhtml">
+     style="position:fixed; bottom:20px; right:20px; z-index:1000; font-family: Arial, sans-serif;"
+     xmlns:th="http://www.w3.org/1999/xhtml">
+
     <button id="chat-toggle-btn"
-            style="width:60px; height:60px; border-radius:50%; background:#667eea; color:white; border:none; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+            style="width:60px; height:60px; border-radius:50%; background:#667eea; color:white; border:none; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2); transition: transform 0.2s;">
         💬
     </button>
 
-    <div id="chatbox-content" style="display:none; position:absolute; bottom:70px; right:0; width:300px; border:1px solid #ccc; border-radius:8px; background:white; padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-        <div style="font-weight:bold; margin-bottom:5px;">🤖 BookHub Chatbot</div>
-        <div id="chat-messages" style="height:200px; overflow-y:auto; border:1px solid #eee; margin-bottom:5px; padding:5px;"></div>
-        <input type="text" id="chat-input" style="width: calc(80% - 5px); padding:5px; border:1px solid #ddd; border-radius:4px;">
-        <button id="chat-send" style="width: 20%; padding:5px; border:none; background:#667eea; color:white; border-radius:4px; cursor:pointer;">Gửi</button>
+    <div id="chatbox-content"
+         style="display:none; position:absolute; bottom:80px; right:0; width:320px; height: 450px;
+                border:1px solid #ccc; border-radius:12px; background:white;
+                box-shadow:0 4px 12px rgba(0,0,0,0.15); overflow: hidden; flex-direction: column;">
+
+        <div style="background: #667eea; color: white; padding: 10px; font-weight:bold; display:flex; justify-content: space-between; align-items: center;">
+            <span>🤖 BookHub Chatbot</span>
+            <button id="clear-history-btn" title="Xóa lịch sử chat" style="background:transparent; border:none; cursor:pointer; color:white; font-size:14px;">
+                🗑️
+            </button>
+        </div>
+
+        <div id="chat-messages"
+             style="flex: 1; padding:10px; overflow-y:auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 10px;">
+        </div>
+
+        <div style="padding:10px; border-top:1px solid #eee; display: flex; gap: 5px; background: white;">
+            <input type="text" id="chat-input" placeholder="Nhập tin nhắn..."
+                   style="flex: 1; padding:8px; border:1px solid #ddd; border-radius:20px; outline: none;">
+            <button id="chat-send"
+                    style="padding:8px 15px; border:none; background:#667eea; color:white; border-radius:20px; cursor:pointer; font-weight: bold;">
+                Gửi
+            </button>
+        </div>
     </div>
+
+
 </div>
 
 
+<!--
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // -&#45;&#45; KHAI BÁO BIẾN -&#45;&#45;
+        const chatToggleBtn = document.getElementById("chat-toggle-btn");
+        const chatBoxContent = document.getElementById("chatbox-content");
+        const chatInput = document.getElementById("chat-input");
+        const chatMessages = document.getElementById("chat-messages");
+        const chatSend = document.getElementById("chat-send");
+        const clearHistoryBtn = document.getElementById("clear-history-btn");
+        const CHAT_API_URL = "/chat";
+
+        // Key để lưu trong LocalStorage
+        const STORAGE_KEY_HISTORY = 'bookhub_chat_history';
+        const STORAGE_KEY_STATE = 'bookhub_chat_open';
+
+        // -&#45;&#45; 1. KHỞI TẠO (LOAD LẠI LỊCH SỬ & TRẠNG THÁI CŨ) -&#45;&#45;
+
+        // Load trạng thái mở/đóng
+        const isOpen = localStorage.getItem(STORAGE_KEY_STATE) === 'true';
+        if (isOpen) {
+            chatBoxContent.style.display = 'flex';
+            chatToggleBtn.textContent = '❌';
+        } else {
+            chatBoxContent.style.display = 'none';
+            chatToggleBtn.textContent = '💬';
+        }
+
+        // Load lịch sử tin nhắn
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY)) || [];
+        history.forEach(msg => {
+            appendMessageToUI(msg.sender, msg.text, msg.type);
+        });
+
+        // -&#45;&#45; 2. CÁC SỰ KIỆN (EVENT LISTENERS) -&#45;&#45;
+
+        // Bật/Tắt chat
+        chatToggleBtn.addEventListener("click", () => {
+            const isHidden = chatBoxContent.style.display === 'none';
+            chatBoxContent.style.display = isHidden ? 'flex' : 'none';
+            chatToggleBtn.textContent = isHidden ? '❌' : '💬';
+
+            // Lưu trạng thái vào Storage
+            localStorage.setItem(STORAGE_KEY_STATE, isHidden);
+
+            if(isHidden) chatInput.focus();
+        });
+
+        // Xóa lịch sử
+        clearHistoryBtn.addEventListener("click", () => {
+            if(confirm("Bạn có chắc muốn xóa toàn bộ lịch sử chat?")) {
+                localStorage.removeItem(STORAGE_KEY_HISTORY);
+                chatMessages.innerHTML = ''; // Xóa giao diện
+            }
+        });
+
+        chatSend.addEventListener("click", sendMessage);
+        chatInput.addEventListener("keypress", e => { if(e.key === "Enter") sendMessage(); });
+
+        // -&#45;&#45; 3. HÀM XỬ LÝ CHÍNH -&#45;&#45;
+
+        function sendMessage() {
+            const msg = chatInput.value.trim();
+            if(!msg) return;
+
+            // 1. Hiển thị & Lưu tin nhắn User
+            appendMessageToUI("You", msg, 'user');
+            saveMessageToStorage("You", msg, 'user');
+
+            chatInput.value = "";
+
+            // 2. Hiển thị Typing (Không lưu cái này vào storage)
+            const typingIndicator = appendMessageToUI("Bot", "Đang trả lời...", 'typing');
+
+            // 3. Gọi API
+            fetch(CHAT_API_URL, {
+                method:"POST",
+                headers:{ "Content-Type":"application/json" },
+                body: JSON.stringify({ message: msg })
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Xóa typing
+                if(typingIndicator && typingIndicator.parentNode) {
+                    chatMessages.removeChild(typingIndicator);
+                }
+
+                const replyText = data.reply || data.error;
+                const type = data.error ? "error" : "bot";
+
+                // 4. Hiển thị & Lưu tin nhắn Bot
+                appendMessageToUI(data.error ? "Error" : "Bot", replyText, type);
+                saveMessageToStorage(data.error ? "Error" : "Bot", replyText, type);
+            })
+            .catch(err => {
+                if(typingIndicator && typingIndicator.parentNode) {
+                    chatMessages.removeChild(typingIndicator);
+                }
+                appendMessageToUI("Error", "Lỗi kết nối server.", "error");
+            });
+        }
+
+        // Hàm chỉ để lưu vào LocalStorage
+        function saveMessageToStorage(sender, text, type) {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY)) || [];
+            history.push({ sender: sender, text: text, type: type });
+            localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
+        }
+
+        // Hàm chỉ để hiển thị ra màn hình (Render)
+        function appendMessageToUI(sender, text, type){
+            const div = document.createElement("div");
+
+            // CSS chung
+            div.style.maxWidth = "80%";
+            div.style.padding = "8px 12px";
+            div.style.borderRadius = "15px";
+            div.style.fontSize = "14px";
+            div.style.lineHeight = "1.5";
+            div.style.wordWrap = "break-word";
+            div.style.whiteSpace = "pre-wrap";
+            div.style.marginBottom = "5px";
+
+            if (type === 'user') {
+                div.style.alignSelf = "flex-end";
+                div.style.backgroundColor = "#e5e7eb";
+                div.style.color = "#1f2937";
+                div.style.borderBottomRightRadius = "2px";
+                div.innerHTML = `<strong>Bạn:</strong> ${text}`;
+            }
+            else if (type === 'bot') {
+                div.style.alignSelf = "flex-start";
+                div.style.backgroundColor = "#dcfce7"; // Xanh lá Pastel
+                div.style.color = "#14532d";
+                div.style.border = "1px solid #bbf7d0";
+                div.style.borderBottomLeftRadius = "2px";
+                div.innerHTML = `<strong>Bot:</strong> ${text}`;
+            }
+            else if (type === 'typing') {
+                div.style.alignSelf = "flex-start";
+                div.style.fontStyle = "italic";
+                div.style.color = "#888";
+                div.style.fontSize = "12px";
+                div.innerHTML = "⏳ <i>Đang trả lời...</i>";
+            }
+            else if (type === 'error') {
+                div.style.alignSelf = "center";
+                div.style.backgroundColor = "#fee2e2";
+                div.style.color = "#dc2626";
+                div.innerHTML = `⚠️ ${text}`;
+            }
+
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return div;
+        }
+    });
+</script>-->
