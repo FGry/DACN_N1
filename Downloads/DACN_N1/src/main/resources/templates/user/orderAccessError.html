@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lỗi Truy Cập Đơn Hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container text-center mt-5">
+    <div class="alert alert-danger p-5" role="alert">
+        <h1 class="display-4 mb-4"><i class="fas fa-exclamation-triangle"></i> LỖI TRUY CẬP!</h1>
+        <p class="lead mb-4">Mã truy cập đơn hàng của bạn không hợp lệ hoặc không còn sử dụng được.</p>
+        <hr>
+        <p class="mb-3 text-break" th:text="${errorMessage}">Mã truy cập đã hết hạn, đã được sử dụng, hoặc không tồn tại.</p>
+
+        <p class="mb-0 small">
+            Nếu bạn đã đăng ký tài khoản, vui lòng đăng nhập để xem đơn hàng trong lịch sử mua hàng.
+        </p>
+    </div>
+    <a th:href="@{/}" class="btn btn-primary mt-3"><i class="fas fa-home"></i> Trở về Trang chủ</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

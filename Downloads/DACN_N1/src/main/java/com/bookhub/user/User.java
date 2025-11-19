@@ -54,6 +54,11 @@ public class User {
     @Column(nullable = false)
     LocalDate createDate;
 
+    // CONSTRUCTOR MỚI: DÙNG ĐỂ TẠO USER THEO ID (FIX LỖI OrderService)
+    public User(Integer idUser) {
+        this.idUser = idUser;
+    }
+
     // ----------------- Quan hệ 1-n -----------------
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Address> addresses;

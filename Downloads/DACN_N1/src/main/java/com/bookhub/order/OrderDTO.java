@@ -1,5 +1,6 @@
 package com.bookhub.order;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
@@ -7,26 +8,38 @@ import java.util.List;
 @Data
 public class OrderDTO {
     private Integer idOrder;
-    private String orderCode; // Ví dụ: #DH001
-
-    // Thông tin khách hàng
+    private String orderCode;
     private Integer userId;
-    private String customerUsername; // Sử dụng username
+    private String customerUsername;
     private String customerPhone;
-
-    // Thông tin đơn hàng tổng hợp
-    private Long totalAmount; // Tổng tiền (trường total)
+    private Long totalAmount;
     private String totalAmountFormatted;
-    private Integer totalProducts; // Tổng số sản phẩm
+    private Integer totalProducts;
     private String status;
     private LocalDate date;
     private String dateFormatted;
-
-    // Chi tiết (cho modal)
     private String address;
     private String paymentMethod;
     private String note;
-
-    // Chi tiết sản phẩm trong đơn hàng
     private List<OrderDetailDTO> productDetails;
+    private String guestAccessToken;
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @Data
+    public static class OrderItemDTO {
+        private Integer productId;
+        private Integer quantity;
+    }
+
+    @Data
+    public static class OrderDetailDTO {
+        private String productName;
+        private String productAuthor;
+        private Integer quantity;
+        private Long priceAtDate;
+        private String priceAtDateFormatted;
+
+        // ⭐ TRƯỜNG MỚI: Lưu thành tiền (Giá * Số lượng) đã format
+        private String totalPriceFormatted;
+    }
 }

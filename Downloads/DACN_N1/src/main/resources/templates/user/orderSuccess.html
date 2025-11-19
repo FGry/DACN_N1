@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thanh toán thành công</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f7f9fc; }
+        .success-container { max-width: 500px; margin: 60px auto; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        .success-icon { color: #28a745; font-size: 4rem; margin-bottom: 20px; }
+        .qr-wrapper { cursor: pointer; transition: transform 0.2s; display: inline-block; }
+        .qr-wrapper:hover { transform: scale(1.05); }
+        .qr-img { width: 220px; border: 2px dashed #007bff; padding: 5px; border-radius: 10px; }
+        .btn-save { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border-radius: 25px; font-weight: bold; border: none; width: 100%; margin-top: 15px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="success-container">
+        <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+        <h3 class="text-success fw-bold mb-3">Thanh toán thành công!</h3>
+
+        <div th:if="${order.guestAccessToken != null}">
+            <p class="text-muted mb-2">Nhấn vào mã QR hoặc quét để xem chi tiết:</p>
+            <a th:href="@{/order/view(token=${order.guestAccessToken})}" class="qr-wrapper" title="Nhấn để xem ngay">
+                <img th:src="${qrCodeBase64}" alt="QR Code" class="img-fluid qr-img" id="qrImage">
+            </a>
+            <div class="alert alert-info py-2 small mt-3">
+                <i class="fas fa-info-circle"></i> Mã này có hiệu lực trong <strong>30 ngày</strong>.
+            </div>
+            <input type="hidden" id="hiddenPhone" th:value="${order.customerPhone}">
+            <button class="btn btn-save" onclick="downloadQRWithPhone()"><i class="fas fa-download"></i> Lưu mã QR về máy</button>
+        </div>
+        <div class="mt-4 border-top pt-3"><a th:href="@{/}" class="btn btn-outline-secondary btn-sm">Quay về trang chủ</a></div>
+    </div>
+</div>
+
+<script>
+    // --- ĐOẠN MỚI THÊM VÀO ĐÂY ---
+    // Khi trang này tải xong, nghĩa là đơn hàng đã thành công
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Xóa giỏ hàng trong bộ nhớ trình duyệt
+        localStorage.removeItem('bookstoreCart');
+
+        // 2. (Tùy chọn) Cập nhật lại số lượng trên icon giỏ hàng về 0 nếu có thanh navbar ở đây
+        const cartCount = document.getElementById('cartCount');
+        if(cartCount) cartCount.innerText = '0';
+    });
+    // -----------------------------
+
+    function downloadQRWithPhone() {
+        const img = document.getElementById('qrImage');
+        const phone = document.getElementById('hiddenPhone').value || 'DonHang';
+        if (img) {
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = `QR_DonHang_${phone}.png`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+    }
+</script>
+</body>
+</html>
