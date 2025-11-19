@@ -428,10 +428,11 @@
 
     let cart = JSON.parse(localStorage.getItem('bookstoreCart')) || [];
     let currentVoucherDiscount = 0;
-    let currentVoucherId = null;
+    // Thay đổi từ ID voucher thành CODE voucher (String)
+    let currentVoucherCode = null;
     let currentSubTotal = 0;
 
-    // 💡 THÊM: Định nghĩa mockProducts để tránh lỗi khi giỏ hàng trống ban đầu
+    // Định nghĩa mockProducts để tránh lỗi khi giỏ hàng trống ban đầu
     const mockProducts = [
         { idProducts: 101, title: 'Sách Lập Trình Java', price: 120000, imageLink: 'https://via.placeholder.com/60x60/88AAFF?text=Java' },
         { idProducts: 102, title: 'Sách Thuật Toán Căn Bản', price: 80000, imageLink: 'https://via.placeholder.com/60x60/FF88AA?text=Algo' }
@@ -448,8 +449,10 @@
     }
 
 
-    // 💡 LƯU Ý: Hàm này chỉ trả về giá trị giả lập. Cần thay bằng giá trị User ID thật.
+    // LƯU Ý: Hàm này chỉ trả về giá trị giả lập. Cần thay bằng giá trị User ID thật.
     function getUserId() {
+        // Trong môi trường Thymeleaf, bạn có thể truyền User ID thực vào đây.
+        // Ví dụ: return [[${currentUser.idUser}]];
         return 1;
     }
 
@@ -522,10 +525,9 @@
         const select = document.getElementById('deliveryAddress');
         select.innerHTML = '<option value="" disabled selected>-- Đang tải địa chỉ... --</option>';
 
-        // 💡 SỬA ĐƯỜNG DẪN API: Phải khớp với AddressController: /user/address/addresses
+        // Đường dẫn API: Phải khớp với AddressController: /user/address/addresses
         fetch('/user/address/addresses')
             .then(response => {
-                // Nếu chưa đăng nhập, backend có thể trả về 401 hoặc 403
                 if (!response.ok) {
                     console.error('Không thể tải địa chỉ. Lỗi HTTP:', response.status);
                     if (response.status === 401 || response.status === 403) {
@@ -533,12 +535,12 @@
                     } else {
                         select.innerHTML = '<option value="" disabled selected>-- Lỗi tải địa chỉ --</option>';
                     }
-                    return null; // Trả về null để thoát khỏi chuỗi .then tiếp theo
+                    return null;
                 }
                 return response.json();
             })
             .then(userAddresses => {
-                if (userAddresses === null) return; // Thoát nếu có lỗi HTTP
+                if (userAddresses === null) return;
 
                 let optionsHtml = '<option value="" disabled selected>-- Chọn địa chỉ hoặc nhập mới --</option>';
 
@@ -550,7 +552,6 @@
                 }
                 select.innerHTML = optionsHtml;
 
-                // Tự động chọn địa chỉ đầu tiên hoặc chuyển sang nhập mới
                 if (userAddresses && userAddresses.length > 0) {
                     select.value = userAddresses[0].idAddress;
                     updateDeliveryInfo(userAddresses[0].idAddress);
@@ -565,13 +566,13 @@
     }
 
     function updateSummary(subTotal) {
-        const shippingFee = 0;
+        const shippingFee = 0; // Giả sử miễn phí
 
         let finalTotal = subTotal - currentVoucherDiscount + shippingFee;
         if (finalTotal < 0) finalTotal = 0;
 
         document.getElementById('subTotalPrice').textContent = formatPrice(subTotal);
-        document.getElementById('voucherDiscount').textContent = formatPrice(currentVoucherDiscount);
+        document.getElementById('voucherDiscount').textContent = `- ${formatPrice(currentVoucherDiscount)}`;
         document.getElementById('shippingFee').textContent = shippingFee === 0 ? 'Miễn phí' : formatPrice(shippingFee);
         document.getElementById('totalPrice').textContent = formatPrice(finalTotal);
 
@@ -605,7 +606,7 @@
             if (item.quantity <= 0) {
                 cart = cart.filter(p => (p.idProducts !== id) && (p.id !== id));
                 currentVoucherDiscount = 0; // Reset voucher khi giỏ hàng thay đổi
-                currentVoucherId = null;
+                currentVoucherCode = null;
             }
         }
         saveCart();
@@ -614,7 +615,7 @@
     function removeItem(id) {
         cart = cart.filter(p => (p.idProducts !== id) && (p.id !== id));
         currentVoucherDiscount = 0; // Reset voucher
-        currentVoucherId = null;
+        currentVoucherCode = null;
         saveCart();
     }
 
@@ -622,31 +623,67 @@
         if(confirm("Bạn có chắc chắn muốn xóa tất cả sản phẩm trong giỏ hàng?")) {
             cart = [];
             currentVoucherDiscount = 0;
-            currentVoucherId = null;
+            currentVoucherCode = null;
             saveCart();
         }
     }
 
-    function applyVoucher() {
+    /**
+     * GỌI API BACKEND ĐỂ XÁC THỰC VOUCHER
+     */
+    async function applyVoucher() {
         const code = document.getElementById('voucherCode').value.trim();
         const subTotal = calculateSubTotal();
+
+        if (!code) {
+            alert('Vui lòng nhập mã voucher.');
+            return;
+        }
 
         if (subTotal === 0) {
             alert('Giỏ hàng trống!');
             return;
         }
 
-        // MOCK LOGIC VOUCHER
-        if (code === 'HOCSINH20') {
-            currentVoucherDiscount = Math.min(subTotal * 0.2, 50000); // Tối đa 50k
-            currentVoucherId = 1; // Giả sử ID của voucher HOCSINH20 là 1
-            alert(`Áp dụng mã giảm giá thành công! Giảm ${formatPrice(currentVoucherDiscount)}.`);
-        } else {
+        // Vô hiệu hóa nút và hiển thị loading
+        const applyButton = document.querySelector('.btn-primary-custom');
+        const originalText = applyButton.innerHTML;
+        applyButton.disabled = true;
+        applyButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Áp dụng...';
+
+        try {
+            // Gọi API Backend: /api/vouchers/apply?code=...&total=...
+            const response = await fetch(`/api/vouchers/apply?code=${code}&total=${subTotal}`);
+
+            if (response.ok) {
+                const result = await response.json();
+
+                // Lấy số tiền giảm giá từ API
+                currentVoucherDiscount = result.discountAmount;
+                currentVoucherCode = code; // Lưu code voucher đã áp dụng
+
+                alert(`🎉 Áp dụng mã giảm giá **${code}** thành công! Giảm ${formatPrice(currentVoucherDiscount)}.`);
+
+            } else {
+                // Xử lý lỗi từ backend (400 Bad Request)
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.message || 'Lỗi không xác định khi áp dụng voucher.';
+
+                currentVoucherDiscount = 0;
+                currentVoucherCode = null;
+                alert(`❌ Lỗi áp dụng voucher: ${errorMessage}`);
+            }
+
+        } catch (error) {
+            console.error('Lỗi kết nối khi áp dụng voucher:', error);
             currentVoucherDiscount = 0;
-            currentVoucherId = null;
-            alert('Mã giảm giá không hợp lệ (Dùng mã: HOCSINH20, giảm tối đa 50k).');
+            currentVoucherCode = null;
+            alert('Lỗi kết nối đến máy chủ (Server) khi áp dụng voucher. Vui lòng thử lại.');
+        } finally {
+            updateSummary(subTotal);
+            applyButton.disabled = false;
+            applyButton.innerHTML = originalText;
         }
-        updateSummary(subTotal);
     }
 
     async function placeOrder() {
@@ -666,8 +703,8 @@
         const paymentMethodElement = document.querySelector('input[name="paymentMethod"]:checked');
 
         // 1. Kiểm tra cơ bản
-        if (!selectedAddressValue || selectedAddressValue === 'new' && (!document.getElementById('newAddressDetail').value.trim() || !document.getElementById('newAddressPhone').value.trim())) {
-            alert('Vui lòng chọn hoặc nhập đầy đủ địa chỉ nhận hàng.');
+        if (!selectedAddressValue) {
+            alert('Vui lòng chọn địa chỉ nhận hàng.');
             orderButton.disabled = false;
             orderButton.innerHTML = '<i class="fas fa-check-circle"></i> Đặt hàng';
             return;
@@ -684,13 +721,10 @@
         let finalAddressDetail = '';
         let finalPhoneNumber = '';
 
-        if (selectedAddressValue === 'new') {
-            finalAddressDetail = document.getElementById('newAddressDetail').value.trim();
-            finalPhoneNumber = document.getElementById('newAddressPhone').value.trim();
-        } else {
-            const selectedOption = addressSelect.querySelector(`option[value="${selectedAddressValue}"]`);
-            finalAddressDetail = selectedOption ? selectedOption.textContent.trim() : 'Địa chỉ đã lưu';
-            finalPhoneNumber = selectedOption ? selectedOption.getAttribute('data-phone') : null;
+        const selectedOption = addressSelect.querySelector(`option[value="${selectedAddressValue}"]`);
+        if(selectedOption) {
+            finalAddressDetail = selectedOption.textContent.trim();
+            finalPhoneNumber = selectedOption.getAttribute('data-phone');
         }
 
         if (!finalPhoneNumber) {
@@ -703,6 +737,7 @@
         // 3. Chuẩn bị dữ liệu cho API
         const totalAmount = parseInt(document.getElementById('totalPrice').dataset.longValue) || 0;
 
+        // **LƯU Ý:** Back-end Order API cần được cập nhật để nhận `voucherCode` và `voucherDiscount`
         const orderItemRequests = cart.map(item => ({
             productId: item.idProducts || item.id,
             quantity: item.quantity,
@@ -715,7 +750,9 @@
             phone: finalPhoneNumber,
             paymentMethod: paymentMethodElement.value.toUpperCase(),
             note: orderNotes,
-            voucherId: currentVoucherId,
+            // THAY THẾ voucherId bằng voucherCode và GỬI KÈM SỐ TIỀN GIẢM
+            voucherCode: currentVoucherCode,
+            voucherDiscount: currentVoucherDiscount,
             totalAmount: totalAmount,
             items: orderItemRequests
         };
@@ -735,9 +772,10 @@
                 const result = await response.json();
                 alert(`🎉 Đặt hàng thành công! Mã đơn hàng: ${result.orderCode || result.idOrder}. Tổng tiền: ${formatPrice(result.totalAmount)}`);
 
+                // Xóa giỏ hàng và reset voucher
                 cart = [];
                 currentVoucherDiscount = 0;
-                currentVoucherId = null;
+                currentVoucherCode = null;
                 saveCart();
                 window.location.href = '/user/profile#orders-settings';
 

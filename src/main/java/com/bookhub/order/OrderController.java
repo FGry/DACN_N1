@@ -4,11 +4,7 @@ import com.bookhub.order.OrderService.RevenueStatsDTO;
 import com.bookhub.order.OrderService.ProductSaleStats;
 import com.bookhub.user.User;
 import com.bookhub.user.UserService;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Year;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,6 +63,7 @@ public class OrderController {
         List<ProductStatsDTO> topSellingProducts = mapTopProducts(stats.getTopSellingProducts(), stats.getTotalRevenue());
         model.addAttribute("topSellingProducts", topSellingProducts);
 
+        // Gọi hàm đã sửa để tạo dữ liệu cho cả Tháng, Quý và Năm
         ChartData chartData = createChartData(stats.getMonthlyRevenue());
         model.addAttribute("chartData", chartData);
 
@@ -80,8 +78,7 @@ public class OrderController {
 
 
     @GetMapping("/admin/revenue/export")
-    public ResponseEntity<byte[]> exportRevenueToExcel(@RequestParam(value = "year", required = false) Integer year,
-                                                       RedirectAttributes redirectAttributes) {
+    public ResponseEntity<byte[]> exportRevenueToExcel(@RequestParam(value = "year", required = false) Integer year) {
 
         Integer currentYear = (year != null) ? year : Year.now().getValue();
 
@@ -94,6 +91,7 @@ public class OrderController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentDispositionFormData("attachment", fileName);
+            headers.setContentLength(bis.available());
 
             return ResponseEntity
                     .ok()
@@ -234,10 +232,18 @@ public class OrderController {
         private TimeData quarterly;
         private TimeData yearly;
 
-        @Getter @Setter @AllArgsConstructor @NoArgsConstructor
+        @Getter @Setter @NoArgsConstructor // Khắc phục lỗi: @Setter cung cấp phương thức setTitle
         public static class TimeData {
+            private String title; // <<< ĐÃ THÊM TRƯỜNG VÀ @Getter/@Setter
             private List<String> labels;
             private List<Double> revenue;
+
+            // Constructor cho dữ liệu cơ bản (Monthly data)
+            public TimeData(List<String> labels, List<Double> revenue) {
+                this.labels = labels;
+                this.revenue = revenue;
+                this.title = null;
+            }
         }
     }
 
@@ -246,22 +252,60 @@ public class OrderController {
         private String message;
     }
 
+    // --- HÀM ĐÃ SỬA: TẠO DỮ LIỆU BIỂU ĐỒ CHO THÁNG, QUÝ, NĂM ---
     private ChartData createChartData(List<RevenueStatsDTO.DataPoint> monthlyData) {
         ChartData chartData = new ChartData();
+        Integer currentYear = Year.now().getValue();
 
-        List<String> labels = monthlyData.stream()
+        // Lấy dữ liệu theo tháng đã có (dưới dạng Triệu VNĐ)
+        List<String> monthlyLabels = monthlyData.stream()
                 .map(RevenueStatsDTO.DataPoint::getLabel)
                 .collect(Collectors.toList());
 
-        List<Double> revenue = monthlyData.stream()
+        List<Double> monthlyRevenue = monthlyData.stream()
                 .map(RevenueStatsDTO.DataPoint::getValue)
                 .collect(Collectors.toList());
 
-        ChartData.TimeData monthlyTimeData = new ChartData.TimeData(labels, revenue);
+        // 1. Dữ liệu theo THÁNG
+        ChartData.TimeData monthlyTimeData = new ChartData.TimeData(monthlyLabels, monthlyRevenue);
+        // Lỗi đã được khắc phục: setTitle() đã có sẵn nhờ @Setter
+        monthlyTimeData.setTitle("Biểu đồ Doanh thu theo Tháng (Năm " + currentYear + ")");
         chartData.setMonthly(monthlyTimeData);
 
-        chartData.setQuarterly(new ChartData.TimeData());
-        chartData.setYearly(new ChartData.TimeData());
+        // 2. Dữ liệu theo QUÝ (Tổng hợp từ dữ liệu theo tháng)
+        List<Double> quarterlyRevenue = new ArrayList<>();
+        List<String> quarterlyLabels = List.of("Quý 1", "Quý 2", "Quý 3", "Quý 4");
+
+        // Tổng hợp dữ liệu theo quý (3 tháng/quý)
+        for (int q = 0; q < 4; q++) {
+            double quarterTotal = 0.0;
+            // Dữ liệu monthlyRevenue có thể không có đủ 12 tháng, nên ta phải kiểm tra kích thước
+            int startIndex = q * 3;
+            int endIndex = Math.min(startIndex + 3, monthlyRevenue.size());
+
+            for (int i = startIndex; i < endIndex; i++) {
+                if (monthlyRevenue.get(i) != null) {
+                    quarterTotal += monthlyRevenue.get(i);
+                }
+            }
+            quarterlyRevenue.add(quarterTotal);
+        }
+
+        ChartData.TimeData quarterlyTimeData = new ChartData.TimeData(quarterlyLabels, quarterlyRevenue);
+        quarterlyTimeData.setTitle("Biểu đồ Doanh thu theo Quý (Năm " + currentYear + ")");
+        chartData.setQuarterly(quarterlyTimeData);
+
+
+        // 3. Dữ liệu theo NĂM (Tổng doanh thu của năm hiện tại)
+        // Lấy tổng doanh thu của tất cả các tháng đã có
+        double yearTotal = monthlyRevenue.stream().filter(v -> v != null).mapToDouble(Double::doubleValue).sum();
+
+        ChartData.TimeData yearlyTimeData = new ChartData.TimeData(
+                List.of(String.valueOf(currentYear)),
+                List.of(yearTotal)
+        );
+        yearlyTimeData.setTitle("Biểu đồ Tổng Doanh thu theo Năm " + currentYear);
+        chartData.setYearly(yearlyTimeData);
 
         return chartData;
     }

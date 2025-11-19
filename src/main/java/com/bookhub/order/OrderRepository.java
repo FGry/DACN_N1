@@ -26,7 +26,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     Long countDeliveredOrders(@Param("year") Integer year);
 
     // Phương thức lấy top sản phẩm bán chạy theo năm
-    @Query("SELECT od.product.title, SUM(od.quantity), SUM(od.price_date * od.quantity) " +
+    @Query("SELECT od.product.title, SUM(od.quantity), SUM(od.total) " +
             "FROM OrderDetail od JOIN od.order o " +
             "WHERE o.status_order = 'DELIVERED' " +
             "AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year) " +
@@ -43,6 +43,12 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             "GROUP BY FUNCTION('MONTH', o.date) " +
             "ORDER BY FUNCTION('MONTH', o.date) ASC")
     List<Object[]> findMonthlyRevenueAndProfit(@Param("year") Integer year);
+
+    // [PHƯƠNG THỨC MỚI] Lấy tổng doanh thu hàng năm cho tất cả các năm đã hoạt động
+    @Query("SELECT FUNCTION('YEAR', o.date), SUM(o.total) " +
+            "FROM Order o WHERE o.status_order = 'DELIVERED' " +
+            "GROUP BY FUNCTION('YEAR', o.date) ORDER BY FUNCTION('YEAR', o.date) ASC")
+    List<Object[]> findRevenueByYear(); // Không cần tham số year
 
     // Phương thức tìm đơn hàng theo trạng thái
     @Query("SELECT o FROM Order o WHERE UPPER(o.status_order) = UPPER(?1)")

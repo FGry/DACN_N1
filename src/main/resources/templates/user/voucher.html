@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,6 +17,7 @@
         .navbar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: background 0.3s ease, backdrop-filter 0.3s ease; /* Thêm transition */
         }
 
         .navbar-brand {
@@ -72,6 +72,50 @@
             justify-content: center;
         }
 
+        /* START: CSS CHO CART MODAL (ĐÃ THÊM) */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+
+        .btn-close-white {
+            filter: invert(1);
+        }
+
+        #cartModal table {
+            font-size: 0.9rem;
+        }
+
+        #cartModal thead th {
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #667eea;
+        }
+
+        #cartModal tbody td {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        #cartModal .item-title-link {
+            font-size: 0.95rem;
+            cursor: pointer;
+            color: #343a40;
+            text-decoration: none;
+        }
+        #cartModal .item-title-link:hover {
+            color: #667eea;
+            text-decoration: underline;
+        }
+
+        /* END: CSS CHO CART MODAL */
+
         .hero-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -79,6 +123,7 @@
             margin-bottom: 60px;
             position: relative;
             overflow: hidden;
+            transition: transform 0.3s ease; /* Thêm transition cho parallax */
         }
 
         .hero-section::before {
@@ -350,24 +395,24 @@
             .hero-section {
                 padding: 60px 0;
             }
-            
+
             .voucher-grid {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
-            
+
             .voucher-header {
                 padding: 20px 20px 15px;
             }
-            
+
             .voucher-info {
                 padding: 0 20px 20px;
             }
-            
+
             .filter-section {
                 padding: 20px;
             }
-            
+
             .stats-section {
                 padding: 30px 20px;
             }
@@ -375,586 +420,607 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.html"><i class="fas fa-book-open"></i> BookStore</a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#home">Trang chủ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/user/voucher}">Voucher</a>
-                    </li>
-                </ul>
-                
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-auth btn-sm" onclick="window.location.href='login.html'">
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/user/voucher}">Voucher</a>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center" id="authButtons">
+
+                <div id="loggedOutButtons" th:if="${!isLoggedIn}">
+                    <a th:href="@{/login}" href="login.html" class="btn btn-auth btn-sm">
                         <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                    </button>
-                    <button class="btn btn-auth btn-sm" onclick="window.location.href='register.html'">
+                    </a>
+                    <a th:href="@{/register}" href="register.html" class="btn btn-auth btn-sm">
                         <i class="fas fa-user-plus"></i> Đăng ký
-                    </button>
-                    <div class="cart-icon ms-3" onclick="window.location.href='cart.html'">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-badge" id="cartCount">0</span>
-                    </div>
+                    </a>
                 </div>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="container">
-            <div class="hero-content text-center">
-                <h1 class="display-3 fw-bold mb-4">
-                    <i class="fas fa-ticket-alt"></i> Voucher ưu đãi
-                </h1>
-                <p class="lead fs-4 mb-5">
-                    Tiết kiệm hơn với các mã giảm giá hấp dẫn
-                </p>
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <p class="fs-5 opacity-90">
-                            Khám phá bộ sưu tập voucher đa dạng của BookStore. Từ giảm giá sách giáo khoa 
-                            đến miễn phí vận chuyển, chúng tôi có ưu đãi phù hợp cho mọi nhu cầu học tập!
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                <div id="loggedInButtons" th:if="${isLoggedIn}">
+                    <div class="dropdown">
+                        <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="userNameDisplay" th:text="${currentUser.username}">Tài khoản</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                            <li><a class="dropdown-item" th:href="@{/user/profile}">
+                                <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                            </a></li>
 
-    <!-- Statistics -->
-    <div class="container">
-        <div class="stats-section">
-            <div class="row">
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="stat-item">
-                        <div class="stat-number" id="totalVouchers">12</div>
-                        <div class="stat-label">Voucher khả dụng</div>
+                            <li><a class="dropdown-item" th:href="@{/user/profile#address-settings}">
+                                <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
+                            </a></li>
+
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" th:href="@{/logout}">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a></li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="stat-item">
-                        <div class="stat-number">50%</div>
-                        <div class="stat-label">Giảm giá tối đa</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="stat-item">
-                        <div class="stat-number">0đ</div>
-                        <div class="stat-label">Phí vận chuyển</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="stat-item">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Hỗ trợ sử dụng</div>
-                    </div>
+
+                <div class="cart-icon ms-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#cartModal">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cartCount">0</span>
                 </div>
             </div>
         </div>
     </div>
+</nav>
 
-    <!-- Filter Section -->
+<section class="hero-section">
     <div class="container">
-        <div class="filter-section">
-            <h4 class="mb-3"><i class="fas fa-filter"></i> Lọc voucher theo loại</h4>
-            <div class="d-flex flex-wrap">
-                <button class="filter-btn active" onclick="filterVouchers('all')">
-                    <i class="fas fa-list"></i> Tất cả
-                </button>
-                <button class="filter-btn" onclick="filterVouchers('discount')">
-                    <i class="fas fa-percentage"></i> Giảm giá
-                </button>
-                <button class="filter-btn" onclick="filterVouchers('shipping')">
-                    <i class="fas fa-shipping-fast"></i> Miễn ship
-                </button>
-                <button class="filter-btn" onclick="filterVouchers('combo')">
-                    <i class="fas fa-gift"></i> Combo
-                </button>
-                <button class="filter-btn" onclick="filterVouchers('newbie')">
-                    <i class="fas fa-user-plus"></i> Khách mới
-                </button>
-                <button class="filter-btn" onclick="filterVouchers('vip')">
-                    <i class="fas fa-crown"></i> VIP
-                </button>
+        <div class="hero-content text-center">
+            <h1 class="display-3 fw-bold mb-4">
+                <i class="fas fa-ticket-alt"></i> Voucher ưu đãi
+            </h1>
+            <p class="lead fs-4 mb-5">
+                Tiết kiệm hơn với các mã giảm giá hấp dẫn
+            </p>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <p class="fs-5 opacity-90">
+                        Khám phá bộ sưu tập voucher đa dạng của BookStore. Từ giảm giá sách giáo khoa
+                        đến miễn phí vận chuyển, chúng tôi có ưu đãi phù hợp cho mọi nhu cầu học tập!
+                    </p>
+                </div>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- Voucher Grid -->
-    <div class="container">
-        <div class="voucher-grid" id="voucherGrid">
-            <!-- Voucher items will be generated by JavaScript -->
+<div class="container">
+    <div class="stats-section">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalVouchers">0</div>
+                    <div class="stat-label">Voucher khả dụng</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <div class="stat-number">50%</div>
+                    <div class="stat-label">Giảm giá tối đa</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <div class="stat-number">0đ</div>
+                    <div class="stat-label">Phí vận chuyển</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Hỗ trợ sử dụng</div>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
-                    <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
-                    <div class="d-flex">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <h5>Liên kết nhanh</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="index.html" class="text-white-50">Trang chủ</a></li>
-                        <li><a href="product.html" class="text-white-50">Sản phẩm</a></li>
-                        <li><a href="about.html" class="text-white-50">Giới thiệu</a></li>
-                        <li><a href="contact.html" class="text-white-50">Liên hệ</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5>Liên hệ</h5>
-                    <p><i class="fas fa-phone"></i> 0123 456 789</p>
-                    <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
-                    <p><i class="fas fa-map-marker-alt"></i> Đại học Công nghiệp Hà Nội - Cơ sở 1</p>
+<div class="container">
+    <div class="filter-section">
+        <h4 class="mb-3"><i class="fas fa-filter"></i> Lọc voucher theo loại</h4>
+        <div class="d-flex flex-wrap">
+            <button class="filter-btn active" onclick="filterVouchers(event, 'all')">
+                <i class="fas fa-list"></i> Tất cả
+            </button>
+            <button class="filter-btn" onclick="filterVouchers(event, 'discount')">
+                <i class="fas fa-percentage"></i> Giảm giá
+            </button>
+            <button class="filter-btn" onclick="filterVouchers(event, 'shipping')">
+                <i class="fas fa-shipping-fast"></i> Miễn ship
+            </button>
+            <button class="filter-btn" onclick="filterVouchers(event, 'combo')">
+                <i class="fas fa-gift"></i> Combo
+            </button>
+            <button class="filter-btn" onclick="filterVouchers(event, 'newbie')">
+                <i class="fas fa-user-plus"></i> Khách mới
+            </button>
+            <button class="filter-btn" onclick="filterVouchers(event, 'vip')">
+                <i class="fas fa-crown"></i> VIP
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="voucher-grid" id="voucherGrid">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            // Khai báo biến global để chứa dữ liệu voucher từ server
+            let VOUCHERS_DATA = JSON.parse(/*[[${vouchersJson}]]*/ '[]');
+            /*]]>*/
+        </script>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
+                <div class="d-flex">
+                    <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
                 </div>
             </div>
-            <hr class="my-4">
-            <div class="text-center">
-                <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
+            <div class="col-md-4">
+                <h5>Liên kết nhanh</h5>
+                <ul class="list-unstyled">
+                    <li><a th:href="@{/}" class="text-white-50">Trang chủ</a></li>
+                    <li><a th:href="@{/products}" class="text-white-50">Sản phẩm</a></li>
+                    <li><a th:href="@{/about}" class="text-white-50">Giới thiệu</a></li>
+                    <li><a th:href="@{/contact}" class="text-white-50">Liên hệ</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h5>Liên hệ</h5>
+                <p><i class="fas fa-phone"></i> 0123 456 789</p>
+                <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
+                <p><i class="fas fa-map-marker-alt"></i> Đại học Công nghiệp Hà Nội - Cơ sở 1</p>
             </div>
         </div>
-    </footer>
+        <hr class="my-4">
+        <div class="text-center">
+            <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let currentFilter = 'all';
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-shopping-cart"></i> Giỏ hàng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cartItems">
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <h5>Tổng cộng: <span id="totalPrice" class="text-danger fw-bold">0đ</span></h5>
+                    <a th:href="@{/user/cart}" href="/user/cart" id="checkoutBtn" class="btn btn-primary-custom disabled" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                        <i class="fas fa-credit-card"></i> Thanh toán (Đi đến giỏ hàng)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // --- 1. DỮ LIỆU MẪU VÀ BIẾN GIỎ HÀNG (ĐÃ THÊM/CHỈNH SỬA) ---
 
-        // Voucher data
-        const vouchers = [
-            {
-                id: 1,
-                code: 'WELCOME50',
-                title: 'Chào mừng khách hàng mới',
-                description: 'Giảm 50% cho đơn hàng đầu tiên. Áp dụng cho tất cả sách giáo khoa và tham khảo.',
-                discountValue: '50%',
-                discountType: 'Giảm giá',
-                category: 'Khách mới',
-                type: 'newbie',
-                minOrder: '200.000đ',
-                endDate: '2024-12-31',
-                status: 'active',
-                requirements: 'Chỉ áp dụng cho khách hàng đăng ký lần đầu. Không áp dụng cùng voucher khác.',
-                quantity: 100
-            },
-            {
-                id: 2,
-                code: 'FREESHIP',
-                title: 'Miễn phí vận chuyển',
-                description: 'Miễn phí ship toàn quốc cho đơn hàng từ 150.000đ. Giao hàng nhanh trong 24h.',
-                discountValue: '0đ',
-                discountType: 'Phí ship',
-                category: 'Miễn ship',
-                type: 'shipping',
-                minOrder: '150.000đ',
-                endDate: '2024-12-25',
-                status: 'active',
-                requirements: 'Áp dụng toàn quốc. Không giới hạn số lần sử dụng.',
-                quantity: 500
-            },
-            {
-                id: 3,
-                code: 'COMBO30',
-                title: 'Combo sách tiết kiệm',
-                description: 'Giảm 30% khi mua combo từ 3 cuốn sách trở lên. Tiết kiệm hơn cho năm học mới.',
-                discountValue: '30%',
-                discountType: 'Combo deal',
-                category: 'Combo',
-                type: 'combo',
-                minOrder: '300.000đ',
-                endDate: '2024-12-20',
-                status: 'ending',
-                requirements: 'Mua tối thiểu 3 cuốn sách. Không áp dụng cho sách đã giảm giá.',
-                quantity: 75
-            },
-            {
-                id: 4,
-                code: 'VIP100',
-                title: 'Ưu đãi thành viên VIP',
-                description: 'Giảm 100.000đ cho thành viên VIP. Tích điểm thêm 5% giá trị đơn hàng.',
-                discountValue: '100K',
-                discountType: 'Giảm tiền',
-                category: 'VIP',
-                type: 'vip',
-                minOrder: '500.000đ',
-                endDate: '2024-12-30',
-                status: 'active',
-                requirements: 'Chỉ dành cho thành viên VIP. Tích điểm thêm 5%.',
-                quantity: 50
-            },
-            {
-                id: 5,
-                code: 'STUDENT20',
-                title: 'Ưu đãi học sinh',
-                description: 'Giảm 20% cho tất cả sách giáo khoa lớp 10, 11, 12. Hỗ trợ học tập hiệu quả.',
-                discountValue: '20%',
-                discountType: 'Sách GK',
-                category: 'Giảm giá',
-                type: 'discount',
-                minOrder: '100.000đ',
-                endDate: '2024-12-28',
-                status: 'active',
-                requirements: 'Chỉ áp dụng sách giáo khoa cấp 3. Xuất trình thẻ học sinh.',
-                quantity: 200
-            },
-            {
-                id: 6,
-                code: 'FLASH40',
-                title: 'Flash Sale cuối tuần',
-                description: 'Giảm 40% trong 48h cuối tuần. Cơ hội vàng để sắm sách với giá ưu đãi nhất.',
-                discountValue: '40%',
-                discountType: 'Flash Sale',
-                category: 'Giảm giá',
-                type: 'discount',
-                minOrder: '250.000đ',
-                endDate: '2024-12-15',
-                status: 'ending',
-                requirements: 'Chỉ áp dụng thứ 7 và chủ nhật. Số lượng có hạn.',
-                quantity: 30
-            },
-            {
-                id: 7,
-                code: 'ENGLISH25',
-                title: 'Sách tiếng Anh giảm giá',
-                description: 'Giảm 25% cho tất cả sách tiếng Anh và từ điển. Nâng cao kỹ năng ngôn ngữ.',
-                discountValue: '25%',
-                discountType: 'Tiếng Anh',
-                category: 'Giảm giá',
-                type: 'discount',
-                minOrder: '180.000đ',
-                endDate: '2024-12-22',
-                status: 'active',
-                requirements: 'Chỉ áp dụng sách tiếng Anh và từ điển. Không giới hạn số lượng.',
-                quantity: 150
-            },
-            {
-                id: 8,
-                code: 'NEWBOOK15',
-                title: 'Sách mới ra mắt',
-                description: 'Giảm 15% cho các đầu sách mới nhất 2024. Cập nhật kiến thức mới nhất.',
-                discountValue: '15%',
-                discountType: 'Sách mới',
-                category: 'Giảm giá',
-                type: 'discount',
-                minOrder: '120.000đ',
-                endDate: '2024-12-27',
-                status: 'active',
-                requirements: 'Chỉ áp dụng sách xuất bản năm 2024. Còn hàng tại kho.',
-                quantity: 80
-            },
-            {
-                id: 9,
-                code: 'BUNDLE50',
-                title: 'Combo 5 cuốn siêu tiết kiệm',
-                description: 'Mua 5 cuốn giảm ngay 50%. Combo hoàn hảo cho cả năm học với giá cực ưu đãi.',
-                discountValue: '50%',
-                discountType: 'Bundle',
-                category: 'Combo',
-                type: 'combo',
-                minOrder: '400.000đ',
-                endDate: '2024-12-26',
-                status: 'active',
-                requirements: 'Mua đúng 5 cuốn sách bất kỳ. Không áp dụng sách sale.',
-                quantity: 40
-            },
-            {
-                id: 10,
-                code: 'LOYAL35',
-                title: 'Khách hàng thân thiết',
-                description: 'Giảm 35% cho khách hàng đã mua từ 5 đơn hàng. Cảm ơn sự tin tưởng của bạn.',
-                discountValue: '35%',
-                discountType: 'Thân thiết',
-                category: 'VIP',
-                type: 'vip',
-                minOrder: '300.000đ',
-                endDate: '2024-12-29',
-                status: 'active',
-                requirements: 'Đã có tối thiểu 5 đơn hàng thành công. Tự động áp dụng.',
-                quantity: 60
-            },
-            {
-                id: 11,
-                code: 'MIDNIGHT60',
-                title: 'Sale nửa đêm đặc biệt',
-                description: 'Giảm 60% từ 23:00-01:00. Cơ hội duy nhất trong tháng để mua sách giá sốc.',
-                discountValue: '60%',
-                discountType: 'Midnight',
-                category: 'Giảm giá',
-                type: 'discount',
-                minOrder: '200.000đ',
-                endDate: '2024-12-18',
-                status: 'ending',
-                requirements: 'Chỉ áp dụng từ 23:00-01:00. Số lượng rất hạn chế.',
-                quantity: 20
-            },
-            {
-                id: 12,
-                code: 'XMAS2024',
-                title: 'Giáng sinh ấm áp',
-                description: 'Giảm 45% nhân dịp Giáng sinh. Tặng bookmark xinh xắn cho mỗi đơn hàng.',
-                discountValue: '45%',
-                discountType: 'Giáng sinh',
-                category: 'Giảm giá',
-                type: 'discount',
-                minOrder: '350.000đ',
-                endDate: '2024-12-25',
-                status: 'active',
-                requirements: 'Áp dụng từ 20/12-25/12. Tặng kèm bookmark Giáng sinh.',
-                quantity: 90
+    // Dữ liệu mẫu sản phẩm (dùng để tra cứu cho giỏ hàng)
+    const mockProducts = [
+        { id: 1, idProducts: 1, title: "Toán học 12 - Sách giáo khoa", price: 45000, description: "Sách giáo khoa Toán học lớp 12", icon: "📚", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=T12']},
+        { id: 2, idProducts: 2, title: "Vật lý 11 - Bài tập nâng cao", price: 65000, description: "Bộ sách bài tập Vật lý nâng cao", icon: "⚡", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=L11']},
+        { id: 3, idProducts: 3, title: "English Grammar in Use", price: 120000, description: "Sách ngữ pháp tiếng Anh", icon: "🇬🇧", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=ENG']},
+        { id: 4, idProducts: 4, title: "Hóa học 10 - Sách giáo khoa", price: 42000, description: "Sách giáo khoa Hóa học lớp 10", icon: "🧪", imageLinks: ['https://via.placeholder.com/250x250/F0F0F0?text=H10']},
+    ];
+    // Giả định một danh sách sản phẩm chung để getProductById hoạt động
+    const products = mockProducts;
+
+    // Cart data from localStorage
+    let cart = JSON.parse(localStorage.getItem('bookstoreCart') || '[]');
+    let currentFilter = 'all';
+
+    // --- 2. CÁC HÀM TIỆN ÍCH (ĐÃ THÊM) ---
+
+    function formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    }
+
+    function getProductById(productId) {
+        // Tìm kiếm sản phẩm trong danh sách tra cứu chung (mockProducts)
+        return products.find(p => p.idProducts === productId || p.id === productId);
+    }
+
+    function getFirstImageLink(product) {
+        // Hàm này được đơn giản hóa cho mục đích hiển thị trong Modal giỏ hàng
+        // Trong môi trường thật, bạn cần logic phức tạp hơn
+        if (product && product.imageLinks && product.imageLinks.length > 0) {
+            let link = product.imageLinks[0];
+            if (typeof link === 'object' && link !== null) {
+                return link.image_link || link.imageLink || null;
             }
-        ];
-
-        // Load page on startup
-        document.addEventListener('DOMContentLoaded', function() {
-            updateCartCount();
-            renderVouchers();
-            startCountdowns();
-            animateOnScroll();
-        });
-
-        // Update cart count
-        function updateCartCount() {
-            const cartCount = document.getElementById('cartCount');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
+            return link;
         }
+        return null;
+    }
 
-        // Render vouchers
-        function renderVouchers() {
-            const grid = document.getElementById('voucherGrid');
-            const filteredVouchers = currentFilter === 'all' ? vouchers : vouchers.filter(v => v.type === currentFilter);
-            
-            grid.innerHTML = filteredVouchers.map(voucher => `
-                <div class="voucher-card" data-type="${voucher.type}">
-                    <div class="voucher-category">${voucher.category}</div>
-                    <div class="voucher-status status-${voucher.status}">
-                        ${voucher.status === 'active' ? 'Còn hiệu lực' : 
-                          voucher.status === 'ending' ? 'Sắp hết hạn' : 'Hết hạn'}
-                    </div>
-                    
-                    <div class="voucher-header">
-                        <div class="voucher-discount">
-                            <div class="discount-value">${voucher.discountValue}</div>
-                            <div class="discount-type">${voucher.discountType}</div>
-                        </div>
-                        
-                        <div class="voucher-code">
-                            <div class="code-text">${voucher.code}</div>
-                            <button class="copy-btn" onclick="copyVoucherCode('${voucher.code}')">
-                                <i class="fas fa-copy"></i> Copy mã
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="voucher-info">
-                        <h4 class="voucher-title">${voucher.title}</h4>
-                        <p class="voucher-description">${voucher.description}</p>
-                        
-                        <div class="voucher-details">
-                            <div class="detail-item">
-                                <i class="fas fa-calendar detail-icon"></i>
-                                <span class="detail-label">Hết hạn:</span>
-                                <span class="detail-value">${formatDate(voucher.endDate)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-shopping-cart detail-icon"></i>
-                                <span class="detail-label">Đơn tối thiểu:</span>
-                                <span class="detail-value">${voucher.minOrder}</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-ticket-alt detail-icon"></i>
-                                <span class="detail-label">Còn lại:</span>
-                                <span class="detail-value">${voucher.quantity} voucher</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-info-circle detail-icon"></i>
-                                <span class="detail-label">Điều kiện:</span>
-                                <span class="detail-value">${voucher.requirements}</span>
-                            </div>
-                        </div>
-                        
-                        ${voucher.status === 'ending' ? `
-                            <div class="countdown-timer" id="countdown-${voucher.id}">
-                                <div>⏰ Còn lại: <span class="timer-value" id="timer-${voucher.id}">--:--:--</span></div>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `).join('');
+    // --- 3. LOGIC GIỎ HÀNG (ĐÃ THÊM/CHỈNH SỬA) ---
 
-            // Update total vouchers count
-            document.getElementById('totalVouchers').textContent = filteredVouchers.length;
-        }
+    // Update cart count (Đổi tên hàm cũ)
+    function updateCartCount() {
+        const cartCount = document.getElementById('cartCount');
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCount.textContent = totalItems;
+        // Cập nhật luôn modal
+        updateCartModal();
+    }
 
-        // Filter vouchers
-        function filterVouchers(type) {
-            currentFilter = type;
-            
-            // Update active filter button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            renderVouchers();
-            startCountdowns();
-        }
+    function updateCartUI() {
+        updateCartCount();
+        // Cập nhật các thành phần UI khác nếu cần
+    }
 
-        // Copy voucher code
-        function copyVoucherCode(code) {
-            navigator.clipboard.writeText(code).then(() => {
-                showNotification(`Đã copy mã voucher: ${code}`, 'success');
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = code;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showNotification(`Đã copy mã voucher: ${code}`, 'success');
-            });
-        }
+    function updateQuantityModal(productId, change) {
+        const item = cart.find(item => item.idProducts === productId || item.id === productId);
+        if (item) {
+            let newQuantity = item.quantity + change;
 
-        // Format date
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('vi-VN', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-        }
-
-        // Start countdown timers
-        function startCountdowns() {
-            const endingVouchers = vouchers.filter(v => v.status === 'ending');
-            
-            endingVouchers.forEach(voucher => {
-                const timerElement = document.getElementById(`timer-${voucher.id}`);
-                if (timerElement) {
-                    updateCountdown(voucher.endDate, timerElement);
-                    setInterval(() => updateCountdown(voucher.endDate, timerElement), 1000);
-                }
-            });
-        }
-
-        // Update countdown
-        function updateCountdown(endDate, element) {
-            const now = new Date().getTime();
-            const end = new Date(endDate).getTime();
-            const distance = end - now;
-
-            if (distance > 0) {
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                element.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-            } else {
-                element.textContent = 'Đã hết hạn';
+            if (newQuantity < 1) {
+                // Nếu giảm xuống 0, hỏi có muốn xóa không (hoặc chỉ cảnh báo)
+                showNotification('Sử dụng nút xóa để loại bỏ hoàn toàn sản phẩm.', 'warning');
+                return;
             }
+
+            item.quantity = newQuantity;
+            localStorage.setItem('bookstoreCart', JSON.stringify(cart));
+            updateCartUI();
+        }
+    }
+
+    function removeFromCart(productId) {
+        cart = cart.filter(item => item.idProducts !== productId && item.id !== productId);
+        localStorage.setItem('bookstoreCart', JSON.stringify(cart));
+        updateCartUI();
+        showNotification('Đã xóa khỏi giỏ hàng!', 'info');
+    }
+
+
+    /**
+     * Modal Giỏ hàng hiển thị chi tiết sản phẩm (ảnh, tên, giá, số lượng, thành tiền).
+     */
+    function updateCartModal() {
+        const cartItems = document.getElementById('cartItems');
+        const totalPrice = document.getElementById('totalPrice');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+
+        let total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+        if (cart.length === 0) {
+            cartItems.innerHTML = '<p class="text-center text-muted p-4">Giỏ hàng tạm thời đang trống.</p>';
+            totalPrice.textContent = '0đ';
+            checkoutBtn.classList.add('disabled');
+            return;
         }
 
-        // Show notification
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            const alertClass = type === 'success' ? 'alert-success' : 
-                              type === 'error' ? 'alert-danger' : 
-                              type === 'info' ? 'alert-info' : 'alert-warning';
-            
-            notification.className = `alert ${alertClass} position-fixed`;
-            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            notification.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        // SỬ DỤNG CẤU TRÚC TABLE CHO CĂN CHỈNH TỐT NHẤT
+        let cartHTML = `
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" style="width: 35%;">Sản phẩm</th>
+                        <th scope="col" style="width: 15%;">Đơn giá</th>
+                        <th scope="col" style="width: 25%;" class="text-center">Số lượng</th>
+                        <th scope="col" style="width: 15%;" class="text-end">Thành tiền</th>
+                        <th scope="col" style="width: 10%;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        cart.forEach(item => {
+            const itemId = item.idProducts;
+            // Sử dụng item.imageLink đã lưu hoặc placeholder
+            const imgSource = item.imageLink || 'https://via.placeholder.com/60x60/DEDEDE?text=Book';
+            const subtotal = item.price * item.quantity;
+
+            cartHTML += `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="${imgSource}" alt="${item.title}" loading="lazy" style="width: 60px; height: 60px; object-fit: contain; border-radius: 5px; margin-right: 15px; border: 1px solid #eee;">
+                            <div>
+                                <a href="/products/${itemId}" class="item-title-link" >
+                                    <h6 class="mb-0">${item.title}</h6>
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                    <td><small class="text-muted">${formatPrice(item.price)}</small></td>
+                    <td class="text-center">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <button class="btn btn-sm btn-outline-secondary me-1" onclick="updateQuantityModal(${itemId}, -1)">-</button>
+                            <span class="mx-1 fw-bold">${item.quantity}</span>
+                            <button class="btn btn-sm btn-outline-secondary ms-1" onclick="updateQuantityModal(${itemId}, 1)">+</button>
+                        </div>
+                    </td>
+                    <td class="text-end fw-bold text-danger">${formatPrice(subtotal)}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${itemId})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
             `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
+        });
+
+        cartHTML += `
+                </tbody>
+            </table>
+        `;
+
+        cartItems.innerHTML = cartHTML;
+        totalPrice.textContent = formatPrice(total);
+        checkoutBtn.classList.remove('disabled');
+    }
+
+
+    // --- 4. LOGIC VOUCHER GỐC (GIỮ NGUYÊN) ---
+
+    // Load page on startup
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartUI(); // Gọi hàm này để cập nhật Giỏ hàng
+        renderVouchers();
+        startCountdowns();
+        animateOnScroll();
+    });
+
+    // Render vouchers
+    function renderVouchers() {
+        const grid = document.getElementById('voucherGrid');
+        // Dùng VOUCHERS_DATA lấy từ server
+        const filteredVouchers = currentFilter === 'all' ? VOUCHERS_DATA : VOUCHERS_DATA.filter(v => v.type === currentFilter);
+
+        grid.innerHTML = filteredVouchers.map(voucher => `
+            <div class="voucher-card" data-type="${voucher.type}">
+                <div class="voucher-category">${voucher.category}</div>
+                <div class="voucher-status status-${voucher.status}">
+                    ${voucher.status === 'active' ? 'Còn hiệu lực' :
+            voucher.status === 'ending' ? 'Sắp hết hạn' : 'Hết hạn'}
+                </div>
+
+                <div class="voucher-header">
+                    <div class="voucher-discount">
+                        <div class="discount-value">${voucher.discountValue}</div>
+                        <div class="discount-type">${voucher.discountType}</div>
+                    </div>
+
+                    <div class="voucher-code">
+                        <div class="code-text">${voucher.code}</div>
+                        <button class="copy-btn" onclick="copyVoucherCode('${voucher.code}')">
+                            <i class="fas fa-copy"></i> Copy mã
+                        </button>
+                    </div>
+                </div>
+
+                <div class="voucher-info">
+                    <h4 class="voucher-title">${voucher.title}</h4>
+                    <p class="voucher-description">${voucher.description}</p>
+
+                    <div class="voucher-details">
+                        <div class="detail-item">
+                            <i class="fas fa-calendar detail-icon"></i>
+                            <span class="detail-label">Hết hạn:</span>
+                            <span class="detail-value">${voucher.endDateDisplay}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-shopping-cart detail-icon"></i>
+                            <span class="detail-label">Đơn tối thiểu:</span>
+                            <span class="detail-value">${voucher.minOrderDisplay}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-ticket-alt detail-icon"></i>
+                            <span class="detail-label">Còn lại:</span>
+                            <span class="detail-value">${voucher.quantity} voucher</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-info-circle detail-icon"></i>
+                            <span class="detail-label">Điều kiện:</span>
+                            <span class="detail-value">${voucher.requirements}</span>
+                        </div>
+                    </div>
+
+                    ${voucher.status === 'ending' ? `
+                        <div class="countdown-timer" id="countdown-${voucher.id}">
+                            <div>⏰ Còn lại: <span class="timer-value" id="timer-${voucher.id}">--:--:--</span></div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        // Update total vouchers count
+        document.getElementById('totalVouchers').textContent = filteredVouchers.length;
+    }
+
+    // Filter vouchers
+    function filterVouchers(event, type) {
+        currentFilter = type;
+
+        // Update active filter button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        renderVouchers();
+        startCountdowns();
+    }
+
+    // Copy voucher code
+    function copyVoucherCode(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            showNotification(`Đã copy mã voucher: ${code}`, 'success');
+        }).catch(() => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = code;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showNotification(`Đã copy mã voucher: ${code}`, 'success');
+        });
+    }
+
+    // Start countdown timers
+    function startCountdowns() {
+        const endingVouchers = VOUCHERS_DATA.filter(v => v.status === 'ending');
+
+        endingVouchers.forEach(voucher => {
+            const timerElement = document.getElementById(`timer-${voucher.id}`);
+            if (timerElement) {
+                updateCountdown(voucher.endDate, timerElement);
+                // Clear existing interval before setting a new one (Phòng ngừa)
+                const existingInterval = timerElement.dataset.intervalId;
+                if (existingInterval) {
+                    clearInterval(parseInt(existingInterval));
                 }
-            }, 3000);
+
+                const intervalId = setInterval(() => updateCountdown(voucher.endDate, timerElement), 1000);
+                timerElement.dataset.intervalId = intervalId;
+            }
+        });
+    }
+
+    // Update countdown
+    function updateCountdown(endDate, element) {
+        const now = new Date().getTime();
+        // JS dùng format yyyy-MM-dd để tạo date object
+        const end = new Date(endDate).getTime();
+        const distance = end - now;
+
+        if (distance > 0) {
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            element.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        } else {
+            element.textContent = 'Đã hết hạn';
+            // Ngừng đếm ngược
+            clearInterval(parseInt(element.dataset.intervalId));
         }
+    }
 
-        // Animate elements on scroll
-        function animateOnScroll() {
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
+    // Show notification
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        const alertClass = type === 'success' ? 'alert-success' :
+            type === 'error' ? 'alert-danger' :
+                type === 'info' ? 'alert-info' : 'alert-warning';
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
+        notification.className = `alert ${alertClass} position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
 
-            // Observe all voucher cards for animation
-            document.querySelectorAll('.voucher-card, .stats-section, .filter-section').forEach(element => {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(30px)';
-                element.style.transition = 'all 0.6s ease';
-                observer.observe(element);
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    // Animate elements on scroll
+    function animateOnScroll() {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
             });
+        }, observerOptions);
+
+        // Observe all voucher cards for animation
+        document.querySelectorAll('.voucher-card, .stats-section, .filter-section').forEach(element => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(30px)';
+            element.style.transition = 'all 0.6s ease';
+            observer.observe(element);
+        });
+    }
+
+    // Add scroll effect to navbar
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 100) {
+            // Hiệu ứng mờ nhẹ
+            navbar.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%)';
+            navbar.style.backdropFilter = 'blur(5px)';
+        } else {
+            navbar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            navbar.style.backdropFilter = 'none';
         }
+    });
 
-        // Add scroll effect to navbar
-        window.addEventListener('scroll', function() {
-            const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 100) {
-                navbar.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%)';
-                navbar.style.backdropFilter = 'blur(10px)';
-            } else {
-                navbar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                navbar.style.backdropFilter = 'none';
-            }
-        });
+    // Add parallax effect to hero section
+    window.addEventListener('scroll', function() {
+        const hero = document.querySelector('.hero-section');
+        const scrolled = window.pageYOffset;
+        // Chia 2 để giảm tốc độ cuộn
+        const rate = scrolled * -0.2;
 
-        // Add parallax effect to hero section
-        window.addEventListener('scroll', function() {
-            const hero = document.querySelector('.hero-section');
-            const scrolled = window.pageYOffset;
-            const rate = scrolled * -0.5;
-            
-            if (hero) {
-                hero.style.transform = `translateY(${rate}px)`;
-            }
-        });
-    </script>
+        if (hero) {
+            hero.style.transform = `translateY(${rate}px)`;
+        }
+    });
+
+</script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa36ac02d708dd',t:'MTc1OTgwNjcxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

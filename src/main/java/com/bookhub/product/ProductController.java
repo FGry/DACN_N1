@@ -53,6 +53,7 @@ public class ProductController {
 
 		model.addAttribute("products", products);
 		model.addAttribute("pageTitle", title);
+		model.addAttribute("allCategories", categoryRepository.findAll());
 
 		return "user/product";
 	}

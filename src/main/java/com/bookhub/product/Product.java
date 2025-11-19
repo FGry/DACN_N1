@@ -71,4 +71,5 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = Cart.class)
     List<Cart> carts;
+
 }

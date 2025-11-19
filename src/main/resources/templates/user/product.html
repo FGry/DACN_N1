@@ -413,39 +413,20 @@
 
 <div class="container category-section text-center">
     <h2 class="mb-5">Danh mục sách</h2>
-    <div class="row justify-content-center"> <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-        <div class="category-card" onclick="filterByCategory(1)">
-            <div class="category-icon"><i class="fas fa-book"></i></div>
-            <h5>Sách giáo khoa</h5>
-            <p class="text-muted">Toán, Lý, Hóa, Sinh, Văn...</p>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" th:each="category : ${allCategories}">
+            <div class="category-card" th:onclick="|filterByCategory(${category.id_categories})|">
+                <div class="category-icon"><i class="fas fa-book"></i></div>
+                <h5 th:text="${category.name}">Tên danh mục</h5>
+                <p class="text-muted" th:text="${category.description}">Mô tả danh mục...</p>
+            </div>
         </div>
     </div>
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory(2)">
-                <div class="category-icon"><i class="fas fa-bookmark"></i></div>
-                <h5>Sách tham khảo</h5>
-                <p class="text-muted">Bài tập nâng cao, luyện thi</p>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory(3)">
-                <div class="category-icon"><i class="fas fa-globe"></i></div>
-                <h5>Tiếng Anh</h5>
-                <p class="text-muted">Grammar, Vocabulary, IELTS</p>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="category-card" onclick="filterByCategory(4)">
-                <div class="category-icon"><i class="fas fa-lightbulb"></i></div>
-                <h5>Kỹ năng sống</h5>
-                <p class="text-muted">Tư duy, học tập hiệu quả</p>
-            </div>
-        </div>
-        <div class="col-12 mt-4">
-            <a th:href="@{/products#products}" class="btn btn-primary-custom">
-                <i class="fas fa-undo"></i> Xem tất cả
-            </a>
-        </div>
+    <div class="col-12 mt-4 text-center">
+        <a th:href="@{/products#products}" class="btn btn-primary-custom">
+            <i class="fas fa-undo"></i> Xem tất cả
+        </a>
     </div>
 </div>
 

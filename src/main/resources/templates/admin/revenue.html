@@ -12,7 +12,7 @@
         body {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f4f6f9; /* Màu nền nhẹ hơn */
+            background: #f4f6f9;
             margin: 0;
             padding: 0;
         }
@@ -519,7 +519,7 @@
                 <div class="summary-card profit">
                     <i class="fas fa-chart-bar icon"></i>
                     <h5>Lợi Nhuận Gộp (<span th:text="${currentYear}">2025</span>)</h5>
-                    <h3 id="totalProfit" th:text="${totalProfitFormatted ?: '₫0'}">₫170,320,000</h3>
+                    <h3 id="totalProfit" th:text="${totalProfitFormatted ?: '₫0'}">₫170,320.000</h3>
                 </div>
             </div>
             <div class="col-lg-4 col-md-12 mb-3">
@@ -614,38 +614,39 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script th:inline="javascript">
-    // Dữ liệu giả định được thay thế bằng dữ liệu thực tế từ Controller
+    /*<![CDATA[*/ // BỌC TOÀN BỘ JS BẰNG CDATA ĐỂ TRÁNH LỖI PHÂN TÍCH THYMELEAF
+
+    // --- KHAI BÁO DỮ LIỆU ---
+
+    // Dữ liệu giả định chỉ để đảm bảo cấu trúc không bị lỗi nếu Controller không cung cấp
     const MOCK_CHART_DATA = {
         monthly: {
-            title: "Biểu đồ Doanh thu theo Tháng (Năm " + /*[[${currentYear}]]*/ 2025 + ")",
-            // Labels và data này sẽ bị ghi đè bởi biến REAL_CHART_DATA
+            title: "Biểu đồ Doanh thu theo Tháng (Năm " + [[${currentYear}]] + ")",
             labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
-            revenue: [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210],
-        },
-        // Thêm dữ liệu cho quý và năm nếu có trong Controller, nếu không sẽ dùng null
-        quarterly: {
-            title: "Biểu đồ Doanh thu theo Quý (Năm " + /*[[${currentYear}]]*/ 2025 + ")",
+            revenue: [[${REAL_CHART_DATA_RAW?.monthly?.revenue}]] || [],
+    },
+    // Giả định nếu Controller chưa cung cấp, mảng labels và revenue sẽ rỗng
+    quarterly: {
+        title: "Biểu đồ Doanh thu theo Quý (Năm " + [[${currentYear}]] + ")",
             labels: ["Quý 1", "Quý 2", "Quý 3", "Quý 4"],
-            revenue: [300, 350, 400, 450],
-        },
-        yearly: {
-            title: "Biểu đồ Doanh thu theo Năm",
-            labels: ["2022", "2023", "2024", "2025"],
-            revenue: [1000, 1200, 1500, 1800]
-        }
+            revenue: []
+    },
+    yearly: {
+        title: "Biểu đồ Doanh thu theo Năm",
+            labels: [],
+            revenue: []
+    }
     };
 
-    // BIẾN THỰC TẾ: Lấy dữ liệu từ Spring Model (OrderController)
-    // Dữ liệu này sẽ chứa cấu trúc {monthly: {labels: [...], revenue: [...]}}
-    const REAL_CHART_DATA_RAW = /*[[${chartData}]]*/ null;
+    // BIẾN THỰC TẾ: Lấy dữ liệu từ Spring Model
+    const REAL_CHART_DATA_RAW = [[${chartData}]] || {};
 
     // Kết hợp dữ liệu thực tế (nếu có) và giả định
     const REAL_CHART_DATA = {
-        // Gán dữ liệu monthly thực tế, nếu không có thì dùng mock
-        monthly: REAL_CHART_DATA_RAW && REAL_CHART_DATA_RAW.monthly ? REAL_CHART_DATA_RAW.monthly : MOCK_CHART_DATA.monthly,
-        // Giữ nguyên mock cho quarterly và yearly vì Controller chưa cung cấp
-        quarterly: MOCK_CHART_DATA.quarterly,
-        yearly: MOCK_CHART_DATA.yearly
+        monthly: REAL_CHART_DATA_RAW.monthly || MOCK_CHART_DATA.monthly,
+        // Dùng dữ liệu thực (nếu Controller gửi) hoặc mock (rỗng)
+        quarterly: REAL_CHART_DATA_RAW.quarterly || MOCK_CHART_DATA.quarterly,
+        yearly: REAL_CHART_DATA_RAW.yearly || MOCK_CHART_DATA.yearly
     };
 
 
@@ -669,29 +670,41 @@
         const noDataMsg = document.getElementById('chartNoDataMessage');
         const canvas = document.getElementById('revenueChart');
 
-        // Kiểm tra xem dữ liệu có tồn tại trong biến REAL_CHART_DATA không
-        if (!REAL_CHART_DATA[timeFilter] || REAL_CHART_DATA[timeFilter].revenue.length === 0) {
+        // Lấy dữ liệu cho kỳ hiện tại
+        const currentData = REAL_CHART_DATA[timeFilter];
+        const currentYear = [[${currentYear}]]; // Lấy năm hiện tại
+
+        // KIỂM TRA: Nếu dữ liệu không tồn tại, hoặc mảng revenue/labels rỗng
+        if (!currentData || !currentData.revenue || currentData.revenue.length === 0 || !currentData.labels || currentData.labels.length === 0) {
             if (revenueChartInstance) {
                 revenueChartInstance.destroy();
                 revenueChartInstance = null;
             }
+
+            // Hiển thị thông báo không có dữ liệu
             noDataMsg.classList.remove('d-none');
             canvas.classList.add('d-none');
-            document.getElementById('chartTitle').textContent = `Biểu đồ Doanh thu (Không có dữ liệu cho năm ${/*[[${currentYear}]]*/ 2025})`;
-            console.warn(`Cảnh báo: Không tìm thấy dữ liệu biểu đồ cho kỳ '${timeFilter}' trong năm hiện tại.`);
+
+            let timeLabel = (timeFilter === 'monthly') ? 'tháng' : (timeFilter === 'quarterly' ? 'quý' : 'năm');
+            // Dùng currentData.title đã được Controller/JS tự động đặt
+            let titleText = currentData && currentData.title ? currentData.title : `Biểu đồ Doanh thu (Không có dữ liệu theo ${timeLabel} cho năm ${currentYear})`;
+            document.getElementById('chartTitle').textContent = titleText;
+
             return; // Dừng nếu không có dữ liệu
         }
 
+        // Nếu có dữ liệu
         noDataMsg.classList.add('d-none');
         canvas.classList.remove('d-none');
-        document.getElementById('chartTitle').textContent = REAL_CHART_DATA[timeFilter].title;
+        // Sử dụng currentData.title đã được Controller/JS tự động đặt
+        document.getElementById('chartTitle').textContent = currentData.title;
         renderRevenueChart(chartType, timeFilter);
     }
 
     // Hàm chỉ thay đổi dạng biểu đồ (giữ nguyên dữ liệu)
     function changeChartType(type) {
-        const timeFilter = document.getElementById('timeFilter').value;
-        renderRevenueChart(type, timeFilter);
+        // Chỉ cần gọi lại hàm cập nhật chính, nó sẽ tự động render lại với loại biểu đồ mới
+        updateChartAndTitle();
     }
 
     // Hàm vẽ biểu đồ chính
@@ -726,8 +739,9 @@
         };
 
         // Khi không có profit, Combined cũng chỉ là Bar/Line
+        let chartTypeFinal = chartType;
         if (chartType === 'combined') {
-            chartType = 'bar';
+            chartTypeFinal = 'bar'; // Mặc định hiển thị Bar nếu là Combined mà chỉ có 1 dataset
         }
 
         // Đồ thị cột hoặc đường đơn giản (chỉ hiển thị Doanh thu thuần)
@@ -735,12 +749,12 @@
             {
                 label: 'Doanh thu thuần',
                 data: revenueDataRaw,
-                backgroundColor: chartType === 'bar' ? barColor : 'rgba(102, 126, 234, 0.3)',
+                backgroundColor: chartTypeFinal === 'bar' ? barColor : 'rgba(102, 126, 234, 0.3)',
                 borderColor: barColor,
                 borderWidth: 2,
                 borderRadius: 5,
-                type: chartType,
-                fill: chartType === 'line' ? 'start' : false,
+                type: chartTypeFinal,
+                fill: chartTypeFinal === 'line' ? 'start' : false,
                 yAxisID: 'y'
             }
         ];
@@ -834,6 +848,7 @@
             'vouchers': 'Quản lý voucher', 'vevenue': 'Thống kê doanh thu', 'setting': 'Cài đặt'
         };
 
+        document.querySelector('body').classList.remove('sidebar-show'); // Đóng sidebar di động
         document.querySelector('.header-title').textContent = titles[section] || 'Thống kê doanh thu';
         showNotification(`Chuyển đến ${titles[section]}`, 'info');
     }
@@ -895,6 +910,7 @@
             sidebar.classList.remove('show');
         }
     });
+    /*]]>*/
 </script>
 </body>
 </html>
