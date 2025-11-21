@@ -36,12 +36,12 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.user u WHERE CAST(o.id_order AS string) LIKE CONCAT('%', ?1, '%') OR u.username LIKE CONCAT('%', ?1, '%') OR o.phone LIKE CONCAT('%', ?1, '%')")
     List<Order> searchOrders(String searchTerm);
 
-    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.orderDetails od WHERE o.user.idUser = :userId ORDER BY o.date DESC")
+    // === [FIX ORDERING & FETCHING] Dùng DISTINCT để tránh lặp và sắp xếp DESC ===
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.orderDetails od WHERE o.user.idUser = :userId ORDER BY o.date DESC")
     List<Order> findByUserIdOrderByDateDesc(@Param("userId") Integer userId);
 
     Optional<Order> findByOrderToken(String orderToken);
 
-    // === [ĐÃ SỬA LẠI] CHỈ LẤY VOUCHER VÀ USER, KHÔNG LẤY ORDERDETAILS ĐỂ TRÁNH LỖI ===
     @Query("SELECT o FROM Order o " +
             "LEFT JOIN FETCH o.voucher " +
             "LEFT JOIN FETCH o.user " +
