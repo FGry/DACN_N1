@@ -555,8 +555,8 @@
                                     <strong th:text="${comment.userName}"></strong>
                                     | Đánh giá:
                                     <span class="rating-stars">
-                                        <i th:each="i : ${#numbers.sequence(1, comment.rate)}" class="fas fa-star"></i>
-                                        <i th:each="i : ${#numbers.sequence(comment.rate + 1, 5)}" class="far fa-star"></i>
+                                        <i th:each="i : ${#numbers.sequence(1, 5)}"
+                                           th:class="${i <= comment.rate} ? 'fas fa-star' : 'far fa-star'"></i>
                                     </span>
                                 </div>
                                 <small class="text-muted" th:text="${#temporals.format(comment.date, 'dd-MM-yyyy')}"></small>

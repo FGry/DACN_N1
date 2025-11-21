@@ -232,16 +232,29 @@
     </div>
 
     <div id="cartSummary" class="cart-footer-summary mt-4 d-none">
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Nhập mã giảm giá" id="voucherCode">
+            <button class="btn btn-outline-secondary" type="button" onclick="applyVoucher()">Áp dụng</button>
+        </div>
+
+        <div class="d-flex justify-content-between mb-2">
+            <span>Tạm tính:</span>
+            <span id="subTotal">0đ</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 text-success d-none" id="discountRow">
+            <span>Giảm giá:</span>
+            <span id="discountAmount">-0đ</span>
+        </div>
+        <hr>
+
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5>Tổng cộng:</h5>
             <h4 id="totalPrice" class="text-danger">0đ</h4>
         </div>
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Nhập mã giảm giá" id="voucherCode">
-            <button class="btn btn-outline-secondary" onclick="applyVoucher()" disabled>Áp dụng</button>
-        </div>
+
         <div class="form-text mb-3">
-            Bạn có thể áp dụng voucher ở trang Thanh toán.
+            Bạn có thể xem lại đơn hàng trước khi thanh toán.
         </div>
         <div class="d-flex justify-content-end">
             <button class="btn btn-primary-custom" onclick="checkout()"><i class="fas fa-credit-card"></i> Thanh toán</button>
@@ -257,8 +270,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // *** SỬA 1: Đồng bộ tên localStorage ***
     let cart = JSON.parse(localStorage.getItem('bookstoreCart')) || [];
+
+    // Biến lưu trạng thái giảm giá
+    let currentDiscountAmount = 0;
+    let currentVoucherCode = null;
 
     function formatPrice(price) {
         if (price === null || typeof price === 'undefined') return '0đ';
@@ -276,9 +292,7 @@
         // Cập nhật badge trên navbar
         const navCartCount = document.querySelector('.navbar .cart-badge');
         if(navCartCount) navCartCount.textContent = totalItems;
-        // Cập nhật badge trên (nếu dùng chung)
         if(cartCount) cartCount.textContent = totalItems;
-
 
         if (cart.length === 0) {
             emptyCart.classList.remove('d-none');
@@ -290,21 +304,22 @@
         emptyCart.classList.add('d-none');
         cartSummary.classList.remove('d-none');
 
-        let total = 0;
+        let subTotal = 0;
         let html = '';
 
         cart.forEach(item => {
-            // *** SỬA: Dùng item.price (GIÁ ĐÃ GIẢM) để tính toán ***
             const finalPrice = item.price || 0;
             const itemTotal = finalPrice * (item.quantity || 1);
-            total += itemTotal;
-            // Dùng item.imageLink nếu có, nếu không thì dùng '📚'
-            const itemImage = item.imageLink ? `<img src="${item.imageLink}" width="60" style="object-fit:cover; border-radius: 5px; height: 80px;">` : '📚';
+            subTotal += itemTotal;
+
+            const itemImage = item.imageLinks && item.imageLinks.length > 0
+                ? `<img src="${item.imageLinks[0]}" width="60" style="object-fit:cover; border-radius: 5px; height: 80px;">`
+                : '<div style="font-size: 2rem;">📚</div>';
 
             html += `
                 <div class="cart-item d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
-                        <div class="me-3" style="font-size:2rem; width: 60px; text-align: center;">${itemImage}</div>
+                        <div class="me-3" style="width: 60px; text-align: center;">${itemImage}</div>
                         <div>
                             <h6 class="mb-1">${item.title}</h6>
                             <small class="text-muted">${formatPrice(finalPrice)}</small>
@@ -324,11 +339,31 @@
         });
 
         cartItemsDiv.innerHTML = html;
-        document.getElementById('totalPrice').textContent = formatPrice(total);
+
+        // --- LOGIC HIỂN THỊ GIÁ ---
+
+        // 1. Hiển thị Tạm tính
+        document.getElementById('subTotal').textContent = formatPrice(subTotal);
+
+        // 2. Hiển thị Giảm giá (Nếu có)
+        const discountRow = document.getElementById('discountRow');
+
+        // Đảm bảo giảm giá không lớn hơn tổng tiền
+        if(currentDiscountAmount > subTotal) currentDiscountAmount = subTotal;
+
+        if (currentDiscountAmount > 0) {
+            discountRow.classList.remove('d-none');
+            document.getElementById('discountAmount').textContent = '-' + formatPrice(currentDiscountAmount);
+        } else {
+            discountRow.classList.add('d-none');
+        }
+
+        // 3. Hiển thị Tổng cộng
+        const finalTotal = subTotal - currentDiscountAmount;
+        document.getElementById('totalPrice').textContent = formatPrice(finalTotal);
     }
 
     function updateQuantity(id, change) {
-        // *** SỬA: Tìm bằng idProducts ***
         const item = cart.find(p => p.idProducts === id);
         if (item) {
             item.quantity += change;
@@ -336,39 +371,97 @@
                 cart = cart.filter(p => p.idProducts !== id);
             }
         }
+        // Reset voucher khi thay đổi số lượng
+        resetVoucherState();
         saveCart();
         renderCart();
     }
 
     function removeItem(id) {
-         // *** SỬA: Lọc bằng idProducts ***
         cart = cart.filter(p => p.idProducts !== id);
+        // Reset voucher khi xóa sản phẩm
+        resetVoucherState();
         saveCart();
         renderCart();
     }
 
-    function applyVoucher() {
-        // Vô hiệu hóa ở trang này, chuyển sang trang checkout
-        alert('Vui lòng áp dụng voucher ở trang Thanh toán.');
+    function resetVoucherState() {
+        if (currentVoucherCode) {
+            currentDiscountAmount = 0;
+            currentVoucherCode = null;
+            document.getElementById('voucherCode').value = '';
+        }
     }
 
-    // *** SỬA 2: Cập nhật hàm checkout() ***
+    // *** HÀM ÁP DỤNG VOUCHER ***
+    async function applyVoucher() {
+        const codeInput = document.getElementById('voucherCode');
+        const code = codeInput.value.trim();
+
+        if (!code) {
+            alert('Vui lòng nhập mã giảm giá!');
+            return;
+        }
+
+        // Tính tổng tiền hiện tại
+        const subTotal = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
+
+        try {
+            // Gọi đúng API mà checkout.html đang dùng
+            const response = await fetch('/api/vouchers/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    cartTotal: subTotal.toString()
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Thành công
+                currentDiscountAmount = data.discountAmount;
+                currentVoucherCode = code;
+                alert(data.message);
+                renderCart(); // Vẽ lại để cập nhật giá
+            } else {
+                // Thất bại
+                currentDiscountAmount = 0;
+                currentVoucherCode = null;
+                alert(data.message || 'Mã giảm giá không hợp lệ.');
+                renderCart();
+            }
+
+        } catch (error) {
+            console.error('Lỗi:', error);
+            alert('Có lỗi xảy ra khi kiểm tra mã giảm giá.');
+        }
+    }
+
     function checkout() {
         if (cart.length === 0) {
             alert('Giỏ hàng trống!');
             return;
         }
 
-        // 1. Lưu giỏ hàng vào sessionStorage (tồn tại qua 1 lần chuyển trang)
-        // Dùng 'bookstoreCart' để đồng bộ
         sessionStorage.setItem('bookstoreCart', JSON.stringify(cart));
 
-        // 2. Chuyển hướng đến trang checkout mới
+        // Lưu voucher đã áp dụng để trang Checkout sử dụng luôn
+        if (currentVoucherCode && currentDiscountAmount > 0) {
+            sessionStorage.setItem('appliedVoucherCode', currentVoucherCode);
+            sessionStorage.setItem('appliedDiscountAmount', currentDiscountAmount);
+        } else {
+            sessionStorage.removeItem('appliedVoucherCode');
+            sessionStorage.removeItem('appliedDiscountAmount');
+        }
+
         window.location.href = '/checkout';
     }
 
     function saveCart() {
-         // *** SỬA 1 (lặp lại): Đồng bộ tên localStorage ***
         localStorage.setItem('bookstoreCart', JSON.stringify(cart));
     }
 

@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         /* ========================================= */
-        /* CSS CHUNG (TỪ mainInterface.html) */
+        /* CSS CHUNG (GIỮ NGUYÊN TỪ FILE GỐC) */
         /* ========================================= */
         body {
             box-sizing: border-box;
@@ -35,7 +35,6 @@
             transition: all 0.3s ease;
         }
 
-        /* === SỬA LỖI HOVER: Giống Product Detail === */
         .nav-link:hover {
             color: white !important;
             transform: translateY(-2px);
@@ -56,19 +55,17 @@
 
         .btn-auth {
             background: rgba(255,255,255,0.2);
-            border: 1px solid white; /* Giữ nguyên màu viền trắng */
+            border: 1px solid white;
             color: white;
             margin: 0 5px;
-            border-radius: 8px; /* Thêm border-radius cho đồng bộ */
-            padding: 5px 15px; /* Giữ padding */
+            border-radius: 8px;
+            padding: 5px 15px;
             transition: all 0.3s ease;
         }
 
-        /* === SỬA LỖI HOVER: Giống Product Detail (background bán trong suốt) === */
         .btn-auth:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
-        /* KẾT THÚC SỬA LỖI HOVER */
 
         .cart-icon {
             position: relative;
@@ -91,8 +88,7 @@
             justify-content: center;
         }
 
-        /* ===== CSS CHO BANNER ĐỘNG (TỪ mainInterface.html) ===== */
-
+        /* BANNER STYLES */
         #voucherCarousel {
             position: relative;
             height: 350px;
@@ -179,17 +175,14 @@
         #voucherCarousel .carousel-control-next {
             right: 1rem;
         }
-        /* ===== KẾT THÚC CSS BANNER ===== */
 
-
-        /* ===== CSS SẢN PHẨM (ĐÃ CHỈNH SỬA KHOẢNG CÁCH) ===== */
+        /* PRODUCT CARD STYLES */
         .product-card {
             background: white;
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
-            /* ĐÃ BỎ margin-bottom ở đây để sử dụng mb-4 của Bootstrap trong HTML */
             cursor: pointer;
             display: flex;
             flex-direction: column;
@@ -262,7 +255,6 @@
             font-weight: bold;
             margin-right: 10px;
         }
-        /* ĐÃ CHỈNH SỬA: CSS cho giá cũ bị gạch ngang */
         .old-price {
             text-decoration: line-through;
             color: #95a5a6;
@@ -270,7 +262,6 @@
             font-weight: normal;
             margin-right: 10px;
         }
-        /* KẾT THÚC CHỈNH SỬA */
         .rating-stars {
             color: #ffc107;
             font-size: 0.9rem;
@@ -309,8 +300,6 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
-        /* ===== KẾT THÚC CSS SẢN PHẨM ===== */
-
 
         .search-section {
             background: white;
@@ -358,7 +347,6 @@
             opacity: 0.8;
         }
 
-        /* ===== CSS CHO BANNER ƯU ĐÃI (TỪ mainInterface.html) ===== */
         .voucher-banner {
             position: relative;
             border-radius: 15px;
@@ -368,7 +356,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             color: white;
             overflow: hidden;
-
             background-image: url('/images/banners/voucher_bg.jpg');
             background-size: cover;
             background-position: center;
@@ -387,8 +374,6 @@
             position: relative;
             z-index: 2;
         }
-        /* ===== KẾT THÚC CSS BANNER ƯU ĐÃI ===== */
-
 
         .modal-content {
             border-radius: 15px;
@@ -422,7 +407,7 @@
             }
         }
         /* ========================================= */
-        /* CSS CHATBOT (TỪ file 2 - SỬA ĐỂ TƯƠNG THÍCH) */
+        /* CSS CHATBOT (GIỮ NGUYÊN TỪ FILE GỐC) */
         /* ========================================= */
         .chatbox-wrapper {
             position: fixed;
@@ -612,6 +597,10 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                             <li><a class="dropdown-item" th:href="@{/user/profile}">
                                 <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                            </a></li>
+
+                            <li><a class="dropdown-item" th:href="@{/my-orders}">
+                                <i class="fas fa-history"></i> Đơn hàng của tôi
                             </a></li>
 
                             <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
@@ -814,20 +803,15 @@
             const detailUrl = `/product_detail/${product.idProducts}`;
             const firstImageLink = product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null;
 
-            // Lấy giá trị thực tiễn từ data
             const originalPrice = product.price || 0;
             const discountPercentage = product.discount || 0;
 
-            // Tính toán discountedPrice (giá sau giảm)
-            // Nếu giá đã được tính ở server (product.discountedPrice) thì dùng, nếu không thì tự tính.
             let calculatedDiscountedPrice = product.discountedPrice;
             if (calculatedDiscountedPrice === undefined || calculatedDiscountedPrice === null) {
                  calculatedDiscountedPrice = originalPrice - (originalPrice * discountPercentage / 100);
             }
 
             const finalPriceToDisplay = calculatedDiscountedPrice;
-
-            // Xác định có giảm giá hay không (giá gốc > giá đã giảm)
             const hasDiscount = originalPrice > finalPriceToDisplay;
 
             const rating = product.averageRating || 0;
@@ -897,39 +881,24 @@
         }).format(price);
     }
 
-    // ===========================================
-    // HÀM MỚI: TÌM KIẾM SẢN PHẨM TRÊN TRANG CHỦ
-    // ===========================================
     function searchProductsOnPage() {
         const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-
         if (searchTerm === '') {
-            // Nếu ô tìm kiếm trống, hiển thị lại toàn bộ sản phẩm ban đầu
             displayProducts(products);
             return;
         }
-
         const filteredProducts = products.filter(product => {
             const title = product.title ? product.title.toLowerCase() : '';
             const author = product.author ? product.author.toLowerCase() : '';
-
-            // Lọc theo tiêu đề hoặc tác giả
             return title.includes(searchTerm) || author.includes(searchTerm);
         });
-
         displayProducts(filteredProducts);
-
-        // Cuộn đến phần kết quả tìm kiếm (Sản phẩm nổi bật)
         const productsSection = document.getElementById('products');
         if (productsSection) {
-             productsSection.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+             productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 
-    // *** ĐÃ SỬA LOGIC: Lưu đúng giá giảm vào thuộc tính 'price' ***
     function addToCart(productId) {
         const product = products.find(p => p.idProducts === productId);
         if (!product) {
@@ -937,7 +906,14 @@
             return;
         }
 
-        // Tính toán giá cuối cùng để lưu vào giỏ hàng
+        // --- ĐOẠN LOGIC MỚI ĐƯỢC CHÈN VÀO ---
+        // Kiểm tra tồn kho
+        if (product.stockQuantity <= 0) {
+            showNotification('Sản phẩm này tạm thời Hết hàng!', 'error');
+            return; // Chặn không cho chạy tiếp
+        }
+        // ------------------------------------
+
         const originalPrice = product.price || 0;
         const discountPercentage = product.discount || 0;
         let finalPrice = product.discountedPrice;
@@ -949,10 +925,8 @@
 
         if (existingItem) {
             existingItem.quantity += 1;
-            // Cập nhật luôn giá mới nhất nếu lỡ giá trên server thay đổi
             existingItem.price = finalPrice;
         } else {
-            // SỬA TẠI ĐÂY: Ghi đè 'price' bằng giá đã giảm ('finalPrice')
             cart.push({
                 ...product,
                 idProducts: productId,
@@ -967,7 +941,21 @@
     }
 
     function orderNow(productId) {
+        const product = products.find(p => p.idProducts === productId);
+
+        // --- ĐOẠN LOGIC MỚI ĐƯỢC CHÈN VÀO ---
+        if (product && product.stockQuantity <= 0) {
+             showNotification('Sản phẩm này đã Hết hàng, không thể đặt mua!', 'error');
+             return; // Chặn không cho mở Modal thanh toán
+        }
+        // ------------------------------------
+
         addToCart(productId);
+        // Nếu addToCart chạy thành công (không bị return do hết hàng), thì mở modal
+        // Tuy nhiên do addToCart đã check rồi, ở đây check lại cho chắc chắn hoặc để logic riêng
+        // Vì addToCart gọi return bên trong nên code dưới vẫn chạy nếu không check lại ở đây.
+        // Nên việc check ở đầu hàm orderNow là bắt buộc.
+
         const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
         cartModal.show();
     }
@@ -994,7 +982,6 @@
         let total = 0;
 
         cart.forEach(item => {
-            // SỬA: Lấy giá từ 'item.price' (lúc này đã là giá giảm)
             const itemPrice = item.price || 0;
             const itemTotal = itemPrice * item.quantity;
             total += itemTotal;
@@ -1051,14 +1038,12 @@
                 ? `<img src="${firstImageLink}" alt="${product.title}" style="width: 100%; object-fit: contain;">`
                 : `<div class="text-center" style="font-size: 8rem;">📚</div>`;
 
-        // Tính toán giá cuối cùng để hiển thị trong modal
         const originalPrice = product.price || 0;
         const discountPercentage = product.discount || 0;
         let discountedPrice = product.discountedPrice;
         if (discountedPrice === undefined || discountedPrice === null) {
              discountedPrice = originalPrice - (originalPrice * discountPercentage / 100);
         }
-
 
         modalTitle.textContent = product.title;
         modalBody.innerHTML = `
@@ -1069,7 +1054,7 @@
                 <div class="col-md-8">
                     <h4>${product.title}</h4>
                     <p class="text-muted">Tác giả: ${product.author || 'N/A'}</p>
-                    <p>${product.description || 'Chưa có mô tả.'}</p>
+                    <p class="text-muted">Tồn kho: ${product.stockQuantity || 0}</p> <p>${product.description || 'Chưa có mô tả.'}</p>
                     <h5 class="text-danger">${formatPrice(discountedPrice)}</h5>
                     <div class="mt-3">
                         <button class="btn btn-add-cart me-2" onclick="addToCart(${product.idProducts})">
@@ -1121,10 +1106,9 @@
         });
     });
 
-    // Thêm sự kiện Enter cho ô tìm kiếm
     document.getElementById('searchInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Ngăn chặn form submit (chuyển trang)
+            e.preventDefault();
             searchProductsOnPage();
         }
     });
@@ -1288,5 +1272,5 @@
         }
     });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa32f5740f08dd',t:'MTc1OTgwNjU1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

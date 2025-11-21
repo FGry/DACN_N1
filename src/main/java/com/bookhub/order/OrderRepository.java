@@ -11,6 +11,7 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
+    // --- CÁC HÀM CŨ GIỮ NGUYÊN ---
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.user u LEFT JOIN FETCH o.orderDetails od")
     List<Order> findAllWithUserAndDetails();
 
@@ -38,6 +39,12 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.orderDetails od WHERE o.user.idUser = :userId ORDER BY o.date DESC")
     List<Order> findByUserIdOrderByDateDesc(@Param("userId") Integer userId);
 
-    // === HÀM MỚI ===
     Optional<Order> findByOrderToken(String orderToken);
+
+    // === [ĐÃ SỬA LẠI] CHỈ LẤY VOUCHER VÀ USER, KHÔNG LẤY ORDERDETAILS ĐỂ TRÁNH LỖI ===
+    @Query("SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.voucher " +
+            "LEFT JOIN FETCH o.user " +
+            "WHERE o.id_order = :id")
+    Optional<Order> findByIdWithFullDetails(@Param("id") Integer id);
 }

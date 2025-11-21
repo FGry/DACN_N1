@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         /* ========================================= */
-        /* CSS CHUNG & SẢN PHẨM (TỪ product.html) */
+        /* CSS CHUNG & SẢN PHẨM */
         /* ========================================= */
         body {
             box-sizing: border-box;
@@ -91,11 +91,9 @@
             justify-content: center;
         }
 
-        /* Banner trang sản phẩm (Đã sửa đổi để dùng ảnh nền) */
+        /* Banner trang sản phẩm */
         .product-banner {
-            /* === ĐÃ CẬP NHẬT ĐƯỜNG DẪN ẢNH VÀ LỚP PHỦ === */
             background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('/images/banners/banner_home3.jpg');
-            /* SỬ DỤNG ĐƯỜNG DẪN: /images/banners/banner_home1.webp */
             background-size: cover;
             background-position: center center;
             background-repeat: no-repeat;
@@ -106,12 +104,12 @@
         }
 
         .product-banner h1 {
-            color: white; /* Đổi sang màu trắng để tăng độ tương phản trên ảnh */
+            color: white;
             font-weight: bold;
         }
 
         .product-banner p.lead {
-             color: rgba(255, 255, 255, 0.9); /* Màu trắng mờ cho chữ phụ */
+             color: rgba(255, 255, 255, 0.9);
         }
 
 
@@ -341,7 +339,7 @@
         }
 
         /* ========================================= */
-        /* CSS CHATBOT (TỪ file 2) */
+        /* CSS CHATBOT */
         /* ========================================= */
         .chatbox-wrapper {
             position: fixed;
@@ -512,12 +510,39 @@
             </ul>
 
             <div class="d-flex align-items-center">
-                <a th:href="@{/login}" class="btn btn-auth btn-sm">
-                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                </a>
-                <a th:href="@{/user/register}" class="btn btn-auth btn-sm">
-                    <i class="fas fa-user-plus"></i> Đăng ký
-                </a>
+                <div th:if="${!isLoggedIn}">
+                    <a th:href="@{/login}" class="btn btn-auth btn-sm">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </a>
+                    <a th:href="@{/user/register}" class="btn btn-auth btn-sm">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </a>
+                </div>
+
+                <div th:if="${isLoggedIn}" class="dropdown">
+                    <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle"></i>
+                        <span th:text="${currentUser.username}">Tài khoản</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <li><a class="dropdown-item" th:href="@{/user/profile}">
+                            <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                        </a></li>
+
+                        <li><a class="dropdown-item" th:href="@{/my-orders}">
+                            <i class="fas fa-history"></i> Đơn hàng của tôi
+                        </a></li>
+
+                        <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
+                            <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
+                        </a></li>
+
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" th:href="@{/logout}">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a></li>
+                    </ul>
+                </div>
 
                 <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
                     <i class="fas fa-shopping-cart"></i>
@@ -632,7 +657,7 @@
         displayProducts(products);
         updateCartUI();
 
-        // CƠ CHẾ SCROLL BỔ SUNG (Chạy khi có keyword hoặc categoryId)
+        // CƠ CHẾ SCROLL BỔ SUNG
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('keyword') || urlParams.has('categoryId') || window.location.hash === '#products') {
             document.getElementById('products').scrollIntoView({
@@ -656,9 +681,7 @@
         });
     });
 
-    // CẬP NHẬT HÀM FILTER THEO CATEGORY ĐỂ GỌI SERVER VÀ CUỘN
     function filterByCategory(categoryId) {
-        // Chuyển hướng về URL mới để Spring Boot Controller xử lý lọc
         window.location.href = `/products?categoryId=${categoryId}#products`;
     }
 
@@ -679,28 +702,20 @@
         const defaultIcon = '📚';
 
         productsToShow.forEach(product => {
-            // Sửa URL chi tiết sản phẩm
             const detailUrl = `/product_detail/${product.idProducts}`;
             const firstImageLink = product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null;
 
-            // --- LOGIC HIỂN THỊ GIÁ ĐÃ CHỈNH SỬA ---
             const originalPrice = product.price || 0;
             const discountPercentage = product.discount || 0;
 
-            // Tính toán discountedPrice (giá sau giảm)
             let calculatedDiscountedPrice = product.discountedPrice;
             if (calculatedDiscountedPrice === undefined || calculatedDiscountedPrice === null) {
                  calculatedDiscountedPrice = originalPrice - (originalPrice * discountPercentage / 100);
             }
 
             const finalPriceToDisplay = calculatedDiscountedPrice;
-
-            // Xác định có giảm giá hay không (giá gốc > giá đã giảm)
             const hasDiscount = originalPrice > finalPriceToDisplay;
-            // --- KẾT THÚC LOGIC HIỂN THỊ GIÁ ---
 
-
-            // Logic Rating (Giữ nguyên)
             const rating = product.averageRating || 0;
             const fullStars = Math.floor(rating);
             const halfStar = rating % 1 >= 0.5;
@@ -721,7 +736,7 @@
 
             const imageContent = firstImageLink
                 ? `<img src="${firstImageLink}" alt="${product.title}">`
-                : `<div class="text-center" style="font-size: 4rem;">${defaultIcon}</div>`; // Sử dụng style inline cho icon
+                : `<div class="text-center" style="font-size: 4rem;">${defaultIcon}</div>`;
 
 
             const productCard = `
@@ -773,36 +788,39 @@
         }).format(price);
     }
 
-    // *** ĐÃ SỬA: HÀM addToCart ĐÃ ĐƯỢC SỬA ĐỂ LƯU ĐÚNG GIÁ GIẢM ***
     function addToCart(productId) {
         const product = products.find(p => p.idProducts === productId);
+        if (!product) {
+            showNotification('Lỗi: Không tìm thấy sản phẩm!', 'error');
+            return;
+        }
+
+        // --- LOGIC KIỂM TRA TỒN KHO ---
+        if (product.stockQuantity <= 0) {
+            showNotification('Sản phẩm này đã Hết hàng!', 'error');
+            return; // Chặn không cho thêm
+        }
+        // ------------------------------
+
+        const originalPrice = product.price || 0;
+        const discountPercentage = product.discount || 0;
+        let finalPrice = product.discountedPrice;
+
+        if (finalPrice === undefined || finalPrice === null) {
+             finalPrice = originalPrice - (originalPrice * discountPercentage / 100);
+        }
+
         const existingItem = cart.find(item => item.idProducts === productId);
-
-        if (product) {
-            // --- LOGIC TÍNH TOÁN GIÁ ĐỂ LƯU VÀO GIỎ HÀNG ---
-            const originalPrice = product.price || 0;
-            const discountPercentage = product.discount || 0;
-            let finalPrice = product.discountedPrice;
-
-            // Nếu chưa có giá sau giảm thì tự tính
-            if (finalPrice === undefined || finalPrice === null) {
-                 finalPrice = originalPrice - (originalPrice * discountPercentage / 100);
-            }
-            // --- KẾT THÚC LOGIC TÍNH TOÁN GIÁ ---
-
-            if (existingItem) {
-                existingItem.quantity += 1;
-                // Cập nhật giá mới nếu có thay đổi (ví dụ admin mới giảm giá thêm)
-                existingItem.price = finalPrice;
-            } else {
-                // QUAN TRỌNG: Ghi đè 'price' bằng 'finalPrice' (giá đã giảm)
-                cart.push({
-                    ...product,
-                    idProducts: productId,
-                    quantity: 1,
-                    price: finalPrice // SỬA TẠI ĐÂY: Lưu giá đã giảm làm giá chính thức trong giỏ
-                });
-            }
+        if (existingItem) {
+            existingItem.quantity += 1;
+            existingItem.price = finalPrice;
+        } else {
+            cart.push({
+                ...product,
+                idProducts: productId,
+                quantity: 1,
+                price: finalPrice
+            });
         }
         localStorage.setItem('bookstoreCart', JSON.stringify(cart));
         updateCartUI();
@@ -810,6 +828,15 @@
     }
 
     function orderNow(productId) {
+        const product = products.find(p => p.idProducts === productId);
+
+        // --- LOGIC KIỂM TRA TỒN KHO ---
+        if (product && product.stockQuantity <= 0) {
+            showNotification('Sản phẩm này đã Hết hàng, không thể đặt mua!', 'error');
+            return; // Chặn không cho mua
+        }
+        // ------------------------------
+
         addToCart(productId);
         const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
         updateCartModal();
@@ -837,7 +864,6 @@
         let total = 0;
 
         cart.forEach(item => {
-            // Vì đã lưu đúng vào 'price', giờ chỉ cần lấy 'item.price'
             const itemPrice = item.price || 0;
             const itemTotal = itemPrice * item.quantity;
             total += itemTotal;

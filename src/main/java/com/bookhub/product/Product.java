@@ -9,7 +9,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.ArrayList; // <-- THÊM IMPORT NÀY
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -50,26 +50,34 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     String description;
 
-    // --- SỬA ĐỔI QUAN HỆ CATEGORY ---
+    // --- MỚI: Số lượng đã bán (Mặc định 0) ---
+    @Column(name = "sold_count")
+    @Builder.Default
+    Integer soldCount = 0;
+
+    // --- MỚI: Điểm đánh giá trung bình (Mặc định 0.0) ---
+    @Column(name = "average_rating")
+    @Builder.Default
+    Double averageRating = 0.0;
+
+    // --- QUAN HỆ KẾT NỐI ---
     @ManyToMany(fetch = FetchType.LAZY, targetEntity = Category.class)
     @JoinTable(
             name = "Categories_Products",
             joinColumns = @JoinColumn(name = "Products_id_products"),
             inverseJoinColumns = @JoinColumn(name = "Categories_id_categories")
     )
-    List<Category> categories = new ArrayList<>(); // <-- THÊM KHỞI TẠO
+    List<Category> categories = new ArrayList<>();
 
-    // --- SỬA ĐỔI QUAN HỆ IMAGE ---
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY, targetEntity = ImageProduct.class)
-    List<ImageProduct> images = new ArrayList<>(); // <-- THÊM KHỞI TẠO
+    List<ImageProduct> images = new ArrayList<>();
 
-    // --- SỬA ĐỔI CÁC QUAN HỆ KHÁC ---
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = Comments.class)
-    List<Comments> comments = new ArrayList<>(); // <-- THÊM KHỞI TẠO
+    List<Comments> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = OrderDetail.class)
-    List<OrderDetail> orderDetails = new ArrayList<>(); // <-- THÊM KHỞI TẠO
+    List<OrderDetail> orderDetails = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = Cart.class)
-    List<Cart> carts = new ArrayList<>(); // <-- THÊM KHỞI TẠO
+    List<Cart> carts = new ArrayList<>();
 }

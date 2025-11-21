@@ -183,8 +183,8 @@
         </div>
 
         <div class="text-end mt-3 pt-3 border-top">
-            <p th:if="${order.discountAmount > 0}" class="mb-1">
-                Giảm giá: <span class="text-success" th:text="'- ' + ${order.discountAmountFormatted}"></span>
+            <p th:if="${order.discountAmount != null and order.discountAmount > 0}" class="mb-1">
+                Giảm giá: <span class="text-success" th:text="'- ' + ${#numbers.formatDecimal(order.discountAmount, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span>
             </p>
             <h4>Tổng cộng: <span class="text-danger fw-bold" th:text="${#numbers.formatDecimal(order.total, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span></h4>
         </div>
@@ -200,8 +200,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Order success page loaded. Clearing cart...');
+        // Xóa giỏ hàng sau khi đặt thành công
         localStorage.removeItem('bookstoreCart');
         sessionStorage.removeItem('bookstoreCart');
+        // Xóa voucher đã lưu
+        sessionStorage.removeItem('appliedVoucherCode');
+        sessionStorage.removeItem('appliedDiscountAmount');
+
         const navCartCount = document.querySelector('.navbar .cart-badge');
         if(navCartCount) navCartCount.textContent = '0';
     });

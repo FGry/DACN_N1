@@ -1,10 +1,11 @@
-package com.bookhub.order; // Hãy kiểm tra package này có đúng với dự án của bạn không
+package com.bookhub.order;
 
 import com.bookhub.user.User;
 import com.bookhub.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ public class UserOrderViewController {
 
     private final OrderService orderService;
     private final UserService userService;
+    private final OrderRepository orderRepository;
 
     // ============================================================
     // 1. CÁC TRANG DÀNH CHO USER ĐÃ ĐĂNG NHẬP
@@ -47,15 +49,23 @@ public class UserOrderViewController {
     }
 
     @GetMapping("/order/success/{orderId}")
+    @Transactional(readOnly = true) // Giữ session mở để Thymeleaf đọc dữ liệu
     public String showOrderSuccessPage(@PathVariable("orderId") Integer orderId, Model model, RedirectAttributes redirectAttributes) {
         try {
+            // 1. Lấy danh sách sản phẩm (List DTO) để hiển thị bảng sản phẩm
             List<OrderDetailDTO> orderDetails = orderService.getOrderDetailsByOrderId(orderId);
-            Order order = orderService.getOrderById(orderId);
+
+            // 2. Lấy Order Entity có kèm Voucher và User để hiển thị thông tin chung
+            Order order = orderRepository.findByIdWithFullDetails(orderId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
+
             model.addAttribute("orderDetails", orderDetails);
             model.addAttribute("order", order);
+
             return "user/order_success";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy đơn hàng.");
+            e.printStackTrace(); // Xem log lỗi nếu còn
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy đơn hàng hoặc lỗi hệ thống.");
             return "redirect:/my-orders";
         }
     }
@@ -64,14 +74,10 @@ public class UserOrderViewController {
     // 2. CÁC TRANG DÀNH CHO KHÁCH VÃNG LAI (GUEST)
     // ============================================================
 
-    /**
-     * Endpoint tạo hình ảnh QR Code
-     */
     @GetMapping(value = "/order/qrcode/{orderToken}", produces = MediaType.IMAGE_PNG_VALUE)
     public @ResponseBody byte[] getOrderQRCode(@PathVariable String orderToken) {
         try {
-            // Thay đổi localhost bằng domain thật khi deploy
-            String BASE_URL = "http://localhost:8080";
+            String BASE_URL = "http://localhost:8080"; // Cấu hình domain thực tế khi deploy
             String orderUrl = BASE_URL + "/order/guest/view/" + orderToken;
             return QRCodeGenerator.generateQRCodeImage(orderUrl);
         } catch (Exception e) {
@@ -80,30 +86,24 @@ public class UserOrderViewController {
         }
     }
 
-    /**
-     * Endpoint xem chi tiết đơn hàng cho khách vãng lai (CÓ KIỂM TRA HẠN 30 NGÀY)
-     */
     @GetMapping("/order/guest/view/{orderToken}")
+    @Transactional(readOnly = true)
     public String viewGuestOrder(@PathVariable String orderToken, Model model) {
         try {
             Order order = orderService.getOrderByToken(orderToken);
 
-            // === LOGIC KIỂM TRA 30 NGÀY ===
             LocalDate orderDate = order.getDate();
             LocalDate expireDate = orderDate.plusDays(30);
 
             if (LocalDate.now().isAfter(expireDate)) {
-                // Nếu quá 30 ngày -> Báo lỗi
-                model.addAttribute("errorMessage", "Liên kết này đã hết hạn (Quá 30 ngày). Vì lý do bảo mật, chúng tôi không thể hiển thị chi tiết.");
-                return "error/404"; // Hoặc trang thông báo lỗi của bạn
+                model.addAttribute("errorMessage", "Liên kết này đã hết hạn (Quá 30 ngày).");
+                return "error/404";
             }
-            // ==============================
 
             List<OrderDetailDTO> orderDetails = orderService.getOrderDetailsByOrder(order);
             model.addAttribute("order", order);
             model.addAttribute("orderDetails", orderDetails);
 
-            // Trả về giao diện xem chi tiết riêng cho khách (file guest-order-details.html bạn đã tạo)
             return "user/guest-order-details";
         } catch (RuntimeException e) {
             model.addAttribute("errorMessage", "Đơn hàng không tồn tại hoặc mã truy cập không hợp lệ.");

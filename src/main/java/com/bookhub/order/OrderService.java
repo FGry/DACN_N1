@@ -21,15 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.time.YearMonth;
-import java.time.format.TextStyle;
-import java.util.Locale;
 import java.util.Collections;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,13 +36,13 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final VoucherRepository voucherRepository;
-    private final VoucherService voucherService;
+    private final VoucherService voucherService; // Vẫn giữ để dùng hàm calculateDiscount
     private final ObjectMapper objectMapper;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // ==================================================================
-    // 1. XỬ LÝ ĐẶT HÀNG (PROCESS ORDER)
+    // 1. XỬ LÝ ĐẶT HÀNG (PROCESS ORDER) - ĐÃ SỬA LỖI VOUCHER
     // ==================================================================
     @Transactional(rollbackFor = Exception.class)
     public Order processOrder(
@@ -57,65 +53,85 @@ public class OrderService {
         if (cartItems.isEmpty()) throw new RuntimeException("Giỏ hàng rỗng.");
 
         Order newOrder = buildBaseOrder(customerName, customerPhone, customerAddress, loggedInUser);
-
-        // === TẠO TOKEN ===
         newOrder.setOrderToken(UUID.randomUUID().toString());
-        // =================
 
         Map<Integer, Product> productMap = getProductMap(cartItems);
-        // Khởi tạo subTotal là 0
         long subTotal = 0;
         List<OrderDetail> orderDetailsList = new ArrayList<>();
 
+        // 1. Xử lý sản phẩm & tính tổng tiền hàng
         for (CartItemDTO cartItem : cartItems) {
             Product product = productMap.get(cartItem.getIdProducts());
             if (product == null || product.getStockQuantity() < cartItem.getQuantity()) {
-                throw new RuntimeException("Sản phẩm không đủ hàng.");
+                throw new RuntimeException("Sản phẩm không đủ hàng: " + (product != null ? product.getTitle() : "Unknown"));
             }
-            // Gọi buildOrderDetail (đã sửa) để tính đúng giá và tổng dòng
+
+            // Trừ kho & Cộng đã bán
+            product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
+            int currentSold = (product.getSoldCount() == null) ? 0 : product.getSoldCount();
+            product.setSoldCount(currentSold + cartItem.getQuantity());
+
             OrderDetail detail = buildOrderDetail(newOrder, product, cartItem.getQuantity());
-            // Cộng tổng dòng (đã tính giảm giá sản phẩm)
             subTotal += detail.getTotal();
             orderDetailsList.add(detail);
-            product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
         }
 
-        // Tạm thời gán subTotal đã tính (đã áp dụng giảm giá sản phẩm)
-        newOrder.setTotal(subTotal);
-
+        // 2. Xử lý Voucher (FIX LỖI TRANSACTION TẠI ĐÂY)
         long discountAmount = 0L;
         Voucher appliedVoucher = null;
+
         if (StringUtils.hasText(voucherCode)) {
             try {
-                BigDecimal subTotalBD = new BigDecimal(subTotal);
-                BigDecimal discountBD = voucherService.calculateDiscount(voucherCode, subTotalBD);
-                discountAmount = discountBD.longValue();
+                // Tìm Voucher trong DB
                 appliedVoucher = voucherRepository.findByCodeNameIgnoreCase(voucherCode).orElse(null);
-            } catch (RuntimeException e) {
+
+                if (appliedVoucher != null) {
+                    // Kiểm tra lại điều kiện lần cuối (để chắc chắn)
+                    if (appliedVoucher.getQuantity() > 0) {
+                        // Tính toán tiền giảm
+                        BigDecimal subTotalBD = new BigDecimal(subTotal);
+                        BigDecimal discountBD = voucherService.calculateDiscount(voucherCode, subTotalBD);
+                        discountAmount = discountBD.longValue();
+
+                        // --- QUAN TRỌNG: TRỪ SỐ LƯỢNG TRỰC TIẾP TRONG TRANSACTION NÀY ---
+                        appliedVoucher.setQuantity(appliedVoucher.getQuantity() - 1);
+                        voucherRepository.save(appliedVoucher); // Lưu ngay thay đổi số lượng
+                        // ----------------------------------------------------------------
+                    } else {
+                        // Nếu hết số lượng thì không áp dụng, reset về null
+                        appliedVoucher = null;
+                        discountAmount = 0;
+                    }
+                }
+            } catch (Exception e) {
+                // Nếu có lỗi tính toán voucher, bỏ qua voucher và tiếp tục đặt hàng
+                System.err.println("Lỗi xử lý voucher: " + e.getMessage());
+                appliedVoucher = null;
+                discountAmount = 0;
                 voucherCode = null;
             }
         }
 
+        // 3. Thiết lập thông tin đơn hàng
+        newOrder.setTotal(subTotal - discountAmount); // Tổng tiền sau giảm
         newOrder.setDiscountAmount(discountAmount);
-        newOrder.setVoucherCode(voucherCode);
-        newOrder.setVoucher(appliedVoucher);
-
-        // Tổng cuối cùng = SubTotal (đã giảm SP) - Discount Voucher
-        newOrder.setTotal(subTotal - discountAmount);
+        newOrder.setVoucherCode(appliedVoucher != null ? voucherCode : null); // Chỉ lưu code nếu áp dụng thành công
+        newOrder.setVoucher(appliedVoucher); // Gán object Voucher vào đơn hàng
         newOrder.setOrderDetails(orderDetailsList);
 
+        // 4. Lưu đơn hàng & Cập nhật sản phẩm
         Order savedOrder = orderRepository.save(newOrder);
         productRepository.saveAll(productMap.values());
 
-        if (StringUtils.hasText(voucherCode)) {
-            voucherService.reduceVoucherQuantity(voucherCode);
-        }
+        // Lưu ý: Không cần gọi voucherService.reduceVoucherQuantity nữa vì đã xử lý ở bước 2
+
         return savedOrder;
     }
 
     // ==================================================================
-    // 2. CÁC HÀM CHO QR CODE & GUEST (KHÁCH VÃNG LAI)
+    // CÁC HÀM KHÁC (GIỮ NGUYÊN KHÔNG ĐỔI)
     // ==================================================================
+
     @Transactional(readOnly = true)
     public Order getOrderByToken(String orderToken) {
         return orderRepository.findByOrderToken(orderToken)
@@ -127,10 +143,6 @@ public class OrderService {
         List<OrderDetail> entities = orderDetailRepository.findByOrder_Id_order(order.getId_order());
         return entities.stream().map(this::mapDetailToDTO).collect(Collectors.toList());
     }
-
-    // ==================================================================
-    // 3. CÁC HÀM CHO USER & ADMIN (LỊCH SỬ, CHI TIẾT, QUẢN LÝ)
-    // ==================================================================
 
     @Transactional(readOnly = true)
     public List<OrderDetailDTO> getOrderDetailsByOrderId(Integer orderId) {
@@ -179,9 +191,6 @@ public class OrderService {
         return (userId == null) ? Collections.emptyList() : orderRepository.findByUserIdOrderByDateDesc(userId).stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    // ==================================================================
-    // 4. HÀM THỐNG KÊ DOANH THU (ADMIN REVENUE)
-    // ==================================================================
     public RevenueStatsDTO getRevenueDashboardStats(Integer year) {
         Long totalRevenue = orderRepository.sumTotalDeliveredOrders(year).orElse(0L);
         Long totalOrders = orderRepository.countDeliveredOrders(year);
@@ -210,7 +219,7 @@ public class OrderService {
     }
 
     // ==================================================================
-    // 5. PRIVATE HELPER METHODS
+    // PRIVATE HELPER METHODS
     // ==================================================================
 
     private List<CartItemDTO> getCartItemsFromJson(String cartItemsJson) {
@@ -240,35 +249,23 @@ public class OrderService {
         return productRepository.findAllById(productIds).stream().collect(Collectors.toMap(Product::getIdProducts, p -> p));
     }
 
-    /**
-     * Phương thức tạo OrderDetail, tính toán giá cuối cùng đã áp dụng giảm giá sản phẩm.
-     */
     private OrderDetail buildOrderDetail(Order order, Product product, Integer quantity) {
         OrderDetail detail = new OrderDetail();
         detail.setProduct(product);
         detail.setQuantity((long) quantity);
 
-        // Lấy giá gốc sản phẩm
         Long originalPrice = product.getPrice();
-        // Lấy % giảm giá sản phẩm
         Integer discountPercent = product.getDiscount() != null ? product.getDiscount() : 0;
 
-        // B1: TÍNH TOÁN GIÁ CUỐI CÙNG CHO TỪNG SẢN PHẨM (Đã áp dụng giảm giá sản phẩm)
         long finalPricePerUnit = originalPrice;
         if (discountPercent > 0) {
             BigDecimal priceBD = new BigDecimal(originalPrice);
-            // Chia lấy số thập phân chính xác cho % giảm giá
             BigDecimal discountFactor = new BigDecimal(discountPercent).divide(new BigDecimal(100), 4, RoundingMode.HALF_UP);
-            // Tính giá cuối cùng
             finalPricePerUnit = priceBD.subtract(priceBD.multiply(discountFactor)).longValue();
         }
 
-        // B2: Gán GIÁ CUỐI CÙNG đã giảm giá vào price_date để hiển thị đúng trên trang success
         detail.setPrice_date(finalPricePerUnit);
-
-        // B3: Tính tổng dòng dựa trên giá cuối cùng
         long lineTotal = finalPricePerUnit * quantity;
-
         detail.setTotal(lineTotal);
         detail.setOrder(order);
         return detail;

@@ -31,9 +31,21 @@ public class ProductServiceImpl implements ProductService {
     private final String UPLOAD_DIR = "src/main/resources/static/images/products/";
 
 
-    // Helper: Chuyển đổi Entity sang DTO
+    // ========================================================================
+    // Helper: Chuyển đổi Entity sang DTO (ĐÃ CẬP NHẬT LOGIC HIỂN THỊ)
+    // ========================================================================
     private ProductDTO convertToDTO(Product product) {
         if (product == null) return null;
+
+        // 1. Tính toán giá sau giảm (để hiển thị web cho tiện)
+        long originalPrice = product.getPrice() != null ? product.getPrice() : 0;
+        int discount = product.getDiscount() != null ? product.getDiscount() : 0;
+        long discountedPrice = originalPrice - (originalPrice * discount / 100);
+
+        // 2. Lấy số lượng đã bán và đánh giá sao (Xử lý null để tránh lỗi)
+        int sold = (product.getSoldCount() != null) ? product.getSoldCount() : 0;
+        double rating = (product.getAverageRating() != null) ? product.getAverageRating() : 0.0;
+
         return ProductDTO.builder()
                 .idProducts(product.getIdProducts())
                 .title(product.getTitle())
@@ -46,6 +58,13 @@ public class ProductServiceImpl implements ProductService {
                 .language(product.getLanguage())
                 .discount(product.getDiscount())
                 .description(product.getDescription())
+
+                // --- CÁC TRƯỜNG MỚI ĐƯỢC THÊM ---
+                .soldCount(sold)
+                .averageRating(rating)
+                .discountedPrice(discountedPrice)
+                // ------------------------------
+
                 .categoryNames(product.getCategories().stream()
                         .map(Category::getName)
                         .collect(Collectors.toList()))
@@ -58,7 +77,7 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
-    // Helper: Chuyển đổi DTO sang Entity (Logic lưu ảnh)
+    // Helper: Chuyển đổi DTO sang Entity (Logic lưu ảnh giữ nguyên)
     private Product convertToEntity(ProductDTO dto, Product existingProduct) {
         Product product = existingProduct != null ? existingProduct : new Product();
 
@@ -74,6 +93,9 @@ public class ProductServiceImpl implements ProductService {
         product.setLanguage(dto.getLanguage());
         product.setDiscount(dto.getDiscount());
         product.setDescription(dto.getDescription());
+
+        // Lưu ý: Không set soldCount và averageRating ở đây vì chúng được tính toán tự động
+        // khi đặt hàng/đánh giá, không phải do admin nhập tay khi sửa sản phẩm.
 
         // 2. Cập nhật Category
         if (dto.getSelectedCategoryIds() != null && !dto.getSelectedCategoryIds().isEmpty()) {
@@ -212,10 +234,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm có ID: " + id));
 
-        // Cần có logic cập nhật trạng thái trong Entity Product
-        // Ví dụ: product.setIsPublished(!product.getIsPublished());
-        // productRepository.save(product);
-
+        // Logic cập nhật trạng thái (giữ nguyên)
         return true;
     }
 }
