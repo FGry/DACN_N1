@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,23 +31,29 @@
             transition: all 0.3s ease;
         }
 
+        /* === SỬA LỖI HOVER: Link Navbar === */
         .nav-link:hover, .nav-link.active {
             color: white !important;
             transform: translateY(-2px);
         }
+        /* KẾT THÚC SỬA LỖI HOVER */
 
         .btn-auth {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+            background-color: transparent;
+            border: 1px solid white;
             color: white;
+            padding: 5px 15px;
             margin: 0 5px;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            transition: all 0.3s;
         }
 
+        /* === SỬA LỖI HOVER: Nút Đăng nhập/Đăng ký === */
         .btn-auth:hover {
-            background: white;
-            color: #667eea;
+            background-color: rgba(255, 255, 255, 0.2);
+            /* Đảm bảo màu chữ không thay đổi */
         }
+        /* KẾT THÚC SỬA LỖI HOVER */
 
         .cart-icon {
             position: relative;
@@ -348,24 +353,24 @@
             .hero-section {
                 padding: 60px 0;
             }
-            
+
             .form-section {
                 padding: 30px 20px;
             }
-            
+
             .map-section {
                 padding: 30px 20px;
             }
-            
+
             .faq-section {
                 padding: 30px 20px;
             }
-            
+
             .contact-card {
                 padding: 30px 20px;
                 margin-bottom: 30px;
             }
-            
+
             .map-placeholder {
                 height: 300px;
             }
@@ -373,532 +378,537 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/}">Trang chủ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" th:href="@{/products}">Sản phẩm</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/user/voucher}">Voucher</a>
-                    </li>
-                </ul>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCategories" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Danh mục
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownCategories">
+                        <li th:each="category : ${allCategories}">
+                            <a class="dropdown-item"
+                               th:href="@{/products(categoryId=${category.id_categories},_fragment='products')}"
+                               th:text="${category.name}">
+                                Tên Danh Mục
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/contact}">Liên hệ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/user/voucher}">Voucher</a>
+                </li>
+            </ul>
 
-                <div class="d-flex align-items-center" id="authButtons">
+            <div class="d-flex align-items-center" id="authButtons">
 
-                    <div id="loggedOutButtons" th:if="${!isLoggedIn}">
-                        <a th:href="@{/login}" href="login.html" class="btn btn-auth btn-sm">
-                            <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                        </a>
-                        <a th:href="@{/register}" href="register.html" class="btn btn-auth btn-sm">
-                            <i class="fas fa-user-plus"></i> Đăng ký
-                        </a>
+                <div id="loggedOutButtons" th:if="${!isLoggedIn}">
+                    <a th:href="@{/login}" href="login.html" class="btn btn-auth btn-sm">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </a>
+                    <a th:href="@{/user/register}" href="register.html" class="btn btn-auth btn-sm">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </a>
+                </div>
+
+                <div id="loggedInButtons" th:if="${isLoggedIn}">
+                    <div class="dropdown">
+                        <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="userNameDisplay" th:text="${currentUser.username}">Tài khoản</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                            <li><a class="dropdown-item" th:href="@{/user/profile}">
+                                <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                            </a></li>
+
+                            <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
+                                <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
+                            </a></li>
+
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" th:href="@{/logout}">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a></li>
+                        </ul>
                     </div>
+                </div>
 
-                    <div id="loggedInButtons" th:if="${isLoggedIn}">
-                        <div class="dropdown">
-                            <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle"></i>
-                                <span id="userNameDisplay" th:text="${currentUser.username}">Tài khoản</span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                                <li><a class="dropdown-item" th:href="@{/user/profile}">
-                                    <i class="fas fa-info-circle"></i> Thông tin cá nhân
-                                </a></li>
+                <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cartCount">0</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
 
-                                <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
-                                    <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
-                                </a></li>
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content text-center">
+            <h1 class="display-3 fw-bold mb-4">
+                <i class="fas fa-phone-alt"></i> Liên hệ với chúng tôi
+            </h1>
+            <p class="lead fs-4 mb-5">
+                Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7
+            </p>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <p class="fs-5 opacity-90">
+                        Có câu hỏi về sản phẩm? Cần tư vấn chọn sách? Hay muốn góp ý về dịch vụ?
+                        Đừng ngần ngại liên hệ với chúng tôi qua các kênh dưới đây!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" th:href="@{/logout}">
-                                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                                </a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-badge" id="cartCount">0</span>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <h4 class="contact-title">Địa chỉ cửa hàng</h4>
+                <div class="contact-info">
+                    <strong>Đại học Công nghiệp Hà Nội - Cơ sở 1</strong><br>
+                    298 Đ. Cầu Diên, Minh Khai<br>
+                    Bắc Từ Liêm, Hà Nội<br>
+                    <a href="https://maps.google.com/?q=Đại+học+Công+nghiệp+Hà+Nội+cơ+sở+1" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Xem trên bản đồ
                     </a>
                 </div>
             </div>
         </div>
-    </nav>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <h4 class="contact-title">Điện thoại</h4>
+                <div class="contact-info">
+                    <strong>Hotline:</strong><br>
+                    <a href="tel:0123456789">0123 456 789</a><br>
+                    <strong>Zalo:</strong><br>
+                    <a href="https://zalo.me/0123456789" target="_blank">0123 456 789</a><br>
+                    <small class="text-muted">Hỗ trợ 24/7</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h4 class="contact-title">Email</h4>
+                <div class="contact-info">
+                    <strong>Tổng đài:</strong><br>
+                    <a href="mailto:info@bookstore.vn">info@bookstore.vn</a><br>
+                    <strong>Hỗ trợ:</strong><br>
+                    <a href="mailto:support@bookstore.vn">support@bookstore.vn</a><br>
+                    <small class="text-muted">Phản hồi trong 2 giờ</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="container">
-            <div class="hero-content text-center">
-                <h1 class="display-3 fw-bold mb-4">
-                    <i class="fas fa-phone-alt"></i> Liên hệ với chúng tôi
-                </h1>
-                <p class="lead fs-4 mb-5">
-                    Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7
-                </p>
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <p class="fs-5 opacity-90">
-                            Có câu hỏi về sản phẩm? Cần tư vấn chọn sách? Hay muốn góp ý về dịch vụ? 
-                            Đừng ngần ngại liên hệ với chúng tôi qua các kênh dưới đây!
-                        </p>
+<div class="container">
+    <div class="form-section">
+        <h2 class="section-title">
+            <i class="fas fa-paper-plane"></i> Gửi tin nhắn cho chúng tôi
+        </h2>
+        <div class="row">
+            <div class="col-lg-8">
+                <form id="contactForm" onsubmit="submitContactForm(event)">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fullName" class="form-label">Họ và tên *</label>
+                            <input type="text" class="form-control" id="fullName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="phone">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="subject" class="form-label">Chủ đề *</label>
+                            <select class="form-control" id="subject" required>
+                                <option value="">Chọn chủ đề</option>
+                                <option value="product">Tư vấn sản phẩm</option>
+                                <option value="order">Hỗ trợ đặt hàng</option>
+                                <option value="complaint">Khiếu nại</option>
+                                <option value="suggestion">Góp ý</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Nội dung tin nhắn *</label>
+                        <textarea class="form-control" id="message" rows="6" placeholder="Nhập nội dung tin nhắn của bạn..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane"></i> Gửi tin nhắn
+                    </button>
+                </form>
+            </div>
+            <div class="col-lg-4">
+                <div class="working-hours">
+                    <h4 class="mb-4">
+                        <i class="fas fa-clock"></i> Giờ làm việc
+                    </h4>
+                    <div class="hours-item">
+                        <span class="hours-day">Thứ 2 - Thứ 6</span>
+                        <span class="hours-time">8:00 - 18:00</span>
+                    </div>
+                    <div class="hours-item">
+                        <span class="hours-day">Thứ 7</span>
+                        <span class="hours-time">8:00 - 17:00</span>
+                    </div>
+                    <div class="hours-item">
+                        <span class="hours-day">Chủ nhật</span>
+                        <span class="hours-time">9:00 - 16:00</span>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <h5 class="mb-3">Kết nối với chúng tôi</h5>
+                    <div class="social-links">
+                        <a href="#" class="social-link" title="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-link" title="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-link" title="YouTube">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" class="social-link" title="TikTok">
+                            <i class="fab fa-tiktok"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Contact Information -->
+    <div class="map-section">
+        <h2 class="section-title">
+            <i class="fas fa-map"></i> Vị trí cửa hàng
+        </h2>
+        <div class="map-container">
+            <div class="map-placeholder">
+                <i class="fas fa-map-marked-alt"></i>
+                <h4>Đại học Công nghiệp Hà Nội - Cơ sở 1</h4>
+                <p class="text-center mb-4">
+                    298 Đ. Cầu Diên, Minh Khai, Bắc Từ Liêm, Hà Nội
+                </p>
+                <a href="https://maps.google.com/?q=Đại+học+Công+nghiệp+Hà+Nội+cơ+sở+1"
+                   target="_blank"
+                   class="btn btn-primary">
+                    <i class="fas fa-directions"></i> Chỉ đường
+                </a>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="fas fa-car text-primary fs-2 mb-3"></i>
+                    <h5>Đi ô tô</h5>
+                    <p class="text-muted">Có bãi đỗ xe rộng rãi, miễn phí cho khách hàng</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="fas fa-bus text-success fs-2 mb-3"></i>
+                    <h5>Xe buýt</h5>
+                    <p class="text-muted">Tuyến 03, 31, 86 - Dừng tại trạm Đại học Công nghiệp</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="fas fa-motorcycle text-warning fs-2 mb-3"></i>
+                    <h5>Xe máy</h5>
+                    <p class="text-muted">Khu vực gửi xe an toàn, có người trông giữ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="faq-section">
+        <h2 class="section-title">
+            <i class="fas fa-question-circle"></i> Câu hỏi thường gặp
+        </h2>
+        <div class="accordion" id="faqAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        Làm thế nào để đặt hàng online?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Bạn có thể đặt hàng dễ dàng bằng cách: 1) Chọn sản phẩm và thêm vào giỏ hàng, 2) Điền thông tin giao hàng, 3) Chọn phương thức thanh toán, 4) Xác nhận đơn hàng. Chúng tôi sẽ liên hệ xác nhận trong vòng 30 phút.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        Thời gian giao hàng là bao lâu?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        - Nội thành Hà Nội: 2-4 giờ (giao hàng nhanh)<br>
+                        - Các tỉnh lân cận: 1-2 ngày<br>
+                        - Toàn quốc: 2-5 ngày làm việc<br>
+                        Chúng tôi có dịch vụ giao hàng trong ngày cho đơn hàng đặt trước 15:00.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        Có thể đổi trả sách không?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Có, chúng tôi hỗ trợ đổi trả trong vòng 7 ngày kể từ ngày nhận hàng với điều kiện: sách còn nguyên vẹn, không bị rách hay bẩn, còn đầy đủ bao bì. Phí đổi trả sẽ do khách hàng chi trả trừ trường hợp lỗi từ phía cửa hàng.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                        Có những phương thức thanh toán nào?
+                    </button>
+                </h2>
+                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Chúng tôi hỗ trợ nhiều phương thức thanh toán:<br>
+                        - Thanh toán khi nhận hàng (COD)<br>
+                        - Chuyển khoản ngân hàng<br>
+                        - Ví điện tử: MoMo, ZaloPay, VNPay<br>
+                        - Thẻ tín dụng/ghi nợ Visa, Mastercard
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                        Làm sao để theo dõi đơn hàng?
+                    </button>
+                </h2>
+                <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Sau khi đặt hàng thành công, bạn sẽ nhận được mã đơn hàng qua SMS/Email. Bạn có thể tra cứu tình trạng đơn hàng bằng cách: gọi hotline 0123 456 789, nhắn tin Zalo, hoặc truy cập website và nhập mã đơn hàng.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
     <div class="container">
         <div class="row">
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <h4 class="contact-title">Địa chỉ cửa hàng</h4>
-                    <div class="contact-info">
-                        <strong>Đại học Công nghiệp Hà Nội - Cơ sở 1</strong><br>
-                        298 Đ. Cầu Diên, Minh Khai<br>
-                        Bắc Từ Liêm, Hà Nội<br>
-                        <a href="https://maps.google.com/?q=Đại+học+Công+nghiệp+Hà+Nội+cơ+sở+1" target="_blank">
-                            <i class="fas fa-external-link-alt"></i> Xem trên bản đồ
-                        </a>
-                    </div>
+            <div class="col-md-4">
+                <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
+                <div class="d-flex">
+                    <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <i class="fas fa-phone"></i>
-                    </div>
-                    <h4 class="contact-title">Điện thoại</h4>
-                    <div class="contact-info">
-                        <strong>Hotline:</strong><br>
-                        <a href="tel:0123456789">0123 456 789</a><br>
-                        <strong>Zalo:</strong><br>
-                        <a href="https://zalo.me/0123456789" target="_blank">0123 456 789</a><br>
-                        <small class="text-muted">Hỗ trợ 24/7</small>
-                    </div>
-                </div>
+            <div class="col-md-4">
+                <h5>Liên kết nhanh</h5>
+                <ul class="list-unstyled">
+                    <li><a href="index.html" class="text-white-50">Trang chủ</a></li>
+                    <li><a href="product.html" class="text-white-50">Sản phẩm</a></li>
+                    <li><a href="about.html" class="text-white-50">Giới thiệu</a></li>
+                    <li><a href="contact.html" class="text-white-50">Liên hệ</a></li>
+                </ul>
             </div>
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <h4 class="contact-title">Email</h4>
-                    <div class="contact-info">
-                        <strong>Tổng đài:</strong><br>
-                        <a href="mailto:info@bookstore.vn">info@bookstore.vn</a><br>
-                        <strong>Hỗ trợ:</strong><br>
-                        <a href="mailto:support@bookstore.vn">support@bookstore.vn</a><br>
-                        <small class="text-muted">Phản hồi trong 2 giờ</small>
-                    </div>
-                </div>
+            <div class="col-md-4">
+                <h5>Liên hệ</h5>
+                <p><i class="fas fa-phone"></i> 0123 456 789</p>
+                <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
+                <p><i class="fas fa-map-marker-alt"></i> Đại học Công nghiệp Hà Nội - Cơ sở 1</p>
             </div>
+        </div>
+        <hr class="my-4">
+        <div class="text-center">
+            <p>© 2024 BookStore. Tất cả quyền được bảo lưu.</p>
         </div>
     </div>
+</footer>
 
-    <!-- Contact Form -->
-    <div class="container">
-        <div class="form-section">
-            <h2 class="section-title">
-                <i class="fas fa-paper-plane"></i> Gửi tin nhắn cho chúng tôi
-            </h2>
-            <div class="row">
-                <div class="col-lg-8">
-                    <form id="contactForm" onsubmit="submitContactForm(event)">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="fullName" class="form-label">Họ và tên *</label>
-                                <input type="text" class="form-control" id="fullName" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email *</label>
-                                <input type="email" class="form-control" id="email" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Số điện thoại</label>
-                                <input type="tel" class="form-control" id="phone">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="subject" class="form-label">Chủ đề *</label>
-                                <select class="form-control" id="subject" required>
-                                    <option value="">Chọn chủ đề</option>
-                                    <option value="product">Tư vấn sản phẩm</option>
-                                    <option value="order">Hỗ trợ đặt hàng</option>
-                                    <option value="complaint">Khiếu nại</option>
-                                    <option value="suggestion">Góp ý</option>
-                                    <option value="other">Khác</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Nội dung tin nhắn *</label>
-                            <textarea class="form-control" id="message" rows="6" placeholder="Nhập nội dung tin nhắn của bạn..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-paper-plane"></i> Gửi tin nhắn
-                        </button>
-                    </form>
-                </div>
-                <div class="col-lg-4">
-                    <div class="working-hours">
-                        <h4 class="mb-4">
-                            <i class="fas fa-clock"></i> Giờ làm việc
-                        </h4>
-                        <div class="hours-item">
-                            <span class="hours-day">Thứ 2 - Thứ 6</span>
-                            <span class="hours-time">8:00 - 18:00</span>
-                        </div>
-                        <div class="hours-item">
-                            <span class="hours-day">Thứ 7</span>
-                            <span class="hours-time">8:00 - 17:00</span>
-                        </div>
-                        <div class="hours-item">
-                            <span class="hours-day">Chủ nhật</span>
-                            <span class="hours-time">9:00 - 16:00</span>
-                        </div>
-                    </div>
-                    
-                    <div class="text-center">
-                        <h5 class="mb-3">Kết nối với chúng tôi</h5>
-                        <div class="social-links">
-                            <a href="#" class="social-link" title="Facebook">
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <a href="#" class="social-link" title="Instagram">
-                                <i class="fab fa-instagram"></i>
-                            </a>
-                            <a href="#" class="social-link" title="YouTube">
-                                <i class="fab fa-youtube"></i>
-                            </a>
-                            <a href="#" class="social-link" title="TikTok">
-                                <i class="fab fa-tiktok"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-    <!-- Map Section -->
-    <div class="container">
-        <div class="map-section">
-            <h2 class="section-title">
-                <i class="fas fa-map"></i> Vị trí cửa hàng
-            </h2>
-            <div class="map-container">
-                <div class="map-placeholder">
-                    <i class="fas fa-map-marked-alt"></i>
-                    <h4>Đại học Công nghiệp Hà Nội - Cơ sở 1</h4>
-                    <p class="text-center mb-4">
-                        298 Đ. Cầu Diên, Minh Khai, Bắc Từ Liêm, Hà Nội
-                    </p>
-                    <a href="https://maps.google.com/?q=Đại+học+Công+nghiệp+Hà+Nội+cơ+sở+1" 
-                       target="_blank" 
-                       class="btn btn-primary">
-                        <i class="fas fa-directions"></i> Chỉ đường
-                    </a>
-                </div>
-            </div>
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <div class="text-center">
-                        <i class="fas fa-car text-primary fs-2 mb-3"></i>
-                        <h5>Đi ô tô</h5>
-                        <p class="text-muted">Có bãi đỗ xe rộng rãi, miễn phí cho khách hàng</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="text-center">
-                        <i class="fas fa-bus text-success fs-2 mb-3"></i>
-                        <h5>Xe buýt</h5>
-                        <p class="text-muted">Tuyến 03, 31, 86 - Dừng tại trạm Đại học Công nghiệp</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="text-center">
-                        <i class="fas fa-motorcycle text-warning fs-2 mb-3"></i>
-                        <h5>Xe máy</h5>
-                        <p class="text-muted">Khu vực gửi xe an toàn, có người trông giữ</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    // Load page on startup
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartCount();
+        animateOnScroll();
+    });
 
-    <!-- FAQ Section -->
-    <div class="container">
-        <div class="faq-section">
-            <h2 class="section-title">
-                <i class="fas fa-question-circle"></i> Câu hỏi thường gặp
-            </h2>
-            <div class="accordion" id="faqAccordion">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                            Làm thế nào để đặt hàng online?
-                        </button>
-                    </h2>
-                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Bạn có thể đặt hàng dễ dàng bằng cách: 1) Chọn sản phẩm và thêm vào giỏ hàng, 2) Điền thông tin giao hàng, 3) Chọn phương thức thanh toán, 4) Xác nhận đơn hàng. Chúng tôi sẽ liên hệ xác nhận trong vòng 30 phút.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                            Thời gian giao hàng là bao lâu?
-                        </button>
-                    </h2>
-                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            - Nội thành Hà Nội: 2-4 giờ (giao hàng nhanh)<br>
-                            - Các tỉnh lân cận: 1-2 ngày<br>
-                            - Toàn quốc: 2-5 ngày làm việc<br>
-                            Chúng tôi có dịch vụ giao hàng trong ngày cho đơn hàng đặt trước 15:00.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                            Có thể đổi trả sách không?
-                        </button>
-                    </h2>
-                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Có, chúng tôi hỗ trợ đổi trả trong vòng 7 ngày kể từ ngày nhận hàng với điều kiện: sách còn nguyên vẹn, không bị rách hay bẩn, còn đầy đủ bao bì. Phí đổi trả sẽ do khách hàng chi trả trừ trường hợp lỗi từ phía cửa hàng.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
-                            Có những phương thức thanh toán nào?
-                        </button>
-                    </h2>
-                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Chúng tôi hỗ trợ nhiều phương thức thanh toán:<br>
-                            - Thanh toán khi nhận hàng (COD)<br>
-                            - Chuyển khoản ngân hàng<br>
-                            - Ví điện tử: MoMo, ZaloPay, VNPay<br>
-                            - Thẻ tín dụng/ghi nợ Visa, Mastercard
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
-                            Làm sao để theo dõi đơn hàng?
-                        </button>
-                    </h2>
-                    <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Sau khi đặt hàng thành công, bạn sẽ nhận được mã đơn hàng qua SMS/Email. Bạn có thể tra cứu tình trạng đơn hàng bằng cách: gọi hotline 0123 456 789, nhắn tin Zalo, hoặc truy cập website và nhập mã đơn hàng.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    // Update cart count
+    function updateCartCount() {
+        const cartCount = document.getElementById('cartCount');
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCount.textContent = totalItems;
+    }
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
-                    <p>Cửa hàng sách học tập hàng đầu cho học sinh cấp 3</p>
-                    <div class="d-flex">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-youtube fa-2x"></i></a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <h5>Liên kết nhanh</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="index.html" class="text-white-50">Trang chủ</a></li>
-                        <li><a href="product.html" class="text-white-50">Sản phẩm</a></li>
-                        <li><a href="about.html" class="text-white-50">Giới thiệu</a></li>
-                        <li><a href="contact.html" class="text-white-50">Liên hệ</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5>Liên hệ</h5>
-                    <p><i class="fas fa-phone"></i> 0123 456 789</p>
-                    <p><i class="fas fa-envelope"></i> info@bookstore.vn</p>
-                    <p><i class="fas fa-map-marker-alt"></i> Đại học Công nghiệp Hà Nội - Cơ sở 1</p>
-                </div>
-            </div>
-            <hr class="my-4">
-            <div class="text-center">
-                <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
-            </div>
-        </div>
-    </footer>
+    // Submit contact form
+    function submitContactForm(event) {
+        event.preventDefault();
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const fullName = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const subject = document.getElementById('subject').value;
+        const message = document.getElementById('message').value.trim();
 
-        // Load page on startup
-        document.addEventListener('DOMContentLoaded', function() {
-            updateCartCount();
-            animateOnScroll();
+        if (!fullName || !email || !subject || !message) {
+            showNotification('Vui lòng điền đầy đủ thông tin bắt buộc!', 'warning');
+            return;
+        }
+
+        // Simulate form submission
+        const submitBtn = document.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+            // Reset form
+            document.getElementById('contactForm').reset();
+
+            // Reset button
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+
+            showNotification('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi trong vòng 2 giờ.', 'success');
+        }, 2000);
+    }
+
+    // Animate elements on scroll
+    function animateOnScroll() {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards for animation
+        document.querySelectorAll('.contact-card, .form-section, .map-section, .faq-section').forEach(element => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(30px)';
+            element.style.transition = 'all 0.6s ease';
+            observer.observe(element);
         });
+    }
 
-        // Update cart count
-        function updateCartCount() {
-            const cartCount = document.getElementById('cartCount');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
-        }
+    // Show notification
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        const alertClass = type === 'success' ? 'alert-success' :
+                          type === 'error' ? 'alert-danger' :
+                          type === 'info' ? 'alert-info' : 'alert-warning';
 
-        // Submit contact form
-        function submitContactForm(event) {
-            event.preventDefault();
-            
-            const fullName = document.getElementById('fullName').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const subject = document.getElementById('subject').value;
-            const message = document.getElementById('message').value.trim();
-            
-            if (!fullName || !email || !subject || !message) {
-                showNotification('Vui lòng điền đầy đủ thông tin bắt buộc!', 'warning');
-                return;
+        notification.className = `alert ${alertClass} position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
             }
-            
-            // Simulate form submission
-            const submitBtn = document.querySelector('.btn-submit');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
-            submitBtn.disabled = true;
-            
-            setTimeout(() => {
-                // Reset form
-                document.getElementById('contactForm').reset();
-                
-                // Reset button
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                
-                showNotification('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi trong vòng 2 giờ.', 'success');
-            }, 2000);
+        }, 5000);
+    }
+
+    // Add scroll effect to navbar
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 100) {
+            navbar.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%)';
+            navbar.style.backdropFilter = 'blur(10px)';
+        } else {
+            navbar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            navbar.style.backdropFilter = 'none';
         }
+    });
 
-        // Animate elements on scroll
-        function animateOnScroll() {
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
+    // Add parallax effect to hero section
+    window.addEventListener('scroll', function() {
+        const hero = document.querySelector('.hero-section');
+        const scrolled = window.pageYOffset;
+        const rate = scrolled * -0.5;
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
+        if (hero) {
+            hero.style.transform = `translateY(${rate}px)`;
+        }
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
                 });
-            }, observerOptions);
-
-            // Observe all cards for animation
-            document.querySelectorAll('.contact-card, .form-section, .map-section, .faq-section').forEach(element => {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(30px)';
-                element.style.transition = 'all 0.6s ease';
-                observer.observe(element);
-            });
-        }
-
-        // Show notification
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            const alertClass = type === 'success' ? 'alert-success' : 
-                              type === 'error' ? 'alert-danger' : 
-                              type === 'info' ? 'alert-info' : 'alert-warning';
-            
-            notification.className = `alert ${alertClass} position-fixed`;
-            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            notification.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 5000);
-        }
-
-        // Add scroll effect to navbar
-        window.addEventListener('scroll', function() {
-            const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 100) {
-                navbar.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%)';
-                navbar.style.backdropFilter = 'blur(10px)';
-            } else {
-                navbar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                navbar.style.backdropFilter = 'none';
             }
         });
-
-        // Add parallax effect to hero section
-        window.addEventListener('scroll', function() {
-            const hero = document.querySelector('.hero-section');
-            const scrolled = window.pageYOffset;
-            const rate = scrolled * -0.5;
-            
-            if (hero) {
-                hero.style.transform = `translateY(${rate}px)`;
-            }
-        });
-
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    </script>
+    });
+</script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa365a337d08dd',t:'MTc1OTgwNjY5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

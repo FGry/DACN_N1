@@ -1,19 +1,102 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>Chi tiết Đơn hàng - BookStore</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
-        body { background-color: #f8f9fa; }
-        .success-container {
-            max-width: 800px;
-            margin: 40px auto;
+    <meta charset="UTF-8">
+    <title>Đặt hàng thành công - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f8; }
+
+        /* Container chung */
+        .main-container {
+            max-width: 600px;
+            margin: 50px auto;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        /* --- CSS RIÊNG CHO GIAO DIỆN KHÁCH VÃNG LAI --- */
+
+        .icon-circle-success {
+            width: 80px;
+            height: 80px;
+            background-color: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+        }
+        .icon-circle-success i {
+            color: white;
+            font-size: 40px;
+        }
+
+        .success-title {
+            color: #155724;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .success-subtitle {
+            color: #6c757d;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .qr-dashed-box {
+            border: 2px dashed #6ea8fe;
+            border-radius: 12px;
+            padding: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        .qr-image {
+            width: 180px;
+            height: 180px;
+            display: block;
+        }
+
+        .info-badge-box {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Nút Gradient Tím/Xanh cho hành động tải QR */
+        .btn-gradient-purple {
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            width: 100%;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
+            transition: all 0.3s ease;
+            display: block;
+            text-decoration: none;
+        }
+        .btn-gradient-purple:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 117, 252, 0.4);
+            color: white;
+        }
+
+        /* --- CSS CHO GIAO DIỆN USER --- */
+        .user-order-details {
+            text-align: left;
         }
         .order-item {
             border-bottom: 1px solid #eee;
@@ -24,70 +107,104 @@
 </head>
 <body>
 
-<div class="container success-container">
+<div class="main-container">
 
-  <div th:if="${successMessage}" class="text-center mb-4">
-    <i class="fas fa-check-circle fa-4x text-success"></i>
-    <h2 class="mt-3">Đặt hàng thành công!</h2>
-    <div class="alert alert-success" th:text="${successMessage}"></div>
-  </div>
+    <div th:if="${order.user == null}">
 
-  <h4 class="mb-3">Chi tiết đơn hàng <span th:text="'#DH' + ${order.id_order}"></span></h4>
+        <div class="icon-circle-success">
+            <i class="fas fa-check"></i>
+        </div>
 
-  <div class="card mb-3">
-    <div class="card-header">Thông tin giao hàng</div>
-    <div class="card-body">
-      <p><strong>Người nhận:</strong> <span th:text="${order.note != null ? order.note : order.user.username}"></span></p>
-      <p><strong>Số điện thoại:</strong> <span th:text="${order.phone}"></span></p>
-      <p><strong>Địa chỉ:</strong> <span th:text="${order.address}"></span></p>
-      <p><strong>Trạng thái:</strong> <span th:text="${order.status_order}"></span></p>
-    </div>
-  </div>
+        <h2 class="success-title">Thanh toán thành công!</h2>
+        <p class="success-subtitle">Nhấn vào mã QR hoặc quét để xem chi tiết:</p>
 
-  <h5>Các sản phẩm đã đặt</h5>
-  <div id="orderItemsList" class="mb-3">
+        <div class="qr-dashed-box">
+            <a th:href="@{/order/guest/view/{token}(token=${order.orderToken})}" target="_blank">
+                <img th:src="@{/order/qrcode/{token}(token=${order.orderToken})}"
+                     class="qr-image" alt="QR Code">
+            </a>
+        </div>
 
-    <div th:each="item : ${orderDetails}" class="d-flex align-items-center order-item">
-      <img th:src="${item.productImageUrl}" alt="Ảnh sách" width="60" class="me-3 rounded">
-      <div class="flex-grow-1">
-        <h6 class="mb-0" th:text="${item.productName}">Tên sách</h6>
-        <small class="text-muted" th:text="${item.productAuthor}">Tác giả</small>
-      </div>
-      <div class="text-end">
-        <div th:text="${item.priceAtDateFormatted} + ' x ' + ${item.quantity}">100.000đ x 2</div>
-        <strong><span th:text="${#numbers.formatDecimal(item.priceAtDate * item.quantity, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span></strong>
-      </div>
+        <div class="info-badge-box">
+            <i class="fas fa-info-circle me-1"></i> Mã này có hiệu lực trong 30 ngày.
+        </div>
+
+        <a th:href="@{/order/qrcode/{token}(token=${order.orderToken})}"
+           download="QR_DonHang.png"
+           class="btn-gradient-purple">
+            <i class="fas fa-download me-2"></i> Lưu mã QR về máy
+        </a>
+
+        <a href="/" class="btn btn-primary mt-3 px-4 py-2" style="border-radius: 6px;">
+            <i class="fas fa-home me-2"></i> Quay về trang chủ
+        </a>
     </div>
 
-  </div>
 
-  <div class="text-end mt-3">
-    <h4>Tổng cộng: <span class="text-danger" th:text="${#numbers.formatDecimal(order.total, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span></h4>
-  </div>
+    <div th:if="${order.user != null}" class="user-order-details">
 
-  <div class="text-center mt-4">
-    <a href="/" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Tiếp tục mua sắm</a>
-    <a href="/my-orders" class="btn btn-outline-secondary">
-      <i class="fas fa-history"></i> Xem lịch sử đơn hàng
-    </a>
-  </div>
+        <div class="text-center mb-4">
+            <i class="fas fa-check-circle fa-4x text-success"></i>
+            <h2 class="mt-3 text-success">Đặt hàng thành công!</h2>
+            <div class="alert alert-success mt-2" th:if="${successMessage}" th:text="${successMessage}"></div>
+        </div>
+
+        <h4 class="mb-3">Chi tiết đơn hàng <span th:text="'#DH' + ${order.id_order}"></span></h4>
+
+        <div class="card mb-3">
+            <div class="card-header bg-light fw-bold">Thông tin giao hàng</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Người nhận:</strong> <span th:text="${order.note != null ? order.note : order.user.username}"></span></p>
+                        <p class="mb-1"><strong>Số điện thoại:</strong> <span th:text="${order.phone}"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Địa chỉ:</strong> <span th:text="${order.address}"></span></p>
+                        <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge bg-info text-dark" th:text="${order.status_order}"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h5>Các sản phẩm đã đặt</h5>
+        <div class="mb-3 border-top">
+            <div th:each="item : ${orderDetails}" class="d-flex align-items-center order-item">
+                <img th:src="${item.productImageUrl}" alt="Ảnh sách" width="60" height="80" class="me-3 rounded object-fit-cover">
+                <div class="flex-grow-1">
+                    <h6 class="mb-1 fw-bold" th:text="${item.productName}">Tên sách</h6>
+                    <small class="text-muted" th:text="${item.productAuthor}">Tác giả</small>
+                </div>
+                <div class="text-end">
+                    <div class="text-muted small" th:text="${item.priceAtDateFormatted} + ' x ' + ${item.quantity}"></div>
+                    <strong class="text-dark"><span th:text="${#numbers.formatDecimal(item.priceAtDate * item.quantity, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span></strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-end mt-3 pt-3 border-top">
+            <p th:if="${order.discountAmount > 0}" class="mb-1">
+                Giảm giá: <span class="text-success" th:text="'- ' + ${order.discountAmountFormatted}"></span>
+            </p>
+            <h4>Tổng cộng: <span class="text-danger fw-bold" th:text="${#numbers.formatDecimal(order.total, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span></h4>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="/" class="btn btn-primary px-4"><i class="fas fa-home"></i> Tiếp tục mua sắm</a>
+            <a href="/my-orders" class="btn btn-outline-secondary px-4 ms-2"><i class="fas fa-history"></i> Lịch sử đơn hàng</a>
+        </div>
+    </div>
+
 </div>
 
 <script>
-        // *** Tự động xóa giỏ hàng nếu đây là trang "thành công" ***
-        // (Kiểm tra xem có thông báo thành công không)
-        document.addEventListener('DOMContentLoaded', function() {
-            const successAlert = document.querySelector('.alert-success');
-            if (successAlert) {
-                console.log('Đặt hàng thành công, xóa giỏ hàng khỏi trình duyệt.');
-                localStorage.removeItem('bookstoreCart');
-                sessionStorage.removeItem('bookstoreCart');
-
-                // (Tùy chọn) Cập nhật lại số lượng trên icon giỏ hàng ở navbar về 0
-                const navCartCount = document.querySelector('.navbar .cart-badge'); // Thay selector nếu cần
-                if(navCartCount) navCartCount.textContent = '0';
-            }
-        });
-    </script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Order success page loaded. Clearing cart...');
+        localStorage.removeItem('bookstoreCart');
+        sessionStorage.removeItem('bookstoreCart');
+        const navCartCount = document.querySelector('.navbar .cart-badge');
+        if(navCartCount) navCartCount.textContent = '0';
+    });
+</script>
 </body>
 </html>

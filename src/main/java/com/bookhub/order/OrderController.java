@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 
@@ -17,26 +18,19 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // ĐÃ CẬP NHẬT: Nhận tham số status và searchTerm
     @GetMapping
     public String listOrders(
             @RequestParam(value = "filterStatus", required = false) String filterStatus,
             @RequestParam(value = "searchTerm", required = false) String searchTerm,
             Model model) {
-
         List<OrderDTO> orders;
-
         if (searchTerm != null && !searchTerm.isEmpty()) {
-            // Ưu tiên tìm kiếm nếu có searchTerm
             orders = orderService.searchOrders(searchTerm);
         } else if (filterStatus != null && !filterStatus.isEmpty()) {
-            // Sau đó đến lọc theo trạng thái
             orders = orderService.filterOrders(filterStatus);
         } else {
-            // Mặc định: lấy tất cả
             orders = orderService.findAllOrders();
         }
-
         model.addAttribute("orders", orders);
         model.addAttribute("statuses", List.of("PENDING", "CONFIRMED", "SHIPPING", "DELIVERED", "CANCELLED"));
         return "admin/cart";
@@ -48,16 +42,13 @@ public class OrderController {
         return orderService.findOrderById(id);
     }
 
-    // ... (Giữ nguyên các phương thức POST/GET khác)
     @PostMapping("/update-status/{id}")
-    public String updateOrderStatus(@PathVariable("id") Integer id,
-                                    @RequestParam("newStatus") String newStatus,
-                                    RedirectAttributes redirectAttributes) {
+    public String updateOrderStatus(@PathVariable("id") Integer id, @RequestParam("newStatus") String newStatus, RedirectAttributes redirectAttributes) {
         try {
             orderService.updateOrderStatus(id, newStatus.toUpperCase());
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + id + " thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thành công!");
         } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi cập nhật trạng thái: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
         }
         return "redirect:/admin/carts";
     }
@@ -66,10 +57,40 @@ public class OrderController {
     public String cancelOrder(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
         try {
             orderService.cancelOrder(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã hủy đơn hàng #" + id + " thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã hủy đơn hàng #" + id);
         } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi hủy đơn hàng: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
         }
         return "redirect:/admin/carts";
+    }
+
+    // ===============================================
+    // === CÁC ENDPOINT MỚI CHO KHÁCH VÃNG LAI ===
+    // ===============================================
+
+    @GetMapping(value = "/order/qrcode/{orderToken}", produces = MediaType.IMAGE_PNG_VALUE)
+    public @ResponseBody byte[] getOrderQRCode(@PathVariable String orderToken) {
+        try {
+            // LƯU Ý: Đổi 'localhost:8080' thành domain thật khi deploy
+            String BASE_URL = "http://localhost:8080";
+            String orderUrl = BASE_URL + "/order/guest/view/" + orderToken;
+            return QRCodeGenerator.generateQRCodeImage(orderUrl);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new byte[0];
+        }
+    }
+
+    @GetMapping("/order/guest/view/{orderToken}")
+    public String viewGuestOrder(@PathVariable String orderToken, Model model) {
+        try {
+            Order order = orderService.getOrderByToken(orderToken);
+            List<OrderDetailDTO> orderDetails = orderService.getOrderDetailsByOrder(order);
+            model.addAttribute("order", order);
+            model.addAttribute("orderDetails", orderDetails);
+            return "user/guest-order-details";
+        } catch (RuntimeException e) {
+            return "error/404";
+        }
     }
 }

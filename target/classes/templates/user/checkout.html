@@ -71,7 +71,13 @@
                     <div class="mb-3">
                         <label for="customerPhone" class="form-label">Số điện thoại</label>
                         <input type="tel" class="form-control" id="customerPhone" name="customerPhone"
-                               th:value="${loggedInUser != null} ? ${loggedInUser.phone} : ''" required>
+                               th:value="${loggedInUser != null} ? ${loggedInUser.phone} : ''"
+                               required
+                               maxlength="10"
+                               pattern="0[0-9]{9}"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length > 0 && this.value[0] !== '0') this.value = '';"
+                        >
+                        <small class="form-text text-muted">Vui lòng nhập đủ 10 số, bắt đầu bằng 0.</small>
                     </div>
                     <div class="mb-3">
                         <label for="customerAddress" class="form-label">Địa chỉ</label>

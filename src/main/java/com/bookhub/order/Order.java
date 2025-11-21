@@ -9,7 +9,6 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 import java.util.List;
 
-// Gửi file code hoàn chỉnh: Order.java
 @Entity
 @Table(name = "Orders")
 @NoArgsConstructor
@@ -24,6 +23,11 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id_order;
 
+    // === THÊM TRƯỜNG MỚI ===
+    @Column(name = "order_token", unique = true, nullable = true, length = 36)
+    String orderToken;
+    // =======================
+
     String address;
     LocalDate date;
     String phone;
@@ -32,13 +36,11 @@ public class Order {
     String payment_method;
     String note;
 
-    // === THÊM CÁC TRƯỜNG VOUCHER ĐỂ LƯU CHI TIẾT ===
     @Column(name = "voucher_code")
-    String voucherCode; // Lưu mã code đã dùng (cho báo cáo nếu voucher bị xóa)
+    String voucherCode;
 
     @Column(name = "discount_amount")
-    Long discountAmount; // Số tiền giảm giá chính thức
-    // ===============================================
+    Long discountAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Users_id_user")
@@ -46,7 +48,7 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Vouchers_id_vouchers")
-    Voucher voucher; // Link tới Entity Voucher
+    Voucher voucher;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<OrderDetail> orderDetails;

@@ -20,6 +20,20 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
+        /* Bổ sung CSS cho dropdown trong navbar (từ product.html) */
+        .dropdown-menu {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: none;
+        }
+        .dropdown-item {
+            transition: all 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background-color: #f0f2f5;
+            color: #667eea;
+        }
+
         .navbar-brand {
             font-weight: bold;
             font-size: 1.5rem;
@@ -45,6 +59,10 @@
             margin: 0 5px;
             border-radius: 8px;
             transition: all 0.3s;
+        }
+
+        .btn-auth:hover {
+            background-color: rgba(255, 255, 255, 0.2);
         }
 
         .cart-icon {
@@ -114,22 +132,34 @@
 
         /* ==================== PRODUCT DETAILS ==================== */
         .product-details {
-            padding-left: 30px;
+            /* Giảm padding để phù hợp với cột hẹp hơn (col-lg-5) */
+            padding-left: 15px;
         }
 
+        /* ĐÃ CHỈNH SỬA: LÀM GỌN KHUNG GIÁ */
+        .price-container {
+            /* Giảm padding của container giá */
+            padding: 10px 15px !important;
+            margin-bottom: 20px !important;
+        }
         .product-price-detail {
-            font-size: 2.8rem; /* Kích thước lớn hơn */
+            font-size: 2.0rem; /* Giảm kích thước font giá đã giảm */
             font-weight: 700;
             color: #e74c3c;
-            margin-bottom: 5px;
+            /* margin-bottom: 5px; Bỏ margin-bottom */
+            margin-bottom: 0;
+            line-height: 1; /* Đảm bảo chỉ 1 dòng */
         }
 
         .old-price {
             text-decoration: line-through;
             color: #95a5a6;
-            font-size: 1.4rem;
-            margin-left: 20px;
+            font-size: 1.0rem; /* Giảm kích thước font giá gốc */
+            margin-left: 15px; /* Giảm khoảng cách */
+            line-height: 1; /* Đảm bảo chỉ 1 dòng */
         }
+        /* KẾT THÚC CHỈNH SỬA: LÀM GỌN KHUNG GIÁ */
+
 
         /* CTA Buttons */
         .btn-add-cart-detail {
@@ -275,7 +305,7 @@
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark">
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
         <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
 
@@ -290,6 +320,20 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" th:href="@{/products}">Sản phẩm</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCategories" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Danh mục
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownCategories">
+                        <li th:each="category : ${allCategories}">
+                            <a class="dropdown-item"
+                               th:href="@{/products(categoryId=${category.id_categories},_fragment='products')}"
+                               th:text="${category.name}">
+                                Tên Danh Mục
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
@@ -307,7 +351,7 @@
                     <a th:href="@{/login}" href="login.html" class="btn btn-auth btn-sm">
                         <i class="fas fa-sign-in-alt"></i> Đăng nhập
                     </a>
-                    <a th:href="@{/register}" href="register.html" class="btn btn-auth btn-sm">
+                    <a th:href="@{/user/register}" href="register.html" class="btn btn-auth btn-sm">
                         <i class="fas fa-user-plus"></i> Đăng ký
                     </a>
                 </div>
@@ -353,7 +397,7 @@
         </div>
 
         <div th:if="${product != null}" class="row">
-            <div class="col-lg-5">
+            <div class="col-lg-7">
                 <div class="product-gallery">
                     <img th:src="${product.imageLinks != null and !product.imageLinks.isEmpty() ? product.imageLinks[0] : 'https://via.placeholder.com/600x480?text=No+Image'}"
                          th:alt="${product.title}"
@@ -373,17 +417,25 @@
                 </div>
             </div>
 
-            <div class="col-lg-7 product-details">
+            <div class="col-lg-5 product-details">
                 <h1 th:text="${product.title}" class="mb-3 fw-bold text-dark"></h1>
                 <p class="text-secondary fs-6">Tác giả: <span th:text="${product.author}"></span> | NXB: <span th:text="${product.publisher}"></span></p>
 
-                <div class="p-3 mb-4 bg-light rounded shadow-sm d-flex align-items-center justify-content-start">
-                    <div class="product-price-detail"
-                         th:with="discountedPrice=${product.price - (product.price * product.discount / 100)}">
-                        <span th:text="${#numbers.formatDecimal(discountedPrice, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span>
+                <div class="p-3 bg-light rounded shadow-sm d-flex align-items-center justify-content-start price-container">
+                    <div th:with="originalPrice=${product.price}, discountPercent=${product.discount},
+                                  discountedPrice=${originalPrice - (originalPrice * discountPercent / 100)},
+                                  hasDiscount=${originalPrice > discountedPrice}">
+
+                        <div class="product-price-detail d-inline-block">
+                            <span th:text="${#numbers.formatDecimal(discountedPrice, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span>
+                        </div>
+
+                        <div th:if="${hasDiscount}" class="old-price d-inline-block"
+                             th:text="${#numbers.formatDecimal(originalPrice, 0, 'POINT', 0, 'COMMA')} + 'đ'"></div>
+
+                        <span th:if="${hasDiscount}" class="badge bg-danger ms-3 fs-6"
+                              th:text="'-' + ${discountPercent} + '%'"></span>
                     </div>
-                    <div th:if="${product.discount > 0}" class="old-price" th:text="${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'COMMA')} + 'đ'"></div>
-                    <span th:if="${product.discount > 0}" class="badge bg-danger ms-3 fs-6" th:text="'-' + ${product.discount} + '%'"></span>
                 </div>
 
                 <div class="mb-4">
@@ -672,7 +724,14 @@
         }
 
         const existingItem = cart.find(item => item.idProducts === productId);
-        const discountedPrice = product.price - (product.price * product.discount / 100);
+
+        // Tính giá đã giảm (final price)
+        const originalPrice = product.price || 0;
+        const discountPercentage = product.discount || 0;
+        let finalPrice = product.discountedPrice;
+        if (finalPrice === undefined || finalPrice === null) {
+             finalPrice = originalPrice - (originalPrice * discountPercentage / 100);
+        }
 
         if (product) {
             if (existingItem) {
@@ -686,7 +745,8 @@
                 cart.push({
                     idProducts: productId,
                     title: product.title,
-                    price: discountedPrice,
+                    // Sử dụng finalPrice đã tính toán
+                    price: finalPrice,
                     imageLink: product.imageLinks && product.imageLinks.length > 0 ? product.imageLinks[0] : null,
                     quantity: quantity
                 });
@@ -725,6 +785,7 @@
         let total = 0;
 
         cart.forEach(item => {
+            // item.price ở đây là finalPrice đã được lưu từ addToCart
             const itemTotal = item.price * item.quantity;
             total += itemTotal;
 

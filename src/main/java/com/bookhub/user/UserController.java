@@ -95,13 +95,13 @@ public class UserController {
     // ====================================================
 
     /** MAPPING: Hiển thị form Đăng ký (GET /register) */
-    @GetMapping("/register")
+    @GetMapping({"/register", "/user/register"}) // <--- ĐÃ SỬA: Thêm đường dẫn /user/register
     public String showRegisterForm() {
         return "user/register";
     }
 
     /** MAPPING: Xử lý Đăng ký (POST /register) */
-    @PostMapping("/register")
+    @PostMapping("/register") // Sử dụng /register để tương thích với link trong login.html
     public String registerUser(
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName,
@@ -112,6 +112,7 @@ public class UserController {
 
         if (userService.isEmailExist(email)) {
             redirectAttributes.addFlashAttribute("error", "Email đã tồn tại.");
+            // Giữ nguyên /register để khớp với mapping GET
             return "redirect:/register";
         }
 
@@ -122,6 +123,7 @@ public class UserController {
 
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi đăng ký: " + e.getMessage());
+            // Giữ nguyên /register để khớp với mapping GET
             return "redirect:/register";
         }
     }
