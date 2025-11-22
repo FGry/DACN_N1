@@ -62,17 +62,15 @@ public class ProductController {
         model.addAttribute("products", products);
         model.addAttribute("pageTitle", title);
 
-        // *** DÒNG ĐÃ THÊM ***
         // Tải tất cả danh mục và thêm vào model
         model.addAttribute("allCategories", categoryRepository.findAll());
-        // *** KẾT THÚC DÒNG ĐÃ THÊM ***
 
         return "user/product";
     }
 
     /** * [PUBLIC] Hiển thị chi tiết sản phẩm (GET /products/{id} và /product_detail/{id})
      */
-    @GetMapping({"/products/{id}", "/product_detail/{id}"}) // <--- ĐÃ SỬA: Thêm đường dẫn /product_detail/{id}
+    @GetMapping({"/products/{id}", "/product_detail/{id}"})
     public String viewProductDetail(@PathVariable("id") Integer id, Principal principal, Model model) {
 
         // GlobalAdvice đã thêm isLoggedIn và currentUser.
@@ -81,6 +79,10 @@ public class ProductController {
         try {
             ProductDTO product = productService.findProductById(id);
             model.addAttribute("product", product);
+
+            // === [FIX] THÊM DÒNG NÀY ĐỂ HIỂN THỊ DANH MỤC TRÊN NAVBAR ===
+            model.addAttribute("allCategories", categoryRepository.findAll());
+            // ============================================================
 
             List<CommentsDTO> publishedComments = commentsService.getCommentsByProduct(id);
             model.addAttribute("publishedComments", publishedComments);
