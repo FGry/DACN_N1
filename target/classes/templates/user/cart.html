@@ -173,32 +173,90 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
         <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" th:href="@{/}">Trang chủ</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/products}">Sản phẩm</a></li>
-
-                <li class="nav-item"><a class="nav-link" th:href="@{/about}">Giới thiệu</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/contact}">Liên hệ</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/user/voucher}">Voucher</a></li>
+            <ul class="navbar-nav me-3">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/products}">Sản phẩm</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCategories" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Danh mục
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownCategories">
+                        <li th:each="category : ${allCategories}">
+                            <a class="dropdown-item"
+                               th:href="@{/products(categoryId=${category.id_categories},_fragment='products')}"
+                               th:text="${category.name}">
+                                Tên Danh Mục
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/user/voucher}">Voucher</a>
+                </li>
             </ul>
-            <div class="d-flex align-items-center">
-                <div sec:authorize="!isAuthenticated()">
-                    <a th:href="@{/login}" class="btn btn-auth btn-sm me-2"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
-                    <a th:href="@{/user/register}" class="btn btn-auth btn-sm"><i class="fas fa-user-plus"></i> Đăng ký</a>
+
+            <form th:action="@{/products}" method="GET" class="d-flex mx-auto my-2 my-lg-0" style="width: 100%; max-width: 300px;">
+                <div class="input-group">
+
                 </div>
-                <div sec:authorize="isAuthenticated()" class="text-white me-3">
-                    Xin chào, <span sec:authentication="name">User</span>
-                    <a th:href="@{/logout}" class="btn btn-auth btn-sm ms-2"><i class="fas fa-sign-out-alt"></i></a>
+            </form>
+
+            <div class="d-flex align-items-center ms-lg-3">
+                <div th:if="${!isLoggedIn}">
+                    <a th:href="@{/login}" class="btn btn-auth btn-sm text-nowrap">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </a>
+                    <a th:href="@{/user/register}" class="btn btn-auth btn-sm text-nowrap">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </a>
                 </div>
 
-                <a th:href="@{/user/cart}" class="cart-icon ms-3">
+                <div th:if="${isLoggedIn}" class="dropdown">
+                    <button class="btn btn-auth btn-sm dropdown-toggle text-nowrap" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle"></i>
+                        <span th:text="${currentUser.username}">Tài khoản</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <li><a class="dropdown-item" th:href="@{/user/profile}">
+                            <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                        </a></li>
+
+                        <li><a class="dropdown-item" th:href="@{/my-orders}">
+                            <i class="fas fa-history"></i> Đơn hàng của tôi
+                        </a></li>
+
+                        <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
+                            <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
+                        </a></li>
+
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" th:href="@{/logout}">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a></li>
+                    </ul>
+                </div>
+
+                <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-badge" id="cartCount">0</span>
                 </a>
@@ -219,10 +277,10 @@
 
     <div id="cartSummary" class="cart-footer-summary mt-4 d-none">
 
-        <div class="input-group mb-3">
+       <!-- <div class="input-group mb-3">
             <input type="text" class="form-control" placeholder="Nhập mã giảm giá" id="voucherCode">
             <button class="btn btn-outline-secondary" type="button" onclick="applyVoucher()">Áp dụng</button>
-        </div>
+        </div>-->
 
         <div class="d-flex justify-content-between mb-2">
             <span>Tạm tính:</span>
@@ -248,11 +306,7 @@
     </div>
 </div>
 
-<footer class="footer mt-5">
-    <div class="container text-center">
-        <p>&copy; 2024 BookStore. Tất cả quyền được bảo lưu.</p>
-    </div>
-</footer>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>

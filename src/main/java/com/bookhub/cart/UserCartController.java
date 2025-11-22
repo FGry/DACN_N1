@@ -1,21 +1,48 @@
-package com.bookhub.cart; // (Hoặc package controller của bạn)
+package com.bookhub.cart;
 
+import com.bookhub.category.CategoryRepository;
+import com.bookhub.user.User;
+import com.bookhub.user.UserRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-// import org.springframework.security.access.prepost.PreAuthorize; // <-- ĐÃ XÓA
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.security.Principal;
+import java.util.Optional;
 
 @Controller
 public class UserCartController {
 
-    /**
-     * Hiển thị trang giỏ hàng (cart.html) cho BẤT KỲ AI.
-     * Đã XÓA @PreAuthorize để cho phép khách (guest) thanh toán.
-     */
-    // @PreAuthorize("hasRole('USER')") // <-- ĐÃ XÓA
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+
+
+    @Autowired
+    public UserCartController(CategoryRepository categoryRepository, UserRepository userRepository) {
+        this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
+    }
+
     @GetMapping("/user/cart")
-    public String userCartPage() {
-        // Trả về tệp: /resources/templates/user/cart.html
-        // Tệp này sẽ tự tải giỏ hàng từ localStorage/sessionStorage
+    public String userCartPage(Model model, Principal principal) {
+
+
+        model.addAttribute("allCategories", categoryRepository.findAll());
+
+        boolean isLoggedIn = (principal != null);
+        model.addAttribute("isLoggedIn", isLoggedIn);
+
+        if (isLoggedIn) {
+            Optional<User> userOptional = userRepository.findByEmail(principal.getName());
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                model.addAttribute("currentUser", user);
+                model.addAttribute("username", user.getUsername());
+            }
+        }
+
+
         return "user/cart";
     }
 }
