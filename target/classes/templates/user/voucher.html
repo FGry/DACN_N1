@@ -398,7 +398,7 @@
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownCategories">
                         <li th:each="category : ${allCategories}">
                             <a class="dropdown-item"
-                               th:href="@{/products(categoryId=${category.id_categories},_fragment='products')}"
+                               th:href="@{/products(categoryId=${category.id_categories})}"
                                th:text="${category.name}">
                                 Tên Danh Mục
                             </a>
@@ -459,8 +459,6 @@
         </div>
     </div>
 </nav>
-
-
 
 <section class="hero-section">
     <div class="container">
@@ -588,33 +586,52 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    // --- KHAI BÁO BIẾN ---
+    // Sử dụng đúng key 'bookstoreCart' để đồng bộ số lượng giỏ hàng
+    let cart = JSON.parse(localStorage.getItem('bookstoreCart') || '[]');
     let currentFilter = 'all';
 
-    // Load page on startup
+    // --- KHỞI TẠO ---
     document.addEventListener('DOMContentLoaded', function() {
-        updateCartCount();
+        updateCartCount(); // Cập nhật số badge giỏ hàng ngay lập tức
         renderVouchers();
         startCountdowns();
         animateOnScroll();
     });
 
-    // Update cart count
+    // --- HÀM CẬP NHẬT SỐ LƯỢNG TRÊN NAVBAR ---
     function updateCartCount() {
         const cartCount = document.getElementById('cartCount');
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartCount.textContent = totalItems;
+        if (cartCount) {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+        }
     }
 
-    // Render vouchers
+    // --- HÀM RENDER VOUCHERS ---
     function renderVouchers() {
         const grid = document.getElementById('voucherGrid');
-        // Dùng VOUCHERS_DATA lấy từ server
+        if (!grid) return;
+
+        // Dữ liệu VOUCHERS_DATA lấy từ th:inline script bên trên
+        if (typeof VOUCHERS_DATA === 'undefined') {
+            // Fallback phòng khi dữ liệu chưa load
+            grid.innerHTML = '<div class="col-12 text-center p-5"><p class="text-muted">Đang tải dữ liệu...</p></div>';
+            return;
+        }
+
         const filteredVouchers = currentFilter === 'all' ? VOUCHERS_DATA : VOUCHERS_DATA.filter(v => v.type === currentFilter);
+
+        if (filteredVouchers.length === 0) {
+            grid.innerHTML = '<div class="col-12 text-center p-5"><p class="text-muted">Không tìm thấy voucher phù hợp.</p></div>';
+            const totalEl = document.getElementById('totalVouchers');
+            if(totalEl) totalEl.textContent = 0;
+            return;
+        }
 
         grid.innerHTML = filteredVouchers.map(voucher => `
             <div class="voucher-card" data-type="${voucher.type}">
-                <div class="voucher-category">${voucher.category}</div>
+                <div class="voucher-category">${voucher.category || 'Ưu đãi'}</div>
                 <div class="voucher-status status-${voucher.status}">
                     ${voucher.status === 'active' ? 'Còn hiệu lực' :
                       voucher.status === 'ending' ? 'Sắp hết hạn' : 'Hết hạn'}
@@ -670,64 +687,87 @@
             </div>
         `).join('');
 
-        // Update total vouchers count
-        document.getElementById('totalVouchers').textContent = filteredVouchers.length;
+        // Cập nhật tổng số voucher hiển thị
+        const totalEl = document.getElementById('totalVouchers');
+        if(totalEl) totalEl.textContent = filteredVouchers.length;
     }
 
-    // Filter vouchers
+    // --- HÀM LỌC VOUCHERS ---
     function filterVouchers(event, type) {
         currentFilter = type;
 
-        // Update active filter button
+        // Xử lý active button
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        event.target.classList.add('active'); // Thêm event vào đây
+
+        if(event && event.target) {
+             const btn = event.target.closest('.filter-btn');
+             if(btn) btn.classList.add('active');
+        }
 
         renderVouchers();
         startCountdowns();
     }
 
-    // Copy voucher code
+    // --- COPY CODE ---
     function copyVoucherCode(code) {
-        navigator.clipboard.writeText(code).then(() => {
-            showNotification(`Đã copy mã voucher: ${code}`, 'success');
-        }).catch(() => {
-            // Fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = code;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            showNotification(`Đã copy mã voucher: ${code}`, 'success');
-        });
+        if (!code) return;
+
+        // Sử dụng API Clipboard hiện đại trước
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification(`Đã copy mã voucher: ${code}`, 'success');
+            }).catch(() => {
+                fallbackCopyTextToClipboard(code);
+            });
+        } else {
+            fallbackCopyTextToClipboard(code);
+        }
     }
 
-    // Start countdown timers
+    function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";  // Để tránh scroll trang xuống cuối
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showNotification(`Đã copy mã voucher: ${text}`, 'success');
+            } else {
+                showNotification('Không thể copy mã', 'error');
+            }
+        } catch (err) {
+            showNotification('Lỗi copy', 'error');
+        }
+        document.body.removeChild(textArea);
+    }
+
+    // --- COUNTDOWN TIMERS ---
     function startCountdowns() {
+        if (typeof VOUCHERS_DATA === 'undefined') return;
         const endingVouchers = VOUCHERS_DATA.filter(v => v.status === 'ending');
 
         endingVouchers.forEach(voucher => {
             const timerElement = document.getElementById(`timer-${voucher.id}`);
             if (timerElement) {
-                updateCountdown(voucher.endDate, timerElement);
-                // Clear existing interval before setting a new one (Phòng ngừa)
+                // Xóa interval cũ nếu có để tránh trùng lặp
                 const existingInterval = timerElement.dataset.intervalId;
-                if (existingInterval) {
-                    clearInterval(parseInt(existingInterval));
-                }
+                if (existingInterval) clearInterval(parseInt(existingInterval));
 
+                updateCountdown(voucher.endDate, timerElement);
                 const intervalId = setInterval(() => updateCountdown(voucher.endDate, timerElement), 1000);
                 timerElement.dataset.intervalId = intervalId;
             }
         });
     }
 
-    // Update countdown
     function updateCountdown(endDate, element) {
         const now = new Date().getTime();
-        // JS dùng format yyyy-MM-dd để tạo date object
         const end = new Date(endDate).getTime();
         const distance = end - now;
 
@@ -736,16 +776,14 @@
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
             element.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
         } else {
             element.textContent = 'Đã hết hạn';
-            // Ngừng đếm ngược
-            clearInterval(parseInt(element.dataset.intervalId));
+            if(element.dataset.intervalId) clearInterval(parseInt(element.dataset.intervalId));
         }
     }
 
-    // Show notification
+    // --- THÔNG BÁO ---
     function showNotification(message, type) {
         const notification = document.createElement('div');
         const alertClass = type === 'success' ? 'alert-success' :
@@ -753,7 +791,7 @@
                           type === 'info' ? 'alert-info' : 'alert-warning';
 
         notification.className = `alert ${alertClass} position-fixed`;
-        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
         notification.innerHTML = `
             ${message}
             <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
@@ -763,12 +801,14 @@
 
         setTimeout(() => {
             if (notification.parentElement) {
-                notification.remove();
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => notification.remove(), 500);
             }
         }, 3000);
     }
 
-    // Animate elements on scroll
+    // --- HIỆU ỨNG CUỘN & ANIMATION ---
     function animateOnScroll() {
         const observerOptions = {
             threshold: 0.1,
@@ -780,11 +820,11 @@
                 if (entry.isIntersecting) {
                     entry.target.style.opacity = '1';
                     entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target); // Chỉ animate 1 lần
                 }
             });
         }, observerOptions);
 
-        // Observe all voucher cards for animation
         document.querySelectorAll('.voucher-card, .stats-section, .filter-section').forEach(element => {
             element.style.opacity = '0';
             element.style.transform = 'translateY(30px)';
@@ -793,7 +833,7 @@
         });
     }
 
-    // Add scroll effect to navbar
+    // Navbar effect
     window.addEventListener('scroll', function() {
         const navbar = document.querySelector('.navbar');
         if (window.scrollY > 100) {
@@ -803,18 +843,14 @@
             navbar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
             navbar.style.backdropFilter = 'none';
         }
-    });
 
-    // Add parallax effect to hero section
-    window.addEventListener('scroll', function() {
+        // Parallax Hero
         const hero = document.querySelector('.hero-section');
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
-
         if (hero) {
-            hero.style.transform = `translateY(${rate}px)`;
+            const scrolled = window.pageYOffset;
+            hero.style.transform = `translateY(${scrolled * -0.3}px)`; // Giảm tốc độ parallax cho mượt hơn
         }
     });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa36ac02d708dd',t:'MTc1OTgwNjcxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

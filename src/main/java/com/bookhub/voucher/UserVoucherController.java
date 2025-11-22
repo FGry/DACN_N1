@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional; // Cần thiết
+import com.bookhub.category.CategoryRepository;
 
 @Controller
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class UserVoucherController {
 
     private final VoucherService voucherService;
     private final UserRepository userRepository; // Dùng để tìm kiếm User Entity
+    private final CategoryRepository categoryRepository;
 
     /**
      * Hiển thị trang voucher (voucher.html) cho người dùng đã đăng nhập.
@@ -30,6 +32,7 @@ public class UserVoucherController {
 
         // 1. Logic kiểm tra trạng thái đăng nhập
         model.addAttribute("isAuthenticated", isAuthenticated);
+        model.addAttribute("allCategories", categoryRepository.findAll()); // <<< THÊM 3: Đưa categories vào Model
 
         if (isAuthenticated) {
             String usernameOrEmail = principal.getName();
@@ -45,6 +48,7 @@ public class UserVoucherController {
                 // String displayName = user.getFirstName() + " " + user.getLastName();
                 String displayName = user.getUsername(); // <-- SỬ DỤNG TÊN HIỂN THỊ
                 model.addAttribute("username", displayName);
+                model.addAttribute("currentUser", user);
             } else {
                 // Trường hợp không tìm thấy User (nên rất hiếm)
                 model.addAttribute("username", usernameOrEmail);
@@ -60,4 +64,6 @@ public class UserVoucherController {
 
         return "user/voucher";
     }
+
+
 }
