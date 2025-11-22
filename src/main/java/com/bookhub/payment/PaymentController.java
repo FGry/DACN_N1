@@ -15,7 +15,6 @@ public class PaymentController {
 
     private final OrderService orderService;
 
-    // PayOS sẽ gọi URL này khi thanh toán xong (thành công hoặc hủy)
     @GetMapping("/return")
     public String handlePaymentReturn(
             @RequestParam("status") String status,
@@ -23,24 +22,26 @@ public class PaymentController {
             RedirectAttributes redirectAttributes
     ) {
         try {
-            Integer orderId = Integer.parseInt(orderCodeString);
+            // --- GIẢI MÃ ORDER ID ---
+            // Lấy orderCode chia cho 10000 để ra ID gốc
+            long orderCode = Long.parseLong(orderCodeString);
+            int orderId = (int) (orderCode / 10000L);
 
             if ("PAID".equalsIgnoreCase(status)) {
-                // Thanh toán thành công -> Cập nhật status đơn hàng
+                // Thanh toán thành công
                 orderService.confirmPayment(orderId);
-
                 redirectAttributes.addFlashAttribute("successMessage",
                         "Thanh toán thành công! Đơn hàng #" + orderId + " đã được xác nhận.");
                 return "redirect:/order/success/" + orderId;
             } else {
-                // Thanh toán thất bại hoặc hủy
-                orderService.cancelOrder(orderId); // Tùy logic, có thể hủy luôn đơn
-                redirectAttributes.addFlashAttribute("errorMessage", "Thanh toán đã bị hủy hoặc thất bại.");
-                return "redirect:/my-orders"; // Hoặc quay lại trang giỏ hàng
+                // Thanh toán thất bại hoặc hủy -> Gọi hàm Hủy đơn để hoàn kho
+                orderService.cancelOrder(orderId);
+                redirectAttributes.addFlashAttribute("errorMessage", "Giao dịch thất bại hoặc đã bị hủy.");
+                return "redirect:/user/cart";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("errorMessage", "Có lỗi xảy ra khi xử lý kết quả thanh toán.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi xử lý kết quả thanh toán: " + e.getMessage());
             return "redirect:/";
         }
     }
@@ -48,11 +49,17 @@ public class PaymentController {
     @GetMapping("/cancel")
     public String handlePaymentCancel(@RequestParam("orderCode") String orderCodeString, RedirectAttributes redirectAttributes) {
         try {
-            Integer orderId = Integer.parseInt(orderCodeString);
+            // --- GIẢI MÃ ORDER ID ---
+            long orderCode = Long.parseLong(orderCodeString);
+            int orderId = (int) (orderCode / 10000L);
+
+            // Gọi hàm hủy đơn để hoàn kho
             orderService.cancelOrder(orderId);
-            redirectAttributes.addFlashAttribute("errorMessage", "Bạn đã hủy thanh toán.");
+
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn đã hủy thanh toán. Đơn hàng đã được hủy.");
         } catch (Exception e) {
             e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi hủy đơn hàng.");
         }
         return "redirect:/user/cart";
     }

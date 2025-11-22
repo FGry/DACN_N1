@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         /* ========================================= */
-        /* CSS CHUNG (GIỮ NGUYÊN TỪ FILE GỐC) */
+        /* CSS CHUNG */
         /* ========================================= */
         body {
             box-sizing: border-box;
@@ -301,35 +301,6 @@
             box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
 
-        .search-section {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin: 40px 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .search-input {
-            border: 2px solid #e9ecef;
-            border-radius: 25px;
-            padding: 12px 20px;
-            font-size: 1rem;
-        }
-
-        .search-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-
-        .btn-search {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 25px;
-            padding: 12px 25px;
-            color: white;
-            font-weight: 600;
-        }
-
         .footer {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
@@ -406,8 +377,9 @@
                 font-size: 3rem;
             }
         }
+
         /* ========================================= */
-        /* CSS CHATBOT (GIỮ NGUYÊN TỪ FILE GỐC) */
+        /* CSS CHATBOT */
         /* ========================================= */
         .chatbox-wrapper {
             position: fixed;
@@ -521,6 +493,7 @@
     </style>
 </head>
 <body>
+
 <div class="chatbox-wrapper">
     <div id="chatbox-content">
         <div class="chatbox-header">
@@ -536,6 +509,7 @@
     </div>
     <button id="chat-toggle-btn">💬</button>
 </div>
+
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
         <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
@@ -545,7 +519,7 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
+            <ul class="navbar-nav me-3">
                 <li class="nav-item">
                     <a class="nav-link active" href="#home">Trang chủ</a>
                 </li>
@@ -578,18 +552,31 @@
                 </li>
             </ul>
 
-            <div class="d-flex align-items-center">
+            <div class="d-flex mx-auto my-2 my-lg-0" style="width: 100%; max-width: 400px;">
+                <div class="input-group">
+                    <input type="text" class="form-control border-0"
+                           id="searchInput"
+                           placeholder="Tìm tên sách, tác giả..."
+                           style="border-radius: 20px 0 0 20px; font-size: 0.9rem;">
+                    <button class="btn btn-light border-0" type="button" onclick="searchProductsOnPage()"
+                            style="border-radius: 0 20px 20px 0; color: #667eea;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center ms-lg-3">
                 <div id="loggedOutButtons" th:if="${!isLoggedIn}">
-                    <a th:href="@{/login}" class="btn btn-auth btn-sm">
+                    <a th:href="@{/login}" class="btn btn-auth btn-sm text-nowrap">
                         <i class="fas fa-sign-in-alt"></i> Đăng nhập
                     </a>
-                    <a th:href="@{/user/register}" class="btn btn-auth btn-sm">
+                    <a th:href="@{/user/register}" class="btn btn-auth btn-sm text-nowrap">
                         <i class="fas fa-user-plus"></i> Đăng ký
                     </a>
                 </div>
 
                 <div th:if="${isLoggedIn}" class="dropdown">
-                    <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-auth btn-sm dropdown-toggle text-nowrap" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user-circle"></i>
                         <span th:text="${currentUser.username}">Tài khoản</span>
                     </button>
@@ -664,6 +651,7 @@
         </button>
     </div>
 </div>
+
 <div class="container">
     <div class="voucher-banner" id="voucher">
         <h3><i class="fas fa-gift"></i> Ưu đãi đặc biệt!</h3>
@@ -672,23 +660,6 @@
     </div>
 </div>
 
-<div class="container">
-    <div class="search-section">
-        <h4 class="text-center mb-4"><i class="fas fa-search"></i> Tìm kiếm sách</h4>
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="input-group">
-                    <input type="text" class="form-control search-input"
-                           id="searchInput"
-                           placeholder="Nhập tên sách, tác giả...">
-                    <button class="btn btn-search" type="button" onclick="searchProductsOnPage()">
-                        <i class="fas fa-search"></i> Tìm kiếm
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 <div class="container" id="products">
     <h2 class="text-center mb-5">Sản phẩm nổi bật</h2>
     <div class="row" id="productList">
@@ -904,13 +875,10 @@
             return;
         }
 
-        // --- ĐOẠN LOGIC MỚI ĐƯỢC CHÈN VÀO ---
-        // Kiểm tra tồn kho
         if (product.stockQuantity <= 0) {
             showNotification('Sản phẩm này tạm thời Hết hàng!', 'error');
-            return; // Chặn không cho chạy tiếp
+            return;
         }
-        // ------------------------------------
 
         const originalPrice = product.price || 0;
         const discountPercentage = product.discount || 0;
@@ -941,18 +909,12 @@
     function orderNow(productId) {
         const product = products.find(p => p.idProducts === productId);
 
-        // --- ĐOẠN LOGIC MỚI ĐƯỢC CHÈN VÀO ---
         if (product && product.stockQuantity <= 0) {
              showNotification('Sản phẩm này đã Hết hàng, không thể đặt mua!', 'error');
-             return; // Chặn không cho mở Modal thanh toán
+             return;
         }
-        // ------------------------------------
 
         addToCart(productId);
-        // Nếu addToCart chạy thành công (không bị return do hết hàng), thì mở modal
-        // Tuy nhiên do addToCart đã check rồi, ở đây check lại cho chắc chắn hoặc để logic riêng
-        // Vì addToCart gọi return bên trong nên code dưới vẫn chạy nếu không check lại ở đây.
-        // Nên việc check ở đầu hàm orderNow là bắt buộc.
 
         const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
         cartModal.show();
@@ -1104,6 +1066,7 @@
         });
     });
 
+    // XỬ LÝ PHÍM ENTER CHO THANH TÌM KIẾM
     document.getElementById('searchInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();

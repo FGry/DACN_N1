@@ -11,8 +11,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException; // Quan trọng
-import org.springframework.web.client.HttpServerErrorException; // Quan trọng
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import vn.payos.PayOS;
 
@@ -24,9 +24,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class PayOSService {
-
-    // Inject để lấy config, nhưng không dùng SDK tạo link
-    private final PayOS payOS;
 
     @Value("${payos.client-id}")
     private String clientId;
@@ -47,15 +44,19 @@ public class PayOSService {
     private final ObjectMapper objectMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    public String createPaymentLink(Order order) { // Bỏ throws Exception để handle bên trong
+    public String createPaymentLink(Order order) {
         try {
-            // 1. Chuẩn bị dữ liệu (Tạo mã ngẫu nhiên để tránh trùng lặp khi test)
-            long orderCode = Long.parseLong(order.getId_order() + "" + (System.currentTimeMillis() / 1000 % 10000));
+            // 1. TẠO ORDER CODE THEO CÔNG THỨC TOÁN HỌC
+            // OrderCode = (OrderID * 10000) + (3 số cuối thời gian)
+            // Ví dụ: OrderID 15 -> 150000 + 123 = 150123
+            // Cách này đảm bảo OrderCode là duy nhất và có thể tính ngược lại ra ID gốc
+            long timePart = System.currentTimeMillis() % 10000;
+            long orderCode = (order.getId_order() * 10000L) + timePart;
+
             int amount = order.getTotal().intValue();
             String description = "Thanh toan don " + order.getId_order();
 
             // 2. Tạo chữ ký (Signature) thủ công
-            // PayOS yêu cầu sắp xếp theo alphabet key
             SortedMap<String, String> signatureData = new TreeMap<>();
             signatureData.put("amount", String.valueOf(amount));
             signatureData.put("cancelUrl", cancelUrl);
@@ -74,7 +75,7 @@ public class PayOSService {
             requestBody.put("cancelUrl", cancelUrl);
             requestBody.put("returnUrl", returnUrl);
             requestBody.put("signature", signature);
-            // KHÔNG gửi items để tránh lỗi logic
+            // KHÔNG gửi items để tránh lỗi logic voucher
 
             // 4. Gửi Request
             HttpHeaders headers = new HttpHeaders();
@@ -84,7 +85,6 @@ public class PayOSService {
 
             HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), headers);
 
-            // Gọi API trực tiếp
             String apiResponse = restTemplate.postForObject(
                     "https://api-merchant.payos.vn/v2/payment-requests",
                     request,
@@ -96,25 +96,21 @@ public class PayOSService {
             String code = rootNode.path("code").asText();
 
             if (!"00".equals(code)) {
-                // Nếu PayOS trả về code lỗi (ví dụ trùng orderCode, sai signature)
                 throw new RuntimeException("PayOS Error [" + code + "]: " + rootNode.path("desc").asText());
             }
 
             return rootNode.path("data").path("checkoutUrl").asText();
 
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            // ĐÂY LÀ CHỖ QUAN TRỌNG NHẤT: Bắt lỗi HTTP 400/500 từ PayOS
             String responseBody = e.getResponseBodyAsString();
-            System.err.println("❌ LỖI GỌI API PAYOS: " + responseBody); // In ra console server
-            throw new RuntimeException("Lỗi PayOS (HTTP " + e.getStatusCode() + "): " + responseBody);
-
+            System.err.println("❌ LỖI GỌI API PAYOS: " + responseBody);
+            throw new RuntimeException("Lỗi PayOS: " + responseBody);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Lỗi tạo link thanh toán: " + e.getMessage());
+            throw new RuntimeException("Lỗi tạo link: " + e.getMessage());
         }
     }
 
-    // Hàm phụ trợ: Tạo chuỗi query string
     private String buildQueryString(Map<String, String> data) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : data.entrySet()) {
@@ -124,13 +120,11 @@ public class PayOSService {
         return sb.toString();
     }
 
-    // Hàm phụ trợ: Mã hóa HMAC-SHA256
     private String generateHmacSHA256(String data, String key) throws Exception {
         Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
         SecretKeySpec secret_key = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         sha256_HMAC.init(secret_key);
         byte[] bytes = sha256_HMAC.doFinal(data.getBytes(StandardCharsets.UTF_8));
-
         StringBuilder hexString = new StringBuilder();
         for (byte b : bytes) {
             String hex = Integer.toHexString(0xff & b);

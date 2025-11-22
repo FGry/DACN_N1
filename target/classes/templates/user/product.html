@@ -54,8 +54,6 @@
             color: #667eea;
         }
 
-
-
         .btn-auth {
             background: rgba(255,255,255,0.2);
             border: 1px solid white;
@@ -281,36 +279,7 @@
             box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
 
-        /* Search & Filter Section */
-        .search-section {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin: 20px 0 40px 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .search-input {
-            border: 2px solid #e9ecef;
-            border-radius: 25px 0 0 25px;
-            padding: 12px 20px;
-            font-size: 1rem;
-        }
-
-        .btn-search {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 0 25px 25px 0;
-            padding: 12px 25px;
-            color: white;
-            font-weight: 600;
-        }
-
-        .search-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-
+        /* Footer */
         .footer {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
@@ -469,6 +438,7 @@
     </div>
     <button id="chat-toggle-btn">💬</button>
 </div>
+
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
         <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
@@ -478,7 +448,7 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
+            <ul class="navbar-nav me-3">
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/}">Trang chủ</a>
                 </li>
@@ -510,18 +480,32 @@
                 </li>
             </ul>
 
-            <div class="d-flex align-items-center">
+            <form th:action="@{/products}" method="GET" class="d-flex mx-auto my-2 my-lg-0" style="width: 100%; max-width: 400px;">
+                <div class="input-group">
+                    <input type="text" class="form-control border-0"
+                           name="keyword"
+                           th:value="${param.keyword}"
+                           placeholder="Tìm tên sách, tác giả..."
+                           style="border-radius: 20px 0 0 20px; font-size: 0.9rem;">
+                    <button class="btn btn-light border-0" type="submit"
+                            style="border-radius: 0 20px 20px 0; color: #667eea;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <div class="d-flex align-items-center ms-lg-3">
                 <div th:if="${!isLoggedIn}">
-                    <a th:href="@{/login}" class="btn btn-auth btn-sm">
+                    <a th:href="@{/login}" class="btn btn-auth btn-sm text-nowrap">
                         <i class="fas fa-sign-in-alt"></i> Đăng nhập
                     </a>
-                    <a th:href="@{/user/register}" class="btn btn-auth btn-sm">
+                    <a th:href="@{/user/register}" class="btn btn-auth btn-sm text-nowrap">
                         <i class="fas fa-user-plus"></i> Đăng ký
                     </a>
                 </div>
 
                 <div th:if="${isLoggedIn}" class="dropdown">
-                    <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-auth btn-sm dropdown-toggle text-nowrap" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user-circle"></i>
                         <span th:text="${currentUser.username}">Tài khoản</span>
                     </button>
@@ -560,29 +544,6 @@
         <p class="lead">Cung cấp sách giáo khoa, tham khảo và tài liệu học tập chất lượng cao.</p>
     </div>
 </section>
-
-<div class="container">
-    <div class="search-section">
-        <h4 class="text-center mb-4"><i class="fas fa-filter"></i> Tìm kiếm và Lọc sách</h4>
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <form th:action="@{/products#products}" method="GET">
-                    <div class="input-group">
-                        <input type="text" class="form-control search-input" name="keyword"
-                               th:value="${param.keyword}"
-                               placeholder="Nhập tên sách hoặc tên tác giả cần tìm..."
-                               id="searchInput"
-                               autocomplete="off">
-                        <button class="btn btn-search" type="submit">
-                            <i class="fas fa-search"></i> Tìm kiếm
-                        </button>
-                    </div>
-                </form>
-
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="container" id="products">
     <h2 class="text-center mb-5">Danh sách sản phẩm</h2>
