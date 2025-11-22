@@ -38,15 +38,16 @@
 
         .btn-auth {
             background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid white;
             color: white;
             margin: 0 5px;
+            border-radius: 8px;
+            padding: 5px 15px;
             transition: all 0.3s ease;
         }
 
         .btn-auth:hover {
-            background: white;
-            color: #667eea;
+            background-color: rgba(255, 255, 255, 0.2);
         }
 
         .cart-icon {
@@ -374,9 +375,9 @@
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark">
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
-        <a class="navbar-brand" th:href="@{/}" title="Trang chủ"><i class="fas fa-book-open"></i> BookStore</a>
+        <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -385,10 +386,24 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" th:href="@{/}">Trang chủ</a>
+                    <a class="nav-link" th:href="@{/}">Trang chủ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
+                    <a class="nav-link active" th:href="@{/products}">Sản phẩm</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCategories" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Danh mục
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownCategories">
+                        <li th:each="category : ${allCategories}">
+                            <a class="dropdown-item"
+                               th:href="@{/products(categoryId=${category.id_categories},_fragment='products')}"
+                               th:text="${category.name}">
+                                Tên Danh Mục
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
@@ -402,55 +417,50 @@
             </ul>
 
             <div class="d-flex align-items-center">
-
-                <div th:unless="${isAuthenticated}">
-                    <button class="btn btn-auth btn-sm" onclick="window.location.href='login.html'">
+                <div th:if="${!isLoggedIn}">
+                    <a th:href="@{/login}" class="btn btn-auth btn-sm">
                         <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                    </button>
-                    <button class="btn btn-auth btn-sm" onclick="window.location.href='register.html'">
+                    </a>
+                    <a th:href="@{/user/register}" class="btn btn-auth btn-sm">
                         <i class="fas fa-user-plus"></i> Đăng ký
-                    </button>
+                    </a>
                 </div>
 
-                <div th:if="${isAuthenticated}" class="dropdown">
-                    <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-user-circle"></i> [[${username}]]
+                <div th:if="${isLoggedIn}" class="dropdown">
+                    <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle"></i>
+                        <span th:text="${currentUser.username}">Tài khoản</span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-                        <li>
-                            <a class="dropdown-item" href="/user/profile">
-                                <i class="fas fa-info-circle me-2"></i> Thông tin cá nhân
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" th:href="@{/my-orders}">
-                                <i class="fas fa-history"></i> Đơn hàng của tôi
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="/user/address">
-                                <i class="fas fa-map-marker-alt me-2"></i> Cập nhật Địa chỉ
-                            </a>
-                        </li>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <li><a class="dropdown-item" th:href="@{/user/profile}">
+                            <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                        </a></li>
+
+                        <li><a class="dropdown-item" th:href="@{/my-orders}">
+                            <i class="fas fa-history"></i> Đơn hàng của tôi
+                        </a></li>
+
+                        <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
+                            <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
+                        </a></li>
+
                         <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form th:action="@{/logout}" method="post">
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
-                                </button>
-                            </form>
-                        </li>
+                        <li><a class="dropdown-item text-danger" th:href="@{/logout}">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a></li>
                     </ul>
                 </div>
 
-                <div class="cart-icon ms-3" onclick="window.location.href='cart.html'">
+                <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-badge" id="cartCount">0</span>
-                </div>
+                </a>
             </div>
         </div>
     </div>
 </nav>
+
+
 
 <section class="hero-section">
     <div class="container">

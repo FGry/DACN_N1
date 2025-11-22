@@ -588,31 +588,29 @@
                     </a>
                 </div>
 
-                <div id="loggedInButtons" th:if="${isLoggedIn}">
-                    <div class="dropdown">
-                        <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle"></i>
-                            <span id="userNameDisplay" th:text="${currentUser.username}">Tài khoản</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                            <li><a class="dropdown-item" th:href="@{/user/profile}">
-                                <i class="fas fa-info-circle"></i> Thông tin cá nhân
-                            </a></li>
+                <div th:if="${isLoggedIn}" class="dropdown">
+                    <button class="btn btn-auth btn-sm dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle"></i>
+                        <span th:text="${currentUser.username}">Tài khoản</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <li><a class="dropdown-item" th:href="@{/user/profile}">
+                            <i class="fas fa-info-circle"></i> Thông tin cá nhân
+                        </a></li>
 
-                            <li><a class="dropdown-item" th:href="@{/my-orders}">
-                                <i class="fas fa-history"></i> Đơn hàng của tôi
-                            </a></li>
+                        <li><a class="dropdown-item" th:href="@{/my-orders}">
+                            <i class="fas fa-history"></i> Đơn hàng của tôi
+                        </a></li>
 
-                            <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
-                                <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
-                            </a></li>
+                        <li><a class="dropdown-item" th:href="@{/user/address_setup.html}">
+                            <i class="fas fa-map-marked-alt"></i> Cập nhật Địa chỉ
+                        </a></li>
 
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" th:href="@{/logout}">
-                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                            </a></li>
-                        </ul>
-                    </div>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" th:href="@{/logout}">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a></li>
+                    </ul>
                 </div>
 
                 <a th:href="@{/user/cart}" class="cart-icon ms-3" style="cursor: pointer;">
