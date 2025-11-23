@@ -175,10 +175,139 @@
             font-weight: 600;
         }
 
+
+         /* ========================================= */
+        /* CSS CHATBOT */
+        /* ========================================= */
+        .chatbox-wrapper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        #chat-toggle-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #chat-toggle-btn:hover {
+            background-color: #764ba2;
+        }
+
+        #chatbox-content {
+            width: 350px;
+            height: 450px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            margin-bottom: 10px;
+            overflow: hidden;
+            display: none; /* Mặc định ẩn, JS sẽ bật */
+            flex-direction: column;
+        }
+
+        .chatbox-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbox-header h5 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        #clear-history-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        #clear-history-btn:hover {
+            color: white;
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fa;
+        }
+
+        .chatbox-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #e9ecef;
+            background-color: white;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            border: 1px solid #ced4da;
+            border-radius: 20px;
+            padding: 8px 15px;
+            margin-right: 10px;
+            outline: none;
+        }
+
+        #chat-send {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #chat-send:hover {
+            background-color: #764ba2;
+        }
     </style>
 </head>
 <body>
 
+
+<div class="chatbox-wrapper">
+    <div id="chatbox-content">
+        <div class="chatbox-header">
+            <h5><i class="fas fa-robot"></i> Chat Hỗ Trợ</h5>
+            <button id="clear-history-btn" title="Xóa lịch sử chat"><i class="fas fa-trash-alt"></i></button>
+        </div>
+        <div id="chat-messages">
+        </div>
+        <div class="chatbox-input-area">
+            <input type="text" id="chat-input" placeholder="Gõ tin nhắn của bạn...">
+            <button id="chat-send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <button id="chat-toggle-btn">💬</button>
+</div>
 
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
@@ -194,7 +323,7 @@
                     <a class="nav-link" th:href="@{/}">Trang chủ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link " th:href="@{/products}">Sản phẩm</a>
+                    <a class="nav-link active" th:href="@{/products}">Sản phẩm</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCategories" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -223,7 +352,14 @@
 
             <form th:action="@{/products}" method="GET" class="d-flex mx-auto my-2 my-lg-0" style="width: 100%; max-width: 300px;">
                 <div class="input-group">
-
+                    <input type="text" class="form-control border-0"
+                           name="keyword"
+                           placeholder="Tìm tên sách, tác giả..."
+                           style="border-radius: 20px 0 0 20px; font-size: 0.9rem;">
+                    <button class="btn btn-light border-0" type="submit"
+                            style="border-radius: 0 20px 20px 0; color: #667eea;">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
             </form>
 
@@ -283,10 +419,7 @@
 
     <div id="cartSummary" class="cart-footer-summary mt-4 d-none">
 
-       <!-- <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Nhập mã giảm giá" id="voucherCode">
-            <button class="btn btn-outline-secondary" type="button" onclick="applyVoucher()">Áp dụng</button>
-        </div>-->
+
 
         <div class="d-flex justify-content-between mb-2">
             <span>Tạm tính:</span>
@@ -313,12 +446,11 @@
 </div>
 
 
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    let cart = JSON.parse(localStorage.getItem('bookstoreCart')) || [];
 
-    // Biến lưu trạng thái giảm giá
+<script>
+    // === LOGIC GIỎ HÀNG VÀ THANH TOÁN ===
+    let cart = JSON.parse(localStorage.getItem('bookstoreCart')) || [];
     let currentDiscountAmount = 0;
     let currentVoucherCode = null;
 
@@ -331,14 +463,11 @@
         const cartItemsDiv = document.getElementById('cartItems');
         const emptyCart = document.getElementById('emptyCart');
         const cartSummary = document.getElementById('cartSummary');
-        const cartCount = document.getElementById('cartCount');
+        const navCartCount = document.querySelector('.navbar .cart-badge');
 
         let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-        // Cập nhật badge trên navbar
-        const navCartCount = document.querySelector('.navbar .cart-badge');
         if(navCartCount) navCartCount.textContent = totalItems;
-        if(cartCount) cartCount.textContent = totalItems;
 
         if (cart.length === 0) {
             emptyCart.classList.remove('d-none');
@@ -387,16 +516,11 @@
         cartItemsDiv.innerHTML = html;
 
         // --- LOGIC HIỂN THỊ GIÁ ---
-
-        // 1. Hiển thị Tạm tính
         document.getElementById('subTotal').textContent = formatPrice(subTotal);
 
-        // 2. Hiển thị Giảm giá (Nếu có)
-        const discountRow = document.getElementById('discountRow');
-
-        // Đảm bảo giảm giá không lớn hơn tổng tiền
         if(currentDiscountAmount > subTotal) currentDiscountAmount = subTotal;
 
+        const discountRow = document.getElementById('discountRow');
         if (currentDiscountAmount > 0) {
             discountRow.classList.remove('d-none');
             document.getElementById('discountAmount').textContent = '-' + formatPrice(currentDiscountAmount);
@@ -404,7 +528,6 @@
             discountRow.classList.add('d-none');
         }
 
-        // 3. Hiển thị Tổng cộng
         const finalTotal = subTotal - currentDiscountAmount;
         document.getElementById('totalPrice').textContent = formatPrice(finalTotal);
     }
@@ -417,7 +540,6 @@
                 cart = cart.filter(p => p.idProducts !== id);
             }
         }
-        // Reset voucher khi thay đổi số lượng
         resetVoucherState();
         saveCart();
         renderCart();
@@ -425,7 +547,6 @@
 
     function removeItem(id) {
         cart = cart.filter(p => p.idProducts !== id);
-        // Reset voucher khi xóa sản phẩm
         resetVoucherState();
         saveCart();
         renderCart();
@@ -435,11 +556,11 @@
         if (currentVoucherCode) {
             currentDiscountAmount = 0;
             currentVoucherCode = null;
-            document.getElementById('voucherCode').value = '';
+            const codeInput = document.getElementById('voucherCode');
+            if(codeInput) codeInput.value = '';
         }
     }
 
-    // *** HÀM ÁP DỤNG VOUCHER ***
     async function applyVoucher() {
         const codeInput = document.getElementById('voucherCode');
         const code = codeInput.value.trim();
@@ -449,42 +570,32 @@
             return;
         }
 
-        // Tính tổng tiền hiện tại
         const subTotal = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
 
         try {
-            // Gọi đúng API mà checkout.html đang dùng
             const response = await fetch('/api/vouchers/check', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    code: code,
-                    cartTotal: subTotal.toString()
-                })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({code: code, cartTotal: subTotal.toString()})
             });
 
             const data = await response.json();
 
             if (response.ok && data.success) {
-                // Thành công
                 currentDiscountAmount = data.discountAmount;
                 currentVoucherCode = code;
                 alert(data.message);
-                renderCart(); // Vẽ lại để cập nhật giá
             } else {
-                // Thất bại
                 currentDiscountAmount = 0;
                 currentVoucherCode = null;
                 alert(data.message || 'Mã giảm giá không hợp lệ.');
-                renderCart();
             }
 
         } catch (error) {
             console.error('Lỗi:', error);
             alert('Có lỗi xảy ra khi kiểm tra mã giảm giá.');
         }
+        renderCart();
     }
 
     function checkout() {
@@ -495,7 +606,6 @@
 
         sessionStorage.setItem('bookstoreCart', JSON.stringify(cart));
 
-        // Lưu voucher đã áp dụng để trang Checkout sử dụng luôn
         if (currentVoucherCode && currentDiscountAmount > 0) {
             sessionStorage.setItem('appliedVoucherCode', currentVoucherCode);
             sessionStorage.setItem('appliedDiscountAmount', currentDiscountAmount);
@@ -511,7 +621,139 @@
         localStorage.setItem('bookstoreCart', JSON.stringify(cart));
     }
 
-    document.addEventListener('DOMContentLoaded', renderCart);
+
+    // === LOGIC CHATBOT ĐÃ LÀM SẠCH VÀ GỘP ===
+    document.addEventListener("DOMContentLoaded", function() {
+        renderCart(); // Gọi lại renderCart sau khi DOMContentLoaded để đảm bảo mọi thứ được khởi tạo
+
+        const chatToggleBtn = document.getElementById("chat-toggle-btn");
+        const chatBoxContent = document.getElementById("chatbox-content");
+        const chatInput = document.getElementById("chat-input");
+        const chatMessages = document.getElementById("chat-messages");
+        const chatSend = document.getElementById("chat-send");
+        const clearHistoryBtn = document.getElementById("clear-history-btn");
+        const CHAT_API_URL = "/chat";
+        const STORAGE_KEY_HISTORY = 'bookhub_chat_history';
+        const STORAGE_KEY_STATE = 'bookhub_chat_open';
+
+        // Khởi tạo trạng thái mở/đóng và lịch sử chat
+        const isOpen = localStorage.getItem(STORAGE_KEY_STATE) === 'true';
+        if (isOpen) {
+            chatBoxContent.style.display = 'flex';
+            chatToggleBtn.textContent = '❌';
+        } else {
+            // Đây là dòng ẩn chatbot nếu nó không được mở lần trước
+            chatBoxContent.style.display = 'none';
+            chatToggleBtn.textContent = '💬';
+        }
+
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY)) || [];
+        history.forEach(msg => {
+            appendMessageToUI(msg.sender, msg.text, msg.type);
+        });
+
+        // Đăng ký sự kiện
+        chatToggleBtn.addEventListener("click", () => {
+            const isHidden = chatBoxContent.style.display === 'none';
+            chatBoxContent.style.display = isHidden ? 'flex' : 'none';
+            chatToggleBtn.textContent = isHidden ? '❌' : '💬';
+            localStorage.setItem(STORAGE_KEY_STATE, isHidden);
+            if(isHidden) chatInput.focus();
+        });
+
+        clearHistoryBtn.addEventListener("click", () => {
+            if(confirm("Bạn có chắc muốn xóa toàn bộ lịch sử chat?")) {
+                localStorage.removeItem(STORAGE_KEY_HISTORY);
+                chatMessages.innerHTML = '';
+            }
+        });
+
+        chatSend.addEventListener("click", sendMessage);
+        chatInput.addEventListener("keypress", e => { if(e.key === "Enter") sendMessage(); });
+
+        // Hàm xử lý chính gửi tin nhắn
+        function sendMessage() {
+            const msg = chatInput.value.trim();
+            if(!msg) return;
+
+            appendMessageToUI("You", msg, 'user');
+            saveMessageToStorage("You", msg, 'user');
+            chatInput.value = "";
+            const typingIndicator = appendMessageToUI("Bot", "Đang trả lời...", 'typing');
+
+            fetch(CHAT_API_URL, {
+                method:"POST",
+                headers:{ "Content-Type":"application/json" },
+                body: JSON.stringify({ message: msg })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(typingIndicator && typingIndicator.parentNode) chatMessages.removeChild(typingIndicator);
+
+                const replyText = data.reply || data.error;
+                const type = data.error ? "error" : "bot";
+
+                appendMessageToUI(data.error ? "Error" : "Bot", replyText, type);
+                saveMessageToStorage(data.error ? "Error" : "Bot", replyText, type);
+            })
+            .catch(err => {
+                if(typingIndicator && typingIndicator.parentNode) chatMessages.removeChild(typingIndicator);
+                appendMessageToUI("Error", "Lỗi kết nối server.", "error");
+            });
+        }
+
+        function saveMessageToStorage(sender, text, type) {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY)) || [];
+            history.push({ sender: sender, text: text, type: type });
+            localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
+        }
+
+        function appendMessageToUI(sender, text, type){
+            const div = document.createElement("div");
+
+            div.style.maxWidth = "80%";
+            div.style.padding = "8px 12px";
+            div.style.borderRadius = "15px";
+            div.style.fontSize = "14px";
+            div.style.lineHeight = "1.5";
+            div.style.wordWrap = "break-word";
+            div.style.whiteSpace = "pre-wrap";
+            div.style.marginBottom = "5px";
+
+            if (type === 'user') {
+                div.style.alignSelf = "flex-end";
+                div.style.backgroundColor = "#e5e7eb";
+                div.style.color = "#1f2937";
+                div.style.borderBottomRightRadius = "2px";
+                div.innerHTML = `<strong>Bạn:</strong> ${text}`;
+            }
+            else if (type === 'bot') {
+                div.style.alignSelf = "flex-start";
+                div.style.backgroundColor = "#dcfce7";
+                div.style.color = "#14532d";
+                div.style.border = "1px solid #bbf7d0";
+                div.style.borderBottomLeftRadius = "2px";
+                div.innerHTML = `<strong>Bot:</strong> ${text}`;
+            }
+            else if (type === 'typing') {
+                div.style.alignSelf = "flex-start";
+                div.style.fontStyle = "italic";
+                div.style.color = "#888";
+                div.style.fontSize = "12px";
+                div.innerHTML = "⏳ <i>Đang trả lời...</i>";
+            }
+            else if (type === 'error') {
+                div.style.alignSelf = "center";
+                div.style.backgroundColor = "#fee2e2";
+                div.style.color = "#dc2626";
+                div.innerHTML = `⚠️ ${text}`;
+            }
+
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return div;
+        }
+    });
 </script>
 
 </body>

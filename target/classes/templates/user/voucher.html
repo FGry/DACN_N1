@@ -372,9 +372,142 @@
                 padding: 30px 20px;
             }
         }
+
+         /* ========================================= */
+        /* CSS CHATBOT */
+        /* ========================================= */
+        .chatbox-wrapper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        #chat-toggle-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #chat-toggle-btn:hover {
+            background-color: #764ba2;
+        }
+
+        #chatbox-content {
+            width: 350px;
+            height: 450px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            margin-bottom: 10px;
+            overflow: hidden;
+            display: none; /* Mặc định ẩn, JS sẽ bật */
+            flex-direction: column;
+        }
+
+        .chatbox-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbox-header h5 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        #clear-history-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        #clear-history-btn:hover {
+            color: white;
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fa;
+        }
+
+        .chatbox-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #e9ecef;
+            background-color: white;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            border: 1px solid #ced4da;
+            border-radius: 20px;
+            padding: 8px 15px;
+            margin-right: 10px;
+            outline: none;
+        }
+
+        #chat-send {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #chat-send:hover {
+            background-color: #764ba2;
+        }
     </style>
 </head>
 <body>
+
+
+<div class="chatbox-wrapper">
+    <div id="chatbox-content">
+        <div class="chatbox-header">
+            <h5><i class="fas fa-robot"></i> Chat Hỗ Trợ</h5>
+            <button id="clear-history-btn" title="Xóa lịch sử chat"><i class="fas fa-trash-alt"></i></button>
+        </div>
+        <div id="chat-messages">
+        </div>
+        <div class="chatbox-input-area">
+            <input type="text" id="chat-input" placeholder="Gõ tin nhắn của bạn...">
+            <button id="chat-send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <button id="chat-toggle-btn">💬</button>
+</div>
+
+
+
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
         <a class="navbar-brand" th:href="@{/}"><i class="fas fa-book-open"></i> BookStore</a>
@@ -585,6 +718,167 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // -&#45;&#45; KHAI BÁO BIẾN -&#45;&#45;
+        const chatToggleBtn = document.getElementById("chat-toggle-btn");
+        const chatBoxContent = document.getElementById("chatbox-content");
+        const chatInput = document.getElementById("chat-input");
+        const chatMessages = document.getElementById("chat-messages");
+        const chatSend = document.getElementById("chat-send");
+        const clearHistoryBtn = document.getElementById("clear-history-btn");
+        const CHAT_API_URL = "/chat";
+
+        // Key để lưu trong LocalStorage
+        const STORAGE_KEY_HISTORY = 'bookhub_chat_history';
+        const STORAGE_KEY_STATE = 'bookhub_chat_open';
+
+        // -&#45;&#45; 1. KHỞI TẠO (LOAD LẠI LỊCH SỬ & TRẠNG THÁI CŨ) -&#45;&#45;
+
+        // Load trạng thái mở/đóng
+        const isOpen = localStorage.getItem(STORAGE_KEY_STATE) === 'true';
+        if (isOpen) {
+            chatBoxContent.style.display = 'flex';
+            chatToggleBtn.textContent = '❌';
+        } else {
+            chatBoxContent.style.display = 'none';
+            chatToggleBtn.textContent = '💬';
+        }
+
+        // Load lịch sử tin nhắn
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY)) || [];
+        history.forEach(msg => {
+            appendMessageToUI(msg.sender, msg.text, msg.type);
+        });
+
+        // -&#45;&#45; 2. CÁC SỰ KIỆN (EVENT LISTENERS) -&#45;&#45;
+
+        // Bật/Tắt chat
+        chatToggleBtn.addEventListener("click", () => {
+            const isHidden = chatBoxContent.style.display === 'none';
+            chatBoxContent.style.display = isHidden ? 'flex' : 'none';
+            chatToggleBtn.textContent = isHidden ? '❌' : '💬';
+
+            // Lưu trạng thái vào Storage
+            localStorage.setItem(STORAGE_KEY_STATE, isHidden);
+
+            if(isHidden) chatInput.focus();
+        });
+
+        // Xóa lịch sử
+        clearHistoryBtn.addEventListener("click", () => {
+            if(confirm("Bạn có chắc muốn xóa toàn bộ lịch sử chat?")) {
+                localStorage.removeItem(STORAGE_KEY_HISTORY);
+                chatMessages.innerHTML = ''; // Xóa giao diện
+            }
+        });
+
+        chatSend.addEventListener("click", sendMessage);
+        chatInput.addEventListener("keypress", e => { if(e.key === "Enter") sendMessage(); });
+
+        // -&#45;&#45; 3. HÀM XỬ LÝ CHÍNH -&#45;&#45;
+
+        function sendMessage() {
+            const msg = chatInput.value.trim();
+            if(!msg) return;
+
+            // 1. Hiển thị & Lưu tin nhắn User
+            appendMessageToUI("You", msg, 'user');
+            saveMessageToStorage("You", msg, 'user');
+
+            chatInput.value = "";
+
+            // 2. Hiển thị Typing (Không lưu cái này vào storage)
+            const typingIndicator = appendMessageToUI("Bot", "Đang trả lời...", 'typing');
+
+            // 3. Gọi API
+            fetch(CHAT_API_URL, {
+                method:"POST",
+                headers:{ "Content-Type":"application/json" },
+                body: JSON.stringify({ message: msg })
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Xóa typing
+                if(typingIndicator && typingIndicator.parentNode) {
+                    chatMessages.removeChild(typingIndicator);
+                }
+
+                const replyText = data.reply || data.error;
+                const type = data.error ? "error" : "bot";
+
+                // 4. Hiển thị & Lưu tin nhắn Bot
+                appendMessageToUI(data.error ? "Error" : "Bot", replyText, type);
+                saveMessageToStorage(data.error ? "Error" : "Bot", replyText, type);
+            })
+            .catch(err => {
+                if(typingIndicator && typingIndicator.parentNode) {
+                    chatMessages.removeChild(typingIndicator);
+                }
+                appendMessageToUI("Error", "Lỗi kết nối server.", "error");
+            });
+        }
+
+        // Hàm chỉ để lưu vào LocalStorage
+        function saveMessageToStorage(sender, text, type) {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY)) || [];
+            history.push({ sender: sender, text: text, type: type });
+            localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
+        }
+
+        // Hàm chỉ để hiển thị ra màn hình (Render)
+        function appendMessageToUI(sender, text, type){
+            const div = document.createElement("div");
+
+            // CSS chung
+            div.style.maxWidth = "80%";
+            div.style.padding = "8px 12px";
+            div.style.borderRadius = "15px";
+            div.style.fontSize = "14px";
+            div.style.lineHeight = "1.5";
+            div.style.wordWrap = "break-word";
+            div.style.whiteSpace = "pre-wrap";
+            div.style.marginBottom = "5px";
+
+            if (type === 'user') {
+                div.style.alignSelf = "flex-end";
+                div.style.backgroundColor = "#e5e7eb";
+                div.style.color = "#1f2937";
+                div.style.borderBottomRightRadius = "2px";
+                div.innerHTML = `<strong>Bạn:</strong> ${text}`;
+            }
+            else if (type === 'bot') {
+                div.style.alignSelf = "flex-start";
+                div.style.backgroundColor = "#dcfce7"; // Xanh lá Pastel
+                div.style.color = "#14532d";
+                div.style.border = "1px solid #bbf7d0";
+                div.style.borderBottomLeftRadius = "2px";
+                div.innerHTML = `<strong>Bot:</strong> ${text}`;
+            }
+            else if (type === 'typing') {
+                div.style.alignSelf = "flex-start";
+                div.style.fontStyle = "italic";
+                div.style.color = "#888";
+                div.style.fontSize = "12px";
+                div.innerHTML = "⏳ <i>Đang trả lời...</i>";
+            }
+            else if (type === 'error') {
+                div.style.alignSelf = "center";
+                div.style.backgroundColor = "#fee2e2";
+                div.style.color = "#dc2626";
+                div.innerHTML = `⚠️ ${text}`;
+            }
+
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return div;
+        }
+    });
+</script>
+
+
 <script>
     // --- KHAI BÁO BIẾN ---
     // Sử dụng đúng key 'bookstoreCart' để đồng bộ số lượng giỏ hàng
