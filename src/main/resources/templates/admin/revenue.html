@@ -12,7 +12,7 @@
         body {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f4f6f9; /* Màu nền nhẹ hơn */
+            background: #f4f6f9;
             margin: 0;
             padding: 0;
         }
@@ -488,53 +488,36 @@
             </button>
             <h1 class="header-title">Thống kê doanh thu</h1>
         </div>
-
-        <div class="header-actions">
-            <button class="notification-btn" onclick="showNotifications()">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
-            </button>
-
-            <div class="user-profile" onclick="showUserMenu()">
-                <div class="user-avatar">A</div>
-                <div class="user-info d-none d-md-block">
-                    <h6>Admin User</h6>
-                    <small>Quản trị viên</small>
-                </div>
-                <i class="fas fa-chevron-down d-none d-md-block"></i>
-            </div>
-        </div>
     </header>
 
     <div class="dashboard-content fade-in">
-
         <div class="row mb-4">
             <div class="col-lg-4 col-md-6 mb-3">
                 <div class="summary-card revenue">
                     <i class="fas fa-dollar-sign icon"></i>
                     <h5>Tổng Doanh Thu (<span th:text="${currentYear}">2025</span>)</h5>
-                    <h3 id="totalRevenue" th:text="${totalRevenueFormatted ?: '₫0'}">₫425,800,000</h3>
+                    <h3 id="totalRevenue" th:text="${totalRevenueFormatted ?: '₫0'}">₫425.800.000</h3>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6 mb-3" style="display: none;">
                 <div class="summary-card profit">
                     <i class="fas fa-chart-bar icon"></i>
                     <h5>Lợi Nhuận Gộp (<span th:text="${currentYear}">2025</span>)</h5>
-                    <h3 id="totalProfit" th:text="${totalProfitFormatted ?: '₫0'}">₫170,320,000</h3>
+                    <h3 id="totalProfit" th:text="${totalProfitFormatted ?: '₫0'}">₫170,320.000</h3>
                 </div>
             </div>
             <div class="col-lg-4 col-md-12 mb-3">
                 <div class="summary-card orders">
                     <i class="fas fa-shopping-bag icon"></i>
                     <h5>Tổng Số Đơn Hàng Đã Giao (<span th:text="${currentYear}">2025</span>)</h5>
-                    <h3 id="totalOrders" th:text="${totalOrdersCount ?: 0}">5,200</h3>
+                    <h3 id="totalOrders" th:text="${#numbers.formatInteger(totalOrdersCount, 0, 'COMMA') ?: 0}">5,200</h3>
                 </div>
             </div>
         </div>
 
         <div class="content-card">
             <div class="content-card-header">
-                <h4 class="content-card-title" id="chartTitle">Biểu đồ Doanh thu (Đang tải...)</h4>
+                <h4 class="content-card-title" id="chartTitle">Biểu đồ Doanh thu theo Tháng</h4>
 
                 <div class="chart-controls">
                     <form th:action="@{/admin/revenue}" method="get" class="d-flex align-items-center gap-2">
@@ -565,11 +548,16 @@
                             <option value="line">Đường (Line)</option>
                         </select>
                     </div>
+                    <div class="export-action ms-lg-2">
+                        <a th:href="@{/admin/revenue/export(year=${currentYear})}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-file-excel me-1"></i> Xuất Excel
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="chart-container">
                 <div id="chartNoDataMessage" class="d-none text-center text-muted" style="padding-top: 150px;">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Không có dữ liệu biểu đồ cho kỳ này. Vui lòng kiểm tra dữ liệu từ Controller.
+                    <i class="fas fa-exclamation-triangle me-2"></i>Không có dữ liệu biểu đồ cho kỳ này.
                 </div>
                 <canvas id="revenueChart"></canvas>
             </div>
@@ -585,9 +573,9 @@
                     <tr>
                         <th>#</th>
                         <th>Tên sản phẩm</th>
-                        <th>Số lượng bán</th>
-                        <th>Tổng doanh thu</th>
-                        <th>Tỷ lệ (%)</th>
+                        <th style="width: 15%;">Số lượng bán</th>
+                        <th style="width: 20%;">Tổng doanh thu</th>
+                        <th style="width: 15%;">Tỷ lệ (%)</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -595,8 +583,8 @@
                         <td th:text="${stat.count}">1</td>
                         <td th:text="${product.name}">Lập trình JavaScript Nâng cao</td>
                         <td th:text="${#numbers.formatInteger(product.quantitySold, 0, 'COMMA')}">450</td>
-                        <td th:text="${#numbers.formatCurrency(product.totalRevenue)}">₫81,000,000</td>
-                        <td th:text="${product.saleRatio != null ? #numbers.formatDecimal(product.saleRatio, 0, 1) + '%' : 'N/A'}">30%</td>
+                        <td th:text="${#numbers.formatInteger(product.totalRevenue, 0, 'POINT')} + '₫'">81.000.000₫</td>
+                        <td th:text="${product.saleRatio != null ? #numbers.formatDecimal(product.saleRatio, 0, 1) + '%' : 'N/A'}">30.0%</td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(topSellingProducts)}">
                         <td colspan="5" class="text-center text-muted">Chưa có dữ liệu sản phẩm bán chạy trong kỳ này.</td>
@@ -610,20 +598,40 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script th:inline="javascript">
+    /*<![CDATA[*/ // BỌC TOÀN BỘ JS BẰNG CDATA ĐỂ TRÁNH LỖI PHÂN TÍCH THYMELEAF
+
+    // --- KHAI BÁO DỮ LIỆU ---
+
+    // Dữ liệu giả định chỉ để đảm bảo cấu trúc không bị lỗi nếu Controller không cung cấp
     const MOCK_CHART_DATA = {
         monthly: {
-            title: "Biểu đồ Doanh thu 6 tháng gần nhất",
-            labels: ["T6", "T7", "T8", "T9", "T10", "T11"],
-            revenue: [120, 150, 140, 180, 200, 250],
-        },
-        quarterly: {
-            title: "Biểu đồ Doanh thu theo Quý",
+            title: "Biểu đồ Doanh thu theo Tháng (Năm " + [[${currentYear}]] + ")",
+            labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
+            revenue: [[${REAL_CHART_DATA_RAW?.monthly?.revenue}]] || [],
+    },
+    // Giả định nếu Controller chưa cung cấp, mảng labels và revenue sẽ rỗng
+    quarterly: {
+        title: "Biểu đồ Doanh thu theo Quý (Năm " + [[${currentYear}]] + ")",
             labels: ["Quý 1", "Quý 2", "Quý 3", "Quý 4"],
-            revenue: [300, 350, 400, 450],
-        },
+            revenue: []
+    },
+    yearly: {
+        title: "Biểu đồ Doanh thu theo Năm",
+            labels: [],
+            revenue: []
+    }
     };
 
-    const REAL_CHART_DATA = /*[[${chartData}]]*/ null || MOCK_CHART_DATA;
+    // BIẾN THỰC TẾ: Lấy dữ liệu từ Spring Model
+    const REAL_CHART_DATA_RAW = [[${chartData}]] || {};
+
+    // Kết hợp dữ liệu thực tế (nếu có) và giả định
+    const REAL_CHART_DATA = {
+        monthly: REAL_CHART_DATA_RAW.monthly || MOCK_CHART_DATA.monthly,
+        // Dùng dữ liệu thực (nếu Controller gửi) hoặc mock (rỗng)
+        quarterly: REAL_CHART_DATA_RAW.quarterly || MOCK_CHART_DATA.quarterly,
+        yearly: REAL_CHART_DATA_RAW.yearly || MOCK_CHART_DATA.yearly
+    };
 
 
     function confirmLogout(logoutUrl) {
@@ -646,31 +654,44 @@
         const noDataMsg = document.getElementById('chartNoDataMessage');
         const canvas = document.getElementById('revenueChart');
 
-        if (!REAL_CHART_DATA || !REAL_CHART_DATA[timeFilter] || !REAL_CHART_DATA[timeFilter].revenue) {
+        // Lấy dữ liệu cho kỳ hiện tại
+        const currentData = REAL_CHART_DATA[timeFilter];
+        const currentYear = [[${currentYear}]]; // Lấy năm hiện tại
+
+        // KIỂM TRA: Nếu dữ liệu không tồn tại, hoặc mảng revenue/labels rỗng
+        if (!currentData || !currentData.revenue || currentData.revenue.length === 0 || !currentData.labels || currentData.labels.length === 0) {
             if (revenueChartInstance) {
                 revenueChartInstance.destroy();
                 revenueChartInstance = null;
             }
+
+            // Hiển thị thông báo không có dữ liệu
             noDataMsg.classList.remove('d-none');
             canvas.classList.add('d-none');
-            document.getElementById('chartTitle').textContent = `Biểu đồ Doanh thu (Thiếu dữ liệu: ${timeFilter})`;
-            console.error(`Lỗi: Không tìm thấy dữ liệu biểu đồ cho kỳ '${timeFilter}' trong biến REAL_CHART_DATA.`);
+
+            let timeLabel = (timeFilter === 'monthly') ? 'tháng' : (timeFilter === 'quarterly' ? 'quý' : 'năm');
+            // Dùng currentData.title đã được Controller/JS tự động đặt
+            let titleText = currentData && currentData.title ? currentData.title : `Biểu đồ Doanh thu (Không có dữ liệu theo ${timeLabel} cho năm ${currentYear})`;
+            document.getElementById('chartTitle').textContent = titleText;
+
             return; // Dừng nếu không có dữ liệu
         }
 
+        // Nếu có dữ liệu
         noDataMsg.classList.add('d-none');
         canvas.classList.remove('d-none');
-        document.getElementById('chartTitle').textContent = REAL_CHART_DATA[timeFilter].title;
+        // Sử dụng currentData.title đã được Controller/JS tự động đặt
+        document.getElementById('chartTitle').textContent = currentData.title;
         renderRevenueChart(chartType, timeFilter);
     }
 
     // Hàm chỉ thay đổi dạng biểu đồ (giữ nguyên dữ liệu)
     function changeChartType(type) {
-        const timeFilter = document.getElementById('timeFilter').value;
-        renderRevenueChart(type, timeFilter);
+        // Chỉ cần gọi lại hàm cập nhật chính, nó sẽ tự động render lại với loại biểu đồ mới
+        updateChartAndTitle();
     }
 
-    // Hàm vẽ biểu đồ chính
+    // HÀM VẼ BIỂU ĐỒ CHÍNH (ĐÃ ĐƯỢC SỬA ĐỂ KHẮC PHỤC LỖI THỪA 3 SỐ 0)
     function renderRevenueChart(chartType, timePeriod) {
         const ctx = document.getElementById('revenueChart').getContext('2d');
         const dataSet = REAL_CHART_DATA[timePeriod];
@@ -682,7 +703,6 @@
 
         const labels = dataSet.labels;
         const revenueDataRaw = dataSet.revenue;
-        // Đã bỏ profitDataRaw
 
         // Cấu hình datasets dựa trên dạng biểu đồ
         let datasets = [];
@@ -694,32 +714,37 @@
             x: { grid: { display: false } },
             y: {
                 beginAtZero: true,
-                title: { display: true, text: 'Doanh thu (Triệu VNĐ)' },
+                // SỬA: Thay đổi tiêu đề trục Y thành (VNĐ)
+                title: { display: true, text: 'Doanh thu (VNĐ)' },
                 ticks: { callback: function(value) {
-                        // 🌟 SỬA LỖI KÝ HIỆU TIỀN TỆ: Thêm "₫" sau "Tr"
-                        return value + ' Tr ₫';
+                        if (value >= 1000000) {
+                            return (value / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) + ' Tr ₫';
+                        }
+                        if (value >= 1000) {
+                            return (value / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' K ₫';
+                        }
+                        return value.toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' ₫';
                     } }
             }
         };
 
-        // --- Cấu hình cho từng loại đồ thị ---
         // Khi không có profit, Combined cũng chỉ là Bar/Line
+        let chartTypeFinal = chartType;
         if (chartType === 'combined') {
-            chartType = 'bar'; // Đặt lại về dạng Bar đơn
+            chartTypeFinal = 'bar'; // Mặc định hiển thị Bar nếu là Combined mà chỉ có 1 dataset
         }
 
-        // Đồ thị cột hoặc đường đơn giản (chỉ hiển thị Doanh thu thuần)
         datasets = [
             {
                 label: 'Doanh thu thuần',
                 data: revenueDataRaw,
-                backgroundColor: chartType === 'bar' ? barColor : 'rgba(102, 126, 234, 0.3)',
+                backgroundColor: chartTypeFinal === 'bar' ? barColor : 'rgba(102, 126, 234, 0.3)',
                 borderColor: barColor,
                 borderWidth: 2,
                 borderRadius: 5,
-                type: chartType, // Sử dụng loại đã được điều chỉnh
-                fill: chartType === 'line' ? 'start' : false,
-                yAxisID: 'y' // Chỉ còn một trục Y
+                type: chartTypeFinal,
+                fill: chartTypeFinal === 'line' ? 'start' : false,
+                yAxisID: 'y'
             }
         ];
 
@@ -731,15 +756,13 @@
             datasets: datasets
         };
 
-        // 🌟 SỬA LỖI KÝ HIỆU TIỀN TỆ: Format số thủ công, nối thêm '₫'
+        // Hàm định dạng tiền tệ trong tooltip
         const formatCurrency = (value) => {
-            // 1. Format số (ví dụ: 123.456)
             let formattedNumber = new Intl.NumberFormat('vi-VN', {
-                style: 'decimal', // Đã đổi sang decimal
+                style: 'decimal',
                 minimumFractionDigits: 0
-            }).format(value * 1000000); // Nhân với 1 triệu vì data đang ở đơn vị Triệu VNĐ
+            }).format(value);
 
-            // 2. Nối thêm ký hiệu VND
             return formattedNumber + '₫';
         };
 
@@ -757,7 +780,8 @@
                                 let label = context.dataset.label || '';
                                 if (label) { label += ': '; }
                                 if (context.parsed.y !== null) {
-                                    label += formatCurrency(context.parsed.y); // Sử dụng hàm format mới
+                                    // SỬA: Sử dụng giá trị y nguyên bản (VNĐ)
+                                    label += formatCurrency(context.parsed.y);
                                 }
                                 return label;
                             }
@@ -813,6 +837,7 @@
             'vouchers': 'Quản lý voucher', 'vevenue': 'Thống kê doanh thu', 'setting': 'Cài đặt'
         };
 
+        document.querySelector('body').classList.remove('sidebar-show'); // Đóng sidebar di động
         document.querySelector('.header-title').textContent = titles[section] || 'Thống kê doanh thu';
         showNotification(`Chuyển đến ${titles[section]}`, 'info');
     }
@@ -874,6 +899,7 @@
             sidebar.classList.remove('show');
         }
     });
+    /*]]>*/
 </script>
 </body>
 </html>

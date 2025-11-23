@@ -1,5 +1,8 @@
 package com.bookhub.order;
 
+// Thêm import cho ProductSaleStats nếu nó là một DTO/Projection Interface
+import com.bookhub.order.ProductSaleStats;
+
 import com.bookhub.cart.CartItemDTO;
 import com.bookhub.product.Product;
 import com.bookhub.product.ProductRepository;
@@ -9,11 +12,19 @@ import com.bookhub.voucher.VoucherRepository;
 import com.bookhub.voucher.VoucherService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+// Apache POI Imports
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,6 +32,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.text.DecimalFormat;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +47,125 @@ public class OrderService {
     private final ObjectMapper objectMapper;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    // --- DTO CHO THỐNG KÊ (NỘI BỘ SERVICE) ---
+
+    /** DTO cho dữ liệu sản phẩm bán chạy. */
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ProductSaleStats { // <--- DTO NỘI BỘ (Inner Class)
+        private String title;
+        private Long quantitySold;
+        private Long totalRevenue;
+    }
+
+    /** DTO tổng hợp dữ liệu cho Dashboard/Báo cáo. */
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    @FieldDefaults(level = AccessLevel.PRIVATE)
+    public static class RevenueStatsDTO {
+        Long totalRevenue;
+        Long totalDeliveredOrders;
+        List<ProductSaleStats> topSellingProducts;
+        List<DataPoint> monthlyRevenue;
+
+        @Getter @Setter @AllArgsConstructor
+        public static class DataPoint {
+            String label;
+            Double value;
+        }
+    }
+
+    // ==================================================================
+    // 0. CHỨC NĂNG XUẤT EXCEL (EXPORT EXCEL)
+    // ==================================================================
+    public ByteArrayInputStream exportRevenueData(RevenueStatsDTO stats, Integer year) throws IOException {
+        DecimalFormat currencyFormatter = new DecimalFormat("#,###₫");
+        DecimalFormat numberFormatter = new DecimalFormat("#,###");
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            // --- SHEET 1: TỔNG QUAN DOANH THU ---
+            Sheet summarySheet = workbook.createSheet("TỔNG QUAN NĂM " + year);
+
+            // Cấu hình Styles
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.BLUE_GREY.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle currencyStyle = workbook.createCellStyle();
+            currencyStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0\"₫\""));
+
+            CellStyle percentStyle = workbook.createCellStyle();
+            percentStyle.setDataFormat(workbook.createDataFormat().getFormat("0.00%"));
+
+            summarySheet.setColumnWidth(0, 8000);
+            summarySheet.setColumnWidth(1, 8000);
+
+            Row titleRow = summarySheet.createRow(0);
+            titleRow.createCell(0).setCellValue("BÁO CÁO DOANH THU NĂM " + year);
+
+            Row row1 = summarySheet.createRow(2);
+            row1.createCell(0).setCellValue("TỔNG DOANH THU (Đơn hàng DELIVERED)");
+            row1.createCell(1).setCellValue(currencyFormatter.format(stats.getTotalRevenue()));
+
+            Row row2 = summarySheet.createRow(3);
+            row2.createCell(0).setCellValue("TỔNG SỐ ĐƠN HÀNG ĐÃ GIAO");
+            row2.createCell(1).setCellValue(numberFormatter.format(stats.getTotalDeliveredOrders()));
+
+
+            // --- SHEET 2: TOP SẢN PHẨM BÁN CHẠY ---
+            Sheet topProductsSheet = workbook.createSheet("TOP SẢN PHẨM BÁN CHẠY");
+
+            Row headerRow = topProductsSheet.createRow(0);
+            String[] headers = {"#", "Tên sản phẩm", "Số lượng bán", "Tổng doanh thu", "Tỷ lệ (%)"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            topProductsSheet.setColumnWidth(0, 1500);
+            topProductsSheet.setColumnWidth(1, 12000);
+            topProductsSheet.setColumnWidth(2, 4000);
+            topProductsSheet.setColumnWidth(3, 5000);
+            topProductsSheet.setColumnWidth(4, 3000);
+
+
+            int rowNum = 1;
+
+            double safeTotalRevenue = (stats.getTotalRevenue() != null && stats.getTotalRevenue() > 0) ? stats.getTotalRevenue().doubleValue() : 1.0;
+
+            for (ProductSaleStats product : stats.getTopSellingProducts()) {
+                Row row = topProductsSheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(rowNum - 1);
+                row.createCell(1).setCellValue(product.getTitle());
+                row.createCell(2).setCellValue(product.getQuantitySold());
+
+                Cell revenueCell = row.createCell(3);
+                revenueCell.setCellValue(product.getTotalRevenue());
+                revenueCell.setCellStyle(currencyStyle);
+
+                double saleRatio = 0.0;
+                if (product.getTotalRevenue() != null && safeTotalRevenue > 1.0) {
+                    saleRatio = product.getTotalRevenue().doubleValue() / safeTotalRevenue;
+                }
+
+                Cell percentCell = row.createCell(4);
+                percentCell.setCellValue(saleRatio);
+                percentCell.setCellStyle(percentStyle);
+            }
+
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+
+        } catch (IOException e) {
+            throw new IOException("Lỗi khi tạo file Excel: " + e.getMessage(), e);
+        }
+    }
 
     // ==================================================================
     // 1. XỬ LÝ ĐẶT HÀNG (PROCESS ORDER)
@@ -128,13 +259,28 @@ public class OrderService {
     // 3. THỐNG KÊ DOANH THU (DASHBOARD)
     // ==================================================================
 
-    // Phương thức đã có
+    /**
+     * Khắc phục lỗi: Sử dụng giả định tên getter phổ biến (getProductName, getTotalQuantity)
+     * cho Projection DTO bên ngoài.
+     */
     public RevenueStatsDTO getRevenueDashboardStats(Integer year) {
         Long totalRevenue = orderRepository.sumTotalDeliveredOrders(year).orElse(0L);
         Long totalOrders = orderRepository.countDeliveredOrders(year);
 
-        // Lấy Top sản phẩm bán chạy (Cần OrderRepository hỗ trợ method này)
-        List<ProductSaleStats> topProducts = orderRepository.findTopSellingProducts(year, PageRequest.of(0, 5));
+        // 1. Lấy Top sản phẩm bán chạy (Repository trả về List<com.bookhub.order.ProductSaleStats>)
+        List<com.bookhub.order.ProductSaleStats> rawTopProducts = orderRepository.findTopSellingProducts(year, PageRequest.of(0, 5));
+
+        // 2. Ánh xạ sang List<OrderService.ProductSaleStats> (Inner DTO)
+        List<OrderService.ProductSaleStats> topProducts = rawTopProducts.stream().map(row ->
+                new OrderService.ProductSaleStats(
+                        // SỬA LỖI: Dùng getProductName() thay vì getTitle()
+                        row.getProductName(),
+                        // SỬA LỖI: Dùng getTotalQuantity() thay vì getQuantitySold()
+                        row.getTotalQuantity(),
+                        row.getTotalRevenue()
+                )
+        ).collect(Collectors.toList());
+
 
         // Lấy dữ liệu biểu đồ theo tháng
         List<Object[]> monthlyData = orderRepository.findMonthlyRevenueAndProfit(year);

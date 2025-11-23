@@ -540,7 +540,7 @@
             <i class="fas fa-box"></i>
             <span>Quản lý sản phẩm</span>
         </a>
-        <a th:href="@{/admin/orders}" class="menu-item">
+        <a th:href="@{/admin/carts}" class="menu-item">
             <i class="fas fa-shopping-cart"></i>
             <span>Quản lý đơn hàng</span>
         </a>
@@ -577,22 +577,6 @@
                 <i class="fas fa-bars"></i>
             </button>
             <h1 class="header-title">Trang chủ Admin</h1>
-        </div>
-
-        <div class="header-actions">
-            <button class="notification-btn" onclick="showNotifications()">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
-            </button>
-
-            <a th:href="@{/admin/setting}" class="user-profile" style="text-decoration: none; color: inherit;">
-                <div class="user-avatar">A</div>
-                <div class="user-info d-none d-md-block">
-                    <h6>Admin User</h6>
-                    <small>Quản trị viên</small>
-                </div>
-                <i class="fas fa-chevron-down d-none d-md-block"></i>
-            </a>
         </div>
     </header>
 
@@ -850,11 +834,6 @@
     function toggleMobileSidebar() {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('show');
-    }
-
-    // Show notifications
-    function showNotifications() {
-        showNotification('Bạn có 3 thông báo mới!', 'info');
     }
 
     // Show notification
