@@ -11,9 +11,20 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
+    @Query("SELECT COUNT(o) FROM Order o WHERE FUNCTION('MONTH', o.date) = :month AND FUNCTION('YEAR', o.date) = :year")
+    Long countOrdersByMonthAndYear(@Param("month") int month, @Param("year") int year);
+
     // --- CÁC HÀM CŨ GIỮ NGUYÊN ---
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.user u LEFT JOIN FETCH o.orderDetails od")
     List<Order> findAllWithUserAndDetails();
+
+    @Query(value = "SELECT c.name AS categoryName, SUM(od.quantity) AS totalSold " +
+            "FROM OrderDetail od " +
+            "JOIN od.product p " +
+            "JOIN p.categories c " +
+            "GROUP BY c.name " +
+            "ORDER BY totalSold DESC")
+    List<Object[]> findSalesCountByCategory();
 
     @Query("SELECT SUM(o.total) FROM Order o WHERE o.status_order = 'DELIVERED' AND (:year IS NULL OR FUNCTION('YEAR', o.date) = :year)")
     Optional<Long> sumTotalDeliveredOrders(@Param("year") Integer year);

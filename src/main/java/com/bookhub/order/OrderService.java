@@ -120,8 +120,6 @@ public class OrderService {
         // Chỉ cập nhật nếu đơn hàng đang chờ thanh toán
         if ("PENDING".equalsIgnoreCase(order.getStatus_order())) {
             order.setStatus_order("CONFIRMED");
-            // Lưu ý: Không setTotal(0) ở đây để giữ số liệu thống kê doanh thu.
-            // Việc hiển thị 0đ sẽ do hàm mapToDTO xử lý.
             orderRepository.save(order);
         }
     }
@@ -129,6 +127,8 @@ public class OrderService {
     // ==================================================================
     // 3. THỐNG KÊ DOANH THU (DASHBOARD)
     // ==================================================================
+
+    // Phương thức đã có
     public RevenueStatsDTO getRevenueDashboardStats(Integer year) {
         Long totalRevenue = orderRepository.sumTotalDeliveredOrders(year).orElse(0L);
         Long totalOrders = orderRepository.countDeliveredOrders(year);
@@ -160,6 +160,28 @@ public class OrderService {
                 .topSellingProducts(topProducts)
                 .monthlyRevenue(chartData)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getSalesByCategory() {
+
+        // 1. Gọi Repository để lấy kết quả (List<Object[]>)
+        List<Object[]> results = orderRepository.findSalesCountByCategory();
+
+        // 2. Sửa lỗi ÁNH XẠ: Ép kiểu và sử dụng Collectors.toList()
+        return results.stream()
+                .map(row -> {
+                    // Đảm bảo ép kiểu an toàn cho từng phần tử
+                    String categoryName = (String) row[0];
+                    Long totalSold = (Long) row[1];
+
+                    // Sử dụng HashMap (thay vì Map.of) để tránh các kiểu suy luận phức tạp
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("categoryName", categoryName);
+                    map.put("totalSold", totalSold);
+                    return map;
+                })
+                .collect(Collectors.toList());
     }
 
     // ==================================================================
@@ -253,7 +275,6 @@ public class OrderService {
         newOrder.setStatus_order("PENDING");
         newOrder.setAddress(customerAddress);
         newOrder.setPhone(customerPhone);
-        // Mặc định là COD, sẽ được ghi đè trong processOrder nếu có truyền vào
         newOrder.setPayment_method("COD");
 
         if (loggedInUser != null) {
@@ -295,7 +316,6 @@ public class OrderService {
         return detail;
     }
 
-    // --- LOGIC QUAN TRỌNG: HIỂN THỊ TIỀN 0Đ KHI IN ĐƠN ---
     private OrderDTO mapToDTO(Order entity) {
         OrderDTO dto = new OrderDTO();
         dto.setIdOrder(entity.getId_order());
@@ -303,9 +323,6 @@ public class OrderService {
         dto.setCustomerUsername(entity.getUser() != null ? entity.getUser().getUsername() : "Khách vãng lai");
         dto.setCustomerPhone(entity.getPhone());
 
-        // LOGIC:
-        // 1. Nếu là đơn Online (không phải COD) mà trạng thái là CONFIRMED/PAID -> Đã thanh toán -> Hiện 0đ
-        // 2. Nếu là đơn bất kỳ mà trạng thái là DELIVERED (Đã giao) -> Đã thu tiền -> Hiện 0đ
         boolean isCOD = "COD".equalsIgnoreCase(entity.getPayment_method());
         boolean isPaidOnline = !isCOD && ("CONFIRMED".equalsIgnoreCase(entity.getStatus_order())
                 || "PAID".equalsIgnoreCase(entity.getStatus_order()));
@@ -326,7 +343,6 @@ public class OrderService {
         dto.setDate(entity.getDate());
         dto.setDateFormatted(entity.getDate().format(DATE_FORMATTER));
 
-        // Tính tổng số lượng sản phẩm
         long totalQuantity = entity.getOrderDetails() != null ? entity.getOrderDetails().stream()
                 .mapToLong(OrderDetail::getQuantity).sum() : 0;
         dto.setTotalProducts((int) totalQuantity);
@@ -335,7 +351,7 @@ public class OrderService {
     }
 
     private OrderDTO mapToDetailDTO(Order entity) {
-        OrderDTO dto = mapToDTO(entity); // Tái sử dụng logic hiển thị tiền ở trên
+        OrderDTO dto = mapToDTO(entity);
         dto.setAddress(entity.getAddress());
         dto.setPaymentMethod(entity.getPayment_method());
         dto.setNote(entity.getNote());
@@ -361,5 +377,24 @@ public class OrderService {
                     ? product.getImages().get(0).getImage_link() : "/images/default-book.png");
         }
         return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public Long calculateTotalRevenue() {
+        return orderRepository.sumTotalDeliveredOrders(LocalDate.now().getYear()).orElse(0L);
+    }
+
+    @Transactional(readOnly = true)
+    public Long countTotalSales() {
+        return orderRepository.countDeliveredOrders(LocalDate.now().getYear());
+    }
+
+    @Transactional(readOnly = true)
+    public Long countNewOrdersThisMonth() {
+        LocalDate today = LocalDate.now();
+        int currentMonth = today.getMonthValue();
+        int currentYear = today.getYear();
+
+        return orderRepository.countOrdersByMonthAndYear(currentMonth, currentYear);
     }
 }

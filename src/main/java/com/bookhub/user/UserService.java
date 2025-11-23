@@ -25,20 +25,13 @@ public class UserService {
     @Autowired
     private AddressRepository addressRepository;
 
-    // ===============================================
-    // === CHỨC NĂNG CỐT LÕI CHO SPRING SECURITY ===
-    // ===============================================
 
-    /**
-     * Hỗ trợ CustomUserDetailsService tìm kiếm người dùng bằng email.
-     */
+
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    // ===============================================
-    // === CÁC HÀM CRUD & LOGIC KHÁC ===
-    // ===============================================
+
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
@@ -115,7 +108,7 @@ public class UserService {
         return userRepository.findByIdUser(userId);
     }
 
-    // ... (Giữ nguyên các hàm saveUserAddress và updateUser)
+
     @Transactional
     public void saveUserAddress(Integer idUser, String city, String district, String street, String notes) {
         Optional<User> userOpt = userRepository.findByIdUser(idUser);
@@ -160,5 +153,17 @@ public class UserService {
         user.setUpdateDate(LocalDate.now());
 
         return userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public long countTotalUsers() {
+        return userRepository.count();
+    }
+
+    // THÊM: Lấy hoạt động gần đây (Bạn cần tạo DTO/Class cho Activity)
+    @Transactional(readOnly = true)
+    public List<UserDTO> getRecentActivities() {
+
+        return List.of();
     }
 }

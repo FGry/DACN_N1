@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,9 +32,22 @@ public class ProductServiceImpl implements ProductService {
     private final String UPLOAD_DIR = "src/main/resources/static/images/products/";
 
 
-    // ========================================================================
-    // Helper: Chuyển đổi Entity sang DTO (ĐÃ CẬP NHẬT LOGIC HIỂN THỊ)
-    // ========================================================================
+    
+    @Transactional(readOnly = true)
+    public List<ProductDTO> getTopSellingProducts() {
+        // Lấy tất cả sản phẩm, sắp xếp theo soldCount giảm dần và giới hạn 5 sản phẩm
+        List<Product> topProducts = productRepository.findAll().stream()
+                // Sắp xếp: dùng Comparator.nullsLast để xử lý soldCount bị null (đẩy về cuối)
+                .sorted(Comparator.comparing(Product::getSoldCount, Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(5)
+                .toList();
+
+        // Map và trả về DTO
+        return topProducts.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     private ProductDTO convertToDTO(Product product) {
         if (product == null) return null;
 
@@ -93,9 +107,6 @@ public class ProductServiceImpl implements ProductService {
         product.setLanguage(dto.getLanguage());
         product.setDiscount(dto.getDiscount());
         product.setDescription(dto.getDescription());
-
-        // Lưu ý: Không set soldCount và averageRating ở đây vì chúng được tính toán tự động
-        // khi đặt hàng/đánh giá, không phải do admin nhập tay khi sửa sản phẩm.
 
         // 2. Cập nhật Category
         if (dto.getSelectedCategoryIds() != null && !dto.getSelectedCategoryIds().isEmpty()) {

@@ -18,4 +18,6 @@ public interface ProductService {
 
     /** Chuyển đổi trạng thái hiển thị của sản phẩm */
     boolean toggleProductStatus(Integer id);
+
+
 }
